@@ -3,13 +3,22 @@ extends PanelContainer
 ## Viewer for the episode recap, with export to user://recaps/.
 
 var _scroll: ScrollContainer
-var _body: Label
+var _body: RichTextLabel
 var _status: Label
 
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(260, 200)
 	visible = false
+	# Opaque background: without one the narrative log and the world show
+	# straight through the text, which is unreadable at the 480x320 size.
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.07, 0.07, 0.1, 0.96)
+	style.border_color = Color(0.35, 0.32, 0.2, 0.9)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(3)
+	style.set_content_margin_all(4)
+	add_theme_stylebox_override("panel", style)
 	_build_ui()
 
 
@@ -20,7 +29,7 @@ func toggle() -> void:
 
 
 func refresh() -> void:
-	_body.text = EpisodeRecap.build()
+	_body.text = EpisodeRecap.build_display()
 	_status.text = ""
 	_scroll.call_deferred("set_v_scroll", 0)
 
@@ -60,10 +69,13 @@ func _build_ui() -> void:
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	outer.add_child(_scroll)
 
-	_body = Label.new()
-	_body.add_theme_font_size_override("font_size", 9)
-	_body.add_theme_color_override("font_color", Color(0.82, 0.82, 0.88))
-	_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_body = RichTextLabel.new()
+	_body.bbcode_enabled = true
+	_body.fit_content = true
+	_body.scroll_active = false  # the outer ScrollContainer owns scrolling
+	_body.add_theme_font_size_override("normal_font_size", 9)
+	_body.add_theme_font_size_override("bold_font_size", 9)
+	_body.add_theme_color_override("default_color", Color(0.82, 0.82, 0.88))
 	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_scroll.add_child(_body)
 

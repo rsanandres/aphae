@@ -58,11 +58,14 @@ func _show() -> void:
 	recap_scroll.custom_minimum_size = Vector2(280, 120)
 	vbox.add_child(recap_scroll)
 
-	var recap_label := Label.new()
-	recap_label.text = EpisodeRecap.build()
-	recap_label.add_theme_font_size_override("font_size", 8)
-	recap_label.add_theme_color_override("font_color", Color(0.72, 0.72, 0.8))
-	recap_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var recap_label := RichTextLabel.new()
+	recap_label.bbcode_enabled = true
+	recap_label.fit_content = true
+	recap_label.scroll_active = false
+	recap_label.text = EpisodeRecap.build_display()
+	recap_label.add_theme_font_size_override("normal_font_size", 8)
+	recap_label.add_theme_font_size_override("bold_font_size", 8)
+	recap_label.add_theme_color_override("default_color", Color(0.72, 0.72, 0.8))
 	recap_label.custom_minimum_size = Vector2(268, 0)
 	recap_scroll.add_child(recap_label)
 

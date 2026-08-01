@@ -40,6 +40,57 @@ static func build() -> String:
 	return "\n".join(lines)
 
 
+static func build_display() -> String:
+	## The same recap as BBCode, for on-screen RichTextLabels. build() stays
+	## Markdown because that is what gets written to a file — rendering the
+	## export format directly showed players literal "##" and "**" markers.
+	return _to_bbcode(build())
+
+
+static func _to_bbcode(markdown: String) -> String:
+	var out: PackedStringArray = []
+	for raw_line in markdown.split("\n"):
+		# Escape brackets first so quip text can never inject BBCode of its own.
+		var line := raw_line.replace("[", "[lb]")
+		if line == ">":
+			continue  # blank quote separator; the indent already spaces them
+		# Emphasis is applied to the line's CONTENT before the block tag wraps
+		# it. Running it afterwards let the underscore inside [font_size=...]
+		# be read as an italic marker, which mangled the tag itself.
+		if line.begins_with("### "):
+			out.append("[b]%s[/b]" % _emphasis(line.substr(4)))
+		elif line.begins_with("## "):
+			out.append("[color=#ffd966][b]%s[/b][/color]" % _emphasis(line.substr(3)))
+		elif line.begins_with("# "):
+			out.append("[font_size=13][color=#ffd966][b]%s[/b][/color][/font_size]" % _emphasis(line.substr(2)))
+		elif line.begins_with("> "):
+			out.append("[indent]%s[/indent]" % _emphasis(line.substr(2)))
+		elif line.begins_with("- "):
+			out.append("  • %s" % _emphasis(line.substr(2)))
+		else:
+			out.append(_emphasis(line))
+	return "\n".join(out)
+
+
+static func _emphasis(text: String) -> String:
+	return _wrap_pairs(_wrap_pairs(text, "**", "[b]", "[/b]"), "_", "[i]", "[/i]")
+
+
+static func _wrap_pairs(text: String, marker: String, open_tag: String, close_tag: String) -> String:
+	## Wraps only matched pairs. An odd number of markers leaves the line
+	## untouched rather than silently swallowing the stray one.
+	var parts := text.split(marker)
+	if parts.size() < 3 or parts.size() % 2 == 0:
+		return text
+	var out := ""
+	for i in range(parts.size()):
+		if i % 2 == 1 and i < parts.size() - 1:
+			out += open_tag + parts[i] + close_tag
+		else:
+			out += parts[i]
+	return out
+
+
 static func export_to_file() -> String:
 	## Writes the recap to user://recaps/ and returns the path, or "" on failure.
 	if not DirAccess.dir_exists_absolute(RECAP_DIR):

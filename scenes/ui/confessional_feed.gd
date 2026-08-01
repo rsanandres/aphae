@@ -10,6 +10,15 @@ var _title: Label
 func _ready() -> void:
 	custom_minimum_size = Vector2(230, 160)
 	visible = false
+	# Opaque background: without one the narrative log shows straight through
+	# the quips, which is unreadable at the 480x320 size.
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.07, 0.07, 0.1, 0.96)
+	style.border_color = Color(0.5, 0.25, 0.25, 0.9)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(3)
+	style.set_content_margin_all(4)
+	add_theme_stylebox_override("panel", style)
 	_build_ui()
 	EventBus.confessional_recorded.connect(func(_c: RefCounted) -> void:
 		if visible:

@@ -60,6 +60,9 @@ signal group_rivalry_detected(group_a: RefCounted, group_b: RefCounted)
 signal storyline_updated(storyline: RefCounted)
 # signal narrator_insight  # Unused — remove if re-adding, reconnect emitters/listeners
 
+# Confessional signals
+signal confessional_recorded(confessional: RefCounted)
+
 # Achievement signals
 signal achievement_unlocked(id: String, name: String)
 

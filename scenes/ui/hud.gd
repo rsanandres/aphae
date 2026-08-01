@@ -18,6 +18,8 @@ var _agent_inspector: AgentInspector
 var _narrative_log: NarrativeLog
 var _relationship_web: RelationshipWeb
 var _story_feed: StoryFeedPanel
+var _confessional_feed: ConfessionalFeed
+var _confessional_toast: ConfessionalToast
 var _settings_panel: Control = null
 var _achievement_panel: Control = null
 var _save_picker: SaveSlotPicker = null
@@ -88,6 +90,29 @@ func _ready() -> void:
 	_story_feed.offset_bottom = 270
 	add_child(_story_feed)
 
+	# Create confessional feed panel (center-left, toggled with C)
+	_confessional_feed = ConfessionalFeed.new()
+	_confessional_feed.offset_left = 20
+	_confessional_feed.offset_top = 26
+	_confessional_feed.offset_right = 250
+	_confessional_feed.offset_bottom = 190
+	add_child(_confessional_feed)
+
+	# Confessional cutaway toast (lower third, above the icon bar)
+	_confessional_toast = ConfessionalToast.new()
+	_confessional_toast.anchor_left = 0.5
+	_confessional_toast.anchor_right = 0.5
+	_confessional_toast.anchor_top = 1.0
+	_confessional_toast.anchor_bottom = 1.0
+	_confessional_toast.offset_left = -130
+	_confessional_toast.offset_right = 130
+	_confessional_toast.offset_top = -78
+	_confessional_toast.offset_bottom = -30
+	_confessional_toast.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_confessional_toast.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	add_child(_confessional_toast)
+	EventBus.confessional_recorded.connect(_on_confessional_recorded)
+
 	# Persistent icon bar (bottom-center quick access)
 	_setup_icon_bar()
 
@@ -139,6 +164,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 			KEY_R:
 				_relationship_web.toggle()
+				get_viewport().set_input_as_handled()
+			KEY_C:
+				_confessional_feed.toggle()
 				get_viewport().set_input_as_handled()
 
 
@@ -195,6 +223,12 @@ func _update_llm_label() -> void:
 		llm_label.add_theme_color_override("font_color", Color(0.9, 0.5, 0.5))
 
 
+func _on_confessional_recorded(confessional: RefCounted) -> void:
+	var c: Confessional = confessional as Confessional
+	if c and _confessional_toast:
+		_confessional_toast.show_confessional(c)
+
+
 func _on_agent_selected(agent: Node2D) -> void:
 	_selected_agent = agent
 
@@ -224,6 +258,9 @@ func _close_all_overlays() -> void:
 	if _story_feed.visible:
 		_story_feed.visible = false
 		return
+	if _confessional_feed.visible:
+		_confessional_feed.visible = false
+		return
 
 
 func _show_context_menu(pos: Vector2) -> void:
@@ -235,6 +272,7 @@ func _show_context_menu(pos: Vector2) -> void:
 	context_menu.add_item("God Mode  [Tab]", 5)
 	context_menu.add_item("Narrative Log  [L]", 6)
 	context_menu.add_item("Story Feed", 8)
+	context_menu.add_item("Confessional Cam  [C]", 9)
 	context_menu.add_item("Relationships  [R]", 7)
 	context_menu.add_separator()
 	var root := get_tree().current_scene
@@ -267,6 +305,7 @@ func _on_context_menu(id: int) -> void:
 		6: _narrative_log.toggle()
 		7: _relationship_web.toggle()
 		8: _story_feed.toggle()
+		9: _confessional_feed.toggle()
 		10: _show_save_picker("save")
 		11: _show_save_picker("load")
 		12: _toggle_settings()
@@ -381,8 +420,8 @@ func _setup_icon_bar() -> void:
 	bar.anchor_right = 0.5
 	bar.anchor_top = 1.0
 	bar.anchor_bottom = 1.0
-	bar.offset_left = -120
-	bar.offset_right = 120
+	bar.offset_left = -145
+	bar.offset_right = 145
 	bar.offset_top = -22
 	bar.offset_bottom = -4
 	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -404,8 +443,8 @@ func _setup_icon_bar() -> void:
 	bar_bg.anchor_right = 0.5
 	bar_bg.anchor_top = 1.0
 	bar_bg.anchor_bottom = 1.0
-	bar_bg.offset_left = -125
-	bar_bg.offset_right = 125
+	bar_bg.offset_left = -150
+	bar_bg.offset_right = 150
 	bar_bg.offset_top = -24
 	bar_bg.offset_bottom = -2
 	bar_bg.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -427,6 +466,7 @@ func _setup_icon_bar() -> void:
 	_add_icon_btn(bar, "GOD", "God Mode [Tab]", func() -> void: _toggle_god_mode())
 	_add_icon_btn(bar, "LOG", "Narrative Log [L]", func() -> void: _narrative_log.toggle())
 	_add_icon_btn(bar, "REL", "Relationships [R]", func() -> void: _relationship_web.toggle())
+	_add_icon_btn(bar, "CAM", "Confessional Cam [C]", func() -> void: _confessional_feed.toggle())
 
 	var sep2 := VSeparator.new()
 	sep2.custom_minimum_size = Vector2(2, 0)

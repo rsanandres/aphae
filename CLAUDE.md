@@ -16,7 +16,7 @@ Ayle — AI Agent Office Simulation. A top-down 2D pixel art game where AI agent
 
 ## Architecture
 
-### Autoloads (17 singletons, load order matters)
+### Autoloads (18 singletons, load order matters)
 - `EventBus` — Global signal bus (~40 signals)
 - `TimeManager` — Game clock (1 real sec = 1 game minute at 1x), pause/1x/2x/3x
 - `Config` — Constants (need decay rates, speeds, thresholds)
@@ -30,6 +30,7 @@ Ayle — AI Agent Office Simulation. A top-down 2D pixel art game where AI agent
 - `SaveManager` — Multi-slot (5) save system with `.bak` backup and corruption recovery
 - `GroupManager` — Social group formation and rivalry tracking
 - `Narrator` — Storyline tracking and narrative arc management
+- `ConfessionalDirector` — Reality-TV confessional cam: first-person "talking head" quips reacting to drama (LLM + heuristic fallback), plus host day recaps
 - `AudioManager` — 3 audio buses (Music/SFX/Ambient), crossfade, procedural fallback sounds
 - `AchievementManager` — 20 achievements, persists to `user://achievements.json`, Steam sync
 - `TutorialManager` — Contextual hints for new players
@@ -63,7 +64,7 @@ Ayle — AI Agent Office Simulation. A top-down 2D pixel art game where AI agent
 desk, couch, coffee_machine, water_cooler (2 occupants), whiteboard (3 occupants), bookshelf, plant (passive), radio (toggleable), bed
 
 ### Keyboard Shortcuts
-Space=pause, 1/2/3=speed, Tab=god mode, F5=save, F9=load, F12=screenshot, L=narrative log, R=relationships, Esc=close overlays
+Space=pause, 1/2/3=speed, Tab=god mode, F5=save, F9=load, F12=screenshot, L=narrative log, R=relationships, C=confessional cam, Esc=close overlays
 
 ### Save/Load
 5 save slots at `user://saves/slot_N.json` with `.bak` backup. Auto-save every 5 game-days. Legacy migration from single-file save.

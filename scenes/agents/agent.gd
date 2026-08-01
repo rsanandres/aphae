@@ -80,6 +80,7 @@ func _ready() -> void:
 	EventBus.day_changed.connect(_on_day_changed)
 	EventBus.agent_selected.connect(_on_global_agent_selected)
 	EventBus.agent_deselected.connect(_on_global_agent_deselected)
+	EventBus.confessional_recorded.connect(_on_confessional_recorded)
 	_setup_hover_tooltip()
 	_setup_speech_panel()
 
@@ -232,6 +233,48 @@ func die(cause: String = "natural causes") -> void:
 				other.witness_death(agent_name, cause)
 		queue_free()
 	)
+
+
+func _on_confessional_recorded(confessional: RefCounted) -> void:
+	## Remember what I said to camera.
+	##
+	## Without this the confessional is a dead end — the agent vents and forgets.
+	## Storing it as a REFLECTION puts it in the retrieval pool the brain already
+	## queries, so an agent who trash-talked someone on camera carries that into
+	## later decisions instead of contradicting themselves an hour later.
+	var c: Confessional = confessional as Confessional
+	if not c or c.is_host or c.speaker != agent_name or is_dead:
+		return
+
+	var importance := 4.0
+	var emotion := "candid"
+	var sentiment := 0.0
+	var protect := false
+	match c.kind:
+		"romance":
+			importance = 6.0
+			emotion = "vulnerable"
+			sentiment = 0.5
+		"tragedy":
+			importance = 7.0
+			emotion = "grief"
+			sentiment = -0.8
+			protect = true  # what you said about a death is a landmark
+		"rivalry":
+			importance = 5.0
+			emotion = "defiance"
+			sentiment = -0.5
+
+	memory.add_memory(
+		MemoryEntry.MemoryType.REFLECTION,
+		"%s said this to the confessional camera: \"%s\"" % [agent_name, c.line],
+		importance
+	)
+	var last: MemoryEntry = memory.memories[-1]
+	last.emotion = emotion
+	last.sentiment = sentiment
+	last.decay_protected = protect
+	last.narrative_thread = "confessional_%s" % c.kind
 
 
 func witness_death(dead_name: String, cause: String) -> void:

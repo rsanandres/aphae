@@ -16,7 +16,7 @@ Built with **Godot 4.6** (GDScript). Bundled LLM for offline AI decisions.
 - **Life Simulation** — Agents age through life stages (young → adult → senior → dying), develop health conditions, and eventually die. Other agents grieve based on relationship closeness.
 - **Drama Director** — A RimWorld-inspired storyteller paces random life events (arguments, promotions, secret admirers, office crises) for narrative satisfaction.
 - **Conversations** — Multi-turn dialogues driven by LLM or heuristic fallback, flavored by personality traits, recent memories, and emotional state.
-- **Confessional Cam** — Reality-TV style talking heads. When drama strikes, an involved agent cuts away to the confessional booth and reacts in first person, in their own voice. A host narrator delivers day recaps as tension builds. Press **C** for the full confessional history.
+- **Confessional Cam** — Reality-TV style talking heads. When drama strikes, an involved agent cuts away to the confessional booth and reacts in first person, in their own voice. A host narrator delivers day recaps as tension builds. Agents *remember* what they said on camera, so a confession or a bit of trash talk colors how they behave afterward. Press **C** for the full confessional history.
 - **Episode Recap** — Press **E** for a shareable Markdown writeup of your run: the top storylines, the best confessional quotes, and the full cast. Export it to a file, or read it on the game-over screen when the office finally falls silent.
 - **God Mode** — Place and remove objects, spawn/remove agents, and reshape the office environment.
 - **Desktop Pet Mode** — Shrink the window to a transparent, borderless, always-on-top overlay with 3 agents living on your desktop.

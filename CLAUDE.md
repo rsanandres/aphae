@@ -53,7 +53,7 @@ Ayle — AI Agent Office Simulation. A top-down 2D pixel art game where AI agent
 ### Agent Systems
 - **Needs**: energy, hunger, social, productivity, health — decay over game time
 - **Brain**: LLM-powered with heuristic fallback (200+ diverse dialogue lines)
-- **Memory**: Scored retrieval, emotional metadata, narrative threads, life summaries (max 300)
+- **Memory**: Scored retrieval, emotional metadata, narrative threads, life summaries (max 300). Agents also remember their own confessionals as REFLECTIONs (`agent.gd::_on_confessional_recorded`), so what they said on camera feeds back into later decisions
 - **Relationships**: Per-pair affinity/trust/familiarity/romantic_interest, personality compatibility
 - **Health**: Aging through life stages (young→adult→senior→dying→dead), conditions, grief
 - **Mood**: Visible emoji indicators (happy, tired, hungry, angry, sick, romantic)

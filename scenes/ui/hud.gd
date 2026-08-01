@@ -21,6 +21,7 @@ var _story_feed: StoryFeedPanel
 var _confessional_feed: ConfessionalFeed
 var _confessional_toast: ConfessionalToast
 var _recap_panel: RecapPanel
+var _producer_panel: ProducerPanel
 var _settings_panel: Control = null
 var _achievement_panel: Control = null
 var _save_picker: SaveSlotPicker = null
@@ -122,6 +123,15 @@ func _ready() -> void:
 	_recap_panel.offset_bottom = 240
 	add_child(_recap_panel)
 
+	# Producer panel (right of centre, toggled with P). Acts on the selected
+	# agent — the inspector shows you a person, this one lets you touch them.
+	_producer_panel = ProducerPanel.new()
+	_producer_panel.offset_left = 250
+	_producer_panel.offset_top = 26
+	_producer_panel.offset_right = 490
+	_producer_panel.offset_bottom = 240
+	add_child(_producer_panel)
+
 	# Persistent icon bar (bottom-center quick access)
 	_setup_icon_bar()
 
@@ -179,6 +189,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 			KEY_E:
 				_recap_panel.toggle()
+				get_viewport().set_input_as_handled()
+			KEY_P:
+				_producer_panel.toggle()
 				get_viewport().set_input_as_handled()
 
 
@@ -276,6 +289,9 @@ func _close_all_overlays() -> void:
 	if _recap_panel.visible:
 		_recap_panel.visible = false
 		return
+	if _producer_panel.visible:
+		_producer_panel.visible = false
+		return
 
 
 func _show_context_menu(pos: Vector2) -> void:
@@ -289,6 +305,7 @@ func _show_context_menu(pos: Vector2) -> void:
 	context_menu.add_item("Story Feed", 8)
 	context_menu.add_item("Confessional Cam  [C]", 9)
 	context_menu.add_item("Episode Recap  [E]", 15)
+	context_menu.add_item("Producer  [P]", 16)
 	context_menu.add_item("Relationships  [R]", 7)
 	context_menu.add_separator()
 	var root := get_tree().current_scene
@@ -328,6 +345,7 @@ func _on_context_menu(id: int) -> void:
 		12: _toggle_settings()
 		13: _toggle_achievements()
 		14: _return_to_menu()
+		16: _producer_panel.toggle()
 		20:
 			var root := get_tree().current_scene
 			if root and root.has_method("set_expanded_mode"):
@@ -485,6 +503,7 @@ func _setup_icon_bar() -> void:
 	_add_icon_btn(bar, "REL", "Relationships [R]", func() -> void: _relationship_web.toggle())
 	_add_icon_btn(bar, "CAM", "Confessional Cam [C]", func() -> void: _confessional_feed.toggle())
 	_add_icon_btn(bar, "EP", "Episode Recap [E]", func() -> void: _recap_panel.toggle())
+	_add_icon_btn(bar, "DIR", "Producer [P]", func() -> void: _producer_panel.toggle())
 
 	var sep2 := VSeparator.new()
 	sep2.custom_minimum_size = Vector2(2, 0)

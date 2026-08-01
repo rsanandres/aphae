@@ -211,6 +211,43 @@ func _run() -> void:
 	_results.append(("PASS  " if legacy_ok and ConfessionalDirector.confessionals.is_empty() else "FAIL  ")
 		+ "pre-v4 save loads with empty confessionals")
 
+	# Emitted fresh rather than reusing an earlier quip: loading a save clears
+	# and repopulates agent memory, so anything recorded before test 11 is gone.
+	print("[TEST] 13. confessional feeds back into the speaker's memory")
+	await _cool()
+	var speaker: Node2D = AgentManager.agents[0]
+	var partner: String = AgentManager.agents[1].agent_name
+	var mem_before: int = speaker.memory.memories.size()
+	var n13 := _received.size()
+	EventBus.confession_made.emit(speaker.agent_name, partner, true)
+
+	var budget: float = 45.0 if LLMManager.is_available else 2.0
+	var waited: float = 0.0
+	while waited < budget and _received.size() <= n13:
+		await get_tree().create_timer(0.25).timeout
+		waited += 0.25
+
+	# Scan back to mem_before rather than trusting memories[-1]: add_memory can
+	# trigger a reflection that appends after ours.
+	var recalled := false
+	var i: int = speaker.memory.memories.size() - 1
+	while i >= mem_before and i >= 0:
+		var m: MemoryEntry = speaker.memory.memories[i]
+		if m.type == MemoryEntry.MemoryType.REFLECTION \
+				and m.narrative_thread == "confessional_romance" \
+				and m.emotion == "vulnerable":
+			recalled = true
+			break
+		i -= 1
+	_results.append(("PASS  " if recalled else "FAIL  ") + "speaker remembers their own confessional")
+
+	var host_leaked := false
+	for agent_node in AgentManager.agents:
+		for m2 in agent_node.memory.memories:
+			if m2.narrative_thread == "confessional_host":
+				host_leaked = true
+	_results.append(("PASS  " if not host_leaked else "FAIL  ") + "host recap creates no agent memory")
+
 
 func _fingerprint() -> Array[String]:
 	## Stable identity of the current confessional list, for round-trip comparison.

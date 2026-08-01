@@ -63,6 +63,11 @@ signal storyline_updated(storyline: RefCounted)
 # Confessional signals
 signal confessional_recorded(confessional: RefCounted)
 
+# Player director signals ("producer" controls)
+signal nudge_answered(agent_name: String, request: String, complied: bool, reason: String)
+signal interview_answered(agent_name: String, question: String, answer: String)
+signal rumor_planted(agent_name: String, text: String)
+
 # Achievement signals
 signal achievement_unlocked(id: String, name: String)
 

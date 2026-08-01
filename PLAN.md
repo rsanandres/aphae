@@ -162,11 +162,25 @@ Parse check → headless smoke test → start Ollama and compare LLM vs heuristi
 GUI check (toast vs icon bar collision; layout at 320×214 and 960×640) → tune `COOLDOWN`
 (currently 8.0s, a conservative guess) based on how much good material gets dropped.
 
-### 🔁 M3 — Confessionals feed agent memory
+### ✅ M3 — Confessionals feed agent memory
 
-Turn confessionals into `MemoryEntry` records so an agent who trash-talked someone on camera
-*remembers* it, and it colors later behavior. Converts a cosmetic layer into a real simulation
-loop. **Medium risk — changes simulation behavior. Validate at runtime after M2.**
+A confessional is no longer a dead end. `agent.gd` subscribes to `confessional_recorded` and,
+when it is the speaker, stores the quip as a `REFLECTION` — landing it in the retrieval pool
+`AgentBrain` already queries, so an agent who trash-talked someone on camera carries that into
+later decisions instead of contradicting themselves an hour later.
+
+**The mutation lives in `agent.gd`, not `ConfessionalDirector`** — deliberately. Writing to
+agent memory from the director would have broken its "purely additive, only listens" invariant.
+Putting the subscription on the agent keeps the director observational and matches how
+`agent.gd` already handles `day_changed` / `agent_selected`. Preserve this split.
+
+Weighting by kind: tragedy 7.0 (`grief`, `decay_protected` — what you said about a death is a
+landmark), romance 6.0 (`vulnerable`), rivalry 5.0 (`defiance`), everything else 4.0 (`candid`).
+Deliberately below `add_reflection`'s default 8.0, which at ~one quip per ten minutes would
+push `_importance_accumulator` toward the reflection threshold too aggressively.
+
+Host recaps are skipped — "Narrator" is not an agent, and a test asserts no agent memory
+carries `confessional_host`.
 
 ### 🚀 M4 — Ship
 

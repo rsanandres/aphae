@@ -135,9 +135,36 @@ func _on_pool_request_completed(result: int, response_code: int, _headers: Packe
 	if content_json.parse(content_str) == OK:
 		callback.call(true, content_json.data, "")
 	else:
-		callback.call(true, {"raw": content_str}, "")
+		# Try to salvage it before giving up — see _repair_json.
+		var repaired := _repair_json(content_str)
+		if repaired != content_str and content_json.parse(repaired) == OK:
+			callback.call(true, content_json.data, "")
+		else:
+			callback.call(true, {"raw": content_str}, "")
 
 	_process_next()
+
+
+func _repair_json(raw: String) -> String:
+	## Small models routinely close a JSON string with a typographic quote (”)
+	## instead of ", and pad the tail with non-breaking spaces:
+	##
+	##     { "answer": "Oh, it's lovely! ... ”}
+	##
+	## The content is fine but the payload will not parse, so every caller
+	## silently falls back to its canned text — measured on gemma3, this failed
+	## identically at num_predict 150 and 300, so it is not truncation.
+	##
+	## Only ever runs after a parse has already failed, so a well-formed
+	## response can never be altered by this.
+	var s := raw.replace("“", "\"").replace("”", "\"")
+	s = s.replace("‘", "'").replace("’", "'")
+	s = s.replace(" ", " ")
+	# Drop any trailing padding after the final closing brace.
+	var last := s.rfind("}")
+	if last != -1:
+		s = s.substr(0, last + 1)
+	return s.strip_edges()
 
 
 func drain_queue() -> void:

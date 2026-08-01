@@ -45,7 +45,6 @@ signal event_ended(event_id: String)
 
 # Romance signals
 signal romance_started(agent_a: String, agent_b: String)
-# signal romance_ended  # Unused — remove if re-adding, reconnect emitters/listeners
 signal confession_made(confessor: String, target: String, accepted: bool)
 
 # Narrative signals
@@ -58,7 +57,6 @@ signal group_rivalry_detected(group_a: RefCounted, group_b: RefCounted)
 
 # Narrator signals
 signal storyline_updated(storyline: RefCounted)
-# signal narrator_insight  # Unused — remove if re-adding, reconnect emitters/listeners
 
 # Confessional signals
 signal confessional_recorded(confessional: RefCounted)
@@ -76,6 +74,4 @@ signal all_agents_dead()
 
 # Game signals
 signal game_ready()
-# signal game_paused  # Unused — use time_paused instead
-# signal game_resumed  # Unused — use time_resumed instead
 signal god_mode_toggled(enabled: bool)

@@ -279,15 +279,35 @@ func _agent_overlap(agents_a: Array[String], agents_b: Array[String]) -> float:
 
 
 func _generate_title(cluster: Array, agents: Array[String]) -> String:
-	# Simple heuristic title from first event
+	## Placeholder until the LLM writes a real one. Naming the cast beats quoting
+	## the first event: a hard character cut produced titles that ended mid-word,
+	## like "Maya's relationship with Devon chan...".
+	if not agents.is_empty():
+		match agents.size():
+			1:
+				return "%s's Story" % agents[0]
+			2:
+				return "%s & %s" % [agents[0], agents[1]]
+			_:
+				return "%s, %s & %d more" % [agents[0], agents[1], agents.size() - 2]
+
 	if cluster.is_empty():
 		return "Untitled Story"
-	var first_text: String = cluster[0].get("text", "")
-	if first_text.length() > 40:
-		return first_text.substr(0, 37) + "..."
+	var first_text := str(cluster[0].get("text", "")).strip_edges()
 	if first_text.is_empty():
-		return "%s's Story" % agents[0] if not agents.is_empty() else "Untitled Story"
-	return first_text
+		return "Untitled Story"
+	return _truncate_on_word(first_text, 40)
+
+
+func _truncate_on_word(text: String, limit: int) -> String:
+	## Cuts at the last whole word inside the limit, so titles never end mid-word.
+	if text.length() <= limit:
+		return text
+	var cut := text.substr(0, limit)
+	var space := cut.rfind(" ")
+	if space > limit / 2:
+		cut = cut.substr(0, space)
+	return cut.strip_edges().trim_suffix(".").trim_suffix(",") + "…"
 
 
 func _request_summaries() -> void:

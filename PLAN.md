@@ -43,8 +43,24 @@ via gemma3: *"Dios mio, it's* triste*. Just… *triste*."* — and a second agen
 produced *"Her rejection is a cruel, obsidian bloom upon my otherwise perfect day."*
 Distinct voices per personality, which the canned lines cannot do.
 
-Individual LLM requests still fail sometimes and fall back mid-run — observed once in a
-13-check pass. That is the degradation path working, not a defect.
+~~Individual LLM requests still fail sometimes and fall back mid-run — observed once in a
+13-check pass. That is the degradation path working, not a defect.~~ **This was wrong — it was
+a defect.** gemma3 routinely closes a JSON string with a typographic quote instead of `"`:
+
+```
+{ "answer": "Oh, it's lovely! ... ”}
+```
+
+The payload will not parse, so the answer was generated and then thrown away. Measured **5 of
+8** responses malformed this way. Not truncation — it fails identically at `num_predict` 150
+and 300. `llm_backend_ollama.gd` now normalises typographic quotes and trailing padding and
+retries; that recovered **8 of 8**. The repair runs only after a parse has already failed, so
+it cannot alter a well-formed response.
+
+**Residual fallbacks are a timeout, not a parse failure.** `TIMEOUT_SEC := 30.0` in
+`llm_backend_ollama.gd` can be exceeded by a *cold* gemma3 load plus generation, so the first
+request after the model unloads still degrades. Left as-is deliberately: raising it means a
+stuck request occupies the queue longer. Warm the model if you need the first call to land.
 
 ### Verification without Godot
 
@@ -233,6 +249,27 @@ parallel store while `MemoryEntry` is being reworked would guarantee a conflict.
 decoration — interpolated into prompts (`agent_brain.gd:88`, `conversation_instance.gd:269`)
 and never pursued, achieved, or failed. Giving goals real resolution is the natural precursor:
 a secret is just a goal an agent is hiding.
+
+### ✅ M8 — Producer controls (nudge / interview / rumour) — done
+
+Backlog items 1–3 below, built. `PlayerDirector` (autoload) + `ProducerPanel` (**P**, DIR
+button, context menu). Harness: `scenes/main/producer_test.tscn`, **14/14**.
+
+| Action | Behaviour |
+|---|---|
+| **Nudge** | Suggest rest / coffee / work / mingle. Compliance is computed from agreeableness, a trait relevant to the suggestion, and whether the matching need is actually low — then rolled. Measured 9 agreed / 15 refused over 24 nudges. |
+| **Interview** | Question answered in character from `memory.retrieve(question)`. LLM at `Priority.HIGH` (a person is waiting), heuristic fallback echoes a real memory. |
+| **Plant rumour** | Injects a `MemoryEntry` (importance 6.5, `related_agents` set) so it surfaces in retrieval and colours later prompts. True or false — that is the point. |
+
+**Design invariants:**
+- **No agent code was changed.** Everything goes through existing public API —
+  `_execute_decision` (which `AgentManager` already drives) and `AgentMemory`.
+- **Refusal is the feature.** A nudge is a suggestion weighed against personality and needs,
+  never a command. Both outcomes must stay reachable; the harness asserts it.
+- **Hard refusal while `TALKING`** — interrupting would strand the other agent in that state.
+
+Not yet done: rumours do not *spread*. Planting colours one agent's behaviour; propagation
+between agents is the natural follow-up and belongs with M7.
 
 ### 🎛️ Backlog — player agency
 

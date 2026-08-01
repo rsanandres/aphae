@@ -32,7 +32,7 @@ Ayle — AI Agent Office Simulation. A top-down 2D pixel art game where AI agent
 - `Narrator` — Storyline tracking and narrative arc management
 - `ConfessionalDirector` — Reality-TV confessional cam: first-person "talking head" quips reacting to drama (LLM + heuristic fallback), plus host day recaps
 - `AudioManager` — 3 audio buses (Music/SFX/Ambient), crossfade, procedural fallback sounds
-- `AchievementManager` — 20 achievements, persists to `user://achievements.json`, Steam sync
+- `AchievementManager` — 24 achievements, persists to `user://achievements.json`, Steam sync
 - `TutorialManager` — Contextual hints for new players
 - `SteamManager` — GodotSteam wrapper (graceful no-op without Steam)
 

@@ -20,7 +20,7 @@ Built with **Godot 4.6** (GDScript). Bundled LLM for offline AI decisions.
 - **Episode Recap** — Press **E** for a shareable Markdown writeup of your run: the top storylines, the best confessional quotes, and the full cast. Export it to a file, or read it on the game-over screen when the office finally falls silent.
 - **God Mode** — Place and remove objects, spawn/remove agents, and reshape the office environment.
 - **Desktop Pet Mode** — Shrink the window to a transparent, borderless, always-on-top overlay with 3 agents living on your desktop.
-- **20 Achievements** — Discovery, relationship, community, and milestone achievements to track your sandbox's progress.
+- **24 Achievements** — Discovery, relationship, community, and milestone achievements to track your sandbox's progress.
 - **Save System** — 5 save slots with automatic backups and corruption recovery. Auto-saves every 5 game-days.
 - **Procedural Everything** — Sprites, audio, and personalities are all generated at runtime. No external art or sound assets required.
 

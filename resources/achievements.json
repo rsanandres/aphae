@@ -19,6 +19,10 @@
     {"id": "century", "name": "Century", "description": "Reach 100 game-days", "category": "milestones"},
     {"id": "rest_in_peace", "name": "Rest in Peace", "description": "An agent dies of old age", "category": "milestones"},
     {"id": "the_architect", "name": "The Architect", "description": "Place 5 objects in God Mode", "category": "milestones"},
-    {"id": "drama_queen", "name": "Drama Queen", "description": "A storyline reaches drama score 8+", "category": "milestones"}
+    {"id": "drama_queen", "name": "Drama Queen", "description": "A storyline reaches drama score 8+", "category": "milestones"},
+    {"id": "caught_on_camera", "name": "Caught on Camera", "description": "An agent gives their first confessional", "category": "discovery"},
+    {"id": "ensemble_cast", "name": "Ensemble Cast", "description": "Every living agent has faced the confessional camera", "category": "community"},
+    {"id": "press_tour", "name": "Press Tour", "description": "25 confessionals recorded", "category": "milestones"},
+    {"id": "sweeps_week", "name": "Sweeps Week", "description": "The narrator delivers a recap at peak drama", "category": "milestones"}
   ]
 }

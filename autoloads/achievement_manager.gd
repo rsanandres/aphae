@@ -7,6 +7,8 @@ var _definitions: Dictionary = {}  # id -> {name, description, category}
 var _unlocked: Dictionary = {}  # id -> true
 var _objects_placed: int = 0
 var _conversations_today: Dictionary = {}  # agent_name -> Array[String] of partners today
+var _confessionals_recorded: int = 0
+var _confessional_speakers: Dictionary = {}  # agent_name -> true, this session only
 
 
 func _ready() -> void:
@@ -86,13 +88,18 @@ func _load_progress() -> void:
 	for id in unlocked_list:
 		_unlocked[str(id)] = true
 	_objects_placed = data.get("objects_placed", 0)
+	_confessionals_recorded = data.get("confessionals_recorded", 0)
 
 
 func _save_progress() -> void:
 	var unlocked_list: Array = []
 	for id in _unlocked:
 		unlocked_list.append(id)
-	var data := {"unlocked": unlocked_list, "objects_placed": _objects_placed}
+	var data := {
+		"unlocked": unlocked_list,
+		"objects_placed": _objects_placed,
+		"confessionals_recorded": _confessionals_recorded,
+	}
 	var file := FileAccess.open(ACHIEVEMENTS_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(data, "\t"))
@@ -185,10 +192,48 @@ func _connect_signals() -> void:
 			unlock("drama_queen")
 	)
 
+	EventBus.confessional_recorded.connect(func(c: RefCounted) -> void:
+		var conf: Confessional = c as Confessional
+		if not conf:
+			return
+		unlock("caught_on_camera")
+
+		_confessionals_recorded += 1
+		if _confessionals_recorded >= 25:
+			unlock("press_tour")
+		elif not is_unlocked("press_tour"):
+			_save_progress()  # persist the counter between unlocks
+
+		if conf.is_host:
+			if DramaDirector.drama_level >= 7.0:
+				unlock("sweeps_week")
+			return
+
+		if conf.speaker != "":
+			_confessional_speakers[conf.speaker] = true
+			_check_ensemble_cast()
+	)
+
 	# Agent count checks (deferred to not fire on initial load)
 	EventBus.agent_spawned.connect(func(_agent: Node2D) -> void:
 		call_deferred("_check_agent_count")
 	)
+
+
+func _check_ensemble_cast() -> void:
+	## Unlocks once every living agent has faced the camera. Speakers are tracked
+	## per session, not persisted: the roster changes as agents are born and die,
+	## so a name carried over from a previous run would unlock this falsely.
+	var living: Array[String] = []
+	for agent in AgentManager.agents:
+		if is_instance_valid(agent) and not agent.is_dead:
+			living.append(agent.agent_name)
+	if living.size() < 3:
+		return  # a duo is not an ensemble
+	for agent_name in living:
+		if not _confessional_speakers.has(agent_name):
+			return
+	unlock("ensemble_cast")
 
 
 func _check_agent_count() -> void:

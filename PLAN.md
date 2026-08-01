@@ -19,7 +19,7 @@ before touching anything — they record findings that are expensive to rediscov
 
 | Dependency | State | Consequence |
 |---|---|---|
-| **Godot 4.6** | ❌ not installed (being installed by another agent) | can't parse-check or run; M2+ blocked |
+| **Godot 4.6** | ✅ installed — portable build, see "Test vehicle" below | M2+ unblocked; parse check + headless run both pass |
 | **Ollama** | ⚠️ installed at `%LOCALAPPDATA%\Programs\Ollama`, **service not running** | LLM calls fail until `ollama serve` |
 | **Ollama model** | ❓ unverified (service down) | need `ollama pull smollm2:1.7b` |
 | **`addons/gdllama`** | ❌ empty dir, not committed | bundled LLM backend won't load |
@@ -78,10 +78,14 @@ menu), `headless_sim.gd` (stdout logging), `project.godot` (autoload).
 
 ### 🔨 M1 — Complete the feature (no Godot needed)
 
-- **M1.1 — Persist confessionals in `SaveManager`.** Additive key; absent must load as empty
-  so existing slots stay valid. Cap restored at `MAX_CONFESSIONALS`.
-- **M1.2 — Episode recap.** Stitch confessionals + `Narrator.get_top_storylines()` into a
-  shareable season summary with file export. The demo money-shot.
+- ✅ **M1.1 — Persist confessionals in `SaveManager`** (save v4). The restore sits *outside*
+  the `version >= 2` gate on purpose: an absent key loads as empty, so pre-v4 slots stay
+  valid. Non-dict entries skipped; trims from the front so newest survive. The latest quip
+  also shows in the "While you were away" load summary.
+- ✅ **M1.2 — Episode recap.** `scripts/utils/episode_recap.gd` assembles shareable Markdown
+  from storylines + confessionals. **Pure synchronous** — storylines already carry LLM
+  summaries, so no LLM call and no async. Viewer at **E** (`scenes/ui/recap_panel.gd`),
+  exports to `user://recaps/`, and renders on the game-over overlay with a Save Recap button.
 - **M1.3 — Achievements.** None of the existing 20 cover confessionals.
 - **M1.4 — Cleanup.** Remove 4 commented-out dead signals in `event_bus.gd`
   (`romance_ended`, `narrator_insight`, `game_paused`, `game_resumed`). Fix
@@ -144,3 +148,8 @@ small screens; Godot exports to Android/iOS natively.
 - **The `/Users/raph/...` path in `CLAUDE.md` is a macOS doc example only.** The project is
   cross-platform; `export_presets.cfg` ships Windows, Linux, and macOS presets.
 - Repo is `aphae`; the project/product name is **Ayle**.
+- **`Time.get_datetime_string_from_system()` contains colons**, which are illegal in Windows
+  filenames. Sanitize before using it in a path — `EpisodeRecap._file_stamp()` does.
+- **Storylines and confessionals outlive their agents.** After a total party death
+  `AgentManager.agents` is empty, so anything summarizing a run must derive its cast from
+  storylines/confessionals rather than the live agent list.

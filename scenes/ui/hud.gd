@@ -20,6 +20,7 @@ var _relationship_web: RelationshipWeb
 var _story_feed: StoryFeedPanel
 var _confessional_feed: ConfessionalFeed
 var _confessional_toast: ConfessionalToast
+var _recap_panel: RecapPanel
 var _settings_panel: Control = null
 var _achievement_panel: Control = null
 var _save_picker: SaveSlotPicker = null
@@ -113,6 +114,14 @@ func _ready() -> void:
 	add_child(_confessional_toast)
 	EventBus.confessional_recorded.connect(_on_confessional_recorded)
 
+	# Episode recap viewer (center overlay, toggled with E)
+	_recap_panel = RecapPanel.new()
+	_recap_panel.offset_left = 40
+	_recap_panel.offset_top = 26
+	_recap_panel.offset_right = 300
+	_recap_panel.offset_bottom = 240
+	add_child(_recap_panel)
+
 	# Persistent icon bar (bottom-center quick access)
 	_setup_icon_bar()
 
@@ -167,6 +176,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 			KEY_C:
 				_confessional_feed.toggle()
+				get_viewport().set_input_as_handled()
+			KEY_E:
+				_recap_panel.toggle()
 				get_viewport().set_input_as_handled()
 
 
@@ -261,6 +273,9 @@ func _close_all_overlays() -> void:
 	if _confessional_feed.visible:
 		_confessional_feed.visible = false
 		return
+	if _recap_panel.visible:
+		_recap_panel.visible = false
+		return
 
 
 func _show_context_menu(pos: Vector2) -> void:
@@ -273,6 +288,7 @@ func _show_context_menu(pos: Vector2) -> void:
 	context_menu.add_item("Narrative Log  [L]", 6)
 	context_menu.add_item("Story Feed", 8)
 	context_menu.add_item("Confessional Cam  [C]", 9)
+	context_menu.add_item("Episode Recap  [E]", 15)
 	context_menu.add_item("Relationships  [R]", 7)
 	context_menu.add_separator()
 	var root := get_tree().current_scene
@@ -306,6 +322,7 @@ func _on_context_menu(id: int) -> void:
 		7: _relationship_web.toggle()
 		8: _story_feed.toggle()
 		9: _confessional_feed.toggle()
+		15: _recap_panel.toggle()
 		10: _show_save_picker("save")
 		11: _show_save_picker("load")
 		12: _toggle_settings()
@@ -420,8 +437,8 @@ func _setup_icon_bar() -> void:
 	bar.anchor_right = 0.5
 	bar.anchor_top = 1.0
 	bar.anchor_bottom = 1.0
-	bar.offset_left = -145
-	bar.offset_right = 145
+	bar.offset_left = -160
+	bar.offset_right = 160
 	bar.offset_top = -22
 	bar.offset_bottom = -4
 	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -443,8 +460,8 @@ func _setup_icon_bar() -> void:
 	bar_bg.anchor_right = 0.5
 	bar_bg.anchor_top = 1.0
 	bar_bg.anchor_bottom = 1.0
-	bar_bg.offset_left = -150
-	bar_bg.offset_right = 150
+	bar_bg.offset_left = -165
+	bar_bg.offset_right = 165
 	bar_bg.offset_top = -24
 	bar_bg.offset_bottom = -2
 	bar_bg.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -467,6 +484,7 @@ func _setup_icon_bar() -> void:
 	_add_icon_btn(bar, "LOG", "Narrative Log [L]", func() -> void: _narrative_log.toggle())
 	_add_icon_btn(bar, "REL", "Relationships [R]", func() -> void: _relationship_web.toggle())
 	_add_icon_btn(bar, "CAM", "Confessional Cam [C]", func() -> void: _confessional_feed.toggle())
+	_add_icon_btn(bar, "EP", "Episode Recap [E]", func() -> void: _recap_panel.toggle())
 
 	var sep2 := VSeparator.new()
 	sep2.custom_minimum_size = Vector2(2, 0)

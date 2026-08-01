@@ -17,6 +17,7 @@ Built with **Godot 4.6** (GDScript). Bundled LLM for offline AI decisions.
 - **Drama Director** — A RimWorld-inspired storyteller paces random life events (arguments, promotions, secret admirers, office crises) for narrative satisfaction.
 - **Conversations** — Multi-turn dialogues driven by LLM or heuristic fallback, flavored by personality traits, recent memories, and emotional state.
 - **Confessional Cam** — Reality-TV style talking heads. When drama strikes, an involved agent cuts away to the confessional booth and reacts in first person, in their own voice. A host narrator delivers day recaps as tension builds. Press **C** for the full confessional history.
+- **Episode Recap** — Press **E** for a shareable Markdown writeup of your run: the top storylines, the best confessional quotes, and the full cast. Export it to a file, or read it on the game-over screen when the office finally falls silent.
 - **God Mode** — Place and remove objects, spawn/remove agents, and reshape the office environment.
 - **Desktop Pet Mode** — Shrink the window to a transparent, borderless, always-on-top overlay with 3 agents living on your desktop.
 - **20 Achievements** — Discovery, relationship, community, and milestone achievements to track your sandbox's progress.
@@ -70,6 +71,7 @@ Configure the Ollama endpoint in **Settings > LLM** from the main menu. The game
 | **L** | Narrative Log |
 | **R** | Relationships |
 | **C** | Confessional Cam |
+| **E** | Episode Recap |
 | **F5** | Quick Save |
 | **F9** | Quick Load |
 | **F12** | Screenshot |

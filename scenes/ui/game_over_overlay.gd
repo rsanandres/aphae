@@ -53,6 +53,23 @@ func _show() -> void:
 	spacer.custom_minimum_size = Vector2(0, 12)
 	vbox.add_child(spacer)
 
+	# The run is over, so this is the moment its story is worth reading.
+	var recap_scroll := ScrollContainer.new()
+	recap_scroll.custom_minimum_size = Vector2(280, 120)
+	vbox.add_child(recap_scroll)
+
+	var recap_label := Label.new()
+	recap_label.text = EpisodeRecap.build()
+	recap_label.add_theme_font_size_override("font_size", 8)
+	recap_label.add_theme_color_override("font_color", Color(0.72, 0.72, 0.8))
+	recap_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	recap_label.custom_minimum_size = Vector2(268, 0)
+	recap_scroll.add_child(recap_label)
+
+	var spacer2 := Control.new()
+	spacer2.custom_minimum_size = Vector2(0, 8)
+	vbox.add_child(spacer2)
+
 	var btn_row := HBoxContainer.new()
 	btn_row.add_theme_constant_override("separation", 8)
 	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -75,6 +92,16 @@ func _show() -> void:
 		_dismiss()
 	)
 	btn_row.add_child(load_btn)
+
+	var save_recap_btn := Button.new()
+	save_recap_btn.text = "Save Recap"
+	save_recap_btn.add_theme_font_size_override("font_size", 9)
+	save_recap_btn.pressed.connect(func() -> void:
+		var path := EpisodeRecap.export_to_file()
+		save_recap_btn.text = "Saved" if path != "" else "Failed"
+		save_recap_btn.disabled = path != ""
+	)
+	btn_row.add_child(save_recap_btn)
 
 	var menu_btn := Button.new()
 	menu_btn.text = "Return to Menu"

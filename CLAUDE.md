@@ -47,7 +47,7 @@ Ayle — AI Agent Office Simulation. A top-down 2D pixel art game where AI agent
 - `scenes/main/` — Root game scene
 - `scripts/enums/` — AgentState, NeedType, ActionType, LifeStage
 - `scripts/data/` — MemoryEntry, PersonalityProfile, RelationshipEntry, HealthState
-- `scripts/utils/` — SpriteFactory, Palette, PromptBuilder, AudioGenerator
+- `scripts/utils/` — SpriteFactory, Palette, PromptBuilder, AudioGenerator, EpisodeRecap
 - `resources/` — Personalities (JSON), prompts (TXT), events (JSON), achievements (JSON)
 
 ### Agent Systems
@@ -64,10 +64,13 @@ Ayle — AI Agent Office Simulation. A top-down 2D pixel art game where AI agent
 desk, couch, coffee_machine, water_cooler (2 occupants), whiteboard (3 occupants), bookshelf, plant (passive), radio (toggleable), bed
 
 ### Keyboard Shortcuts
-Space=pause, 1/2/3=speed, Tab=god mode, F5=save, F9=load, F12=screenshot, L=narrative log, R=relationships, C=confessional cam, Esc=close overlays
+Space=pause, 1/2/3=speed, Tab=god mode, F5=save, F9=load, F12=screenshot, L=narrative log, R=relationships, C=confessional cam, E=episode recap, Esc=close overlays
 
 ### Save/Load
-5 save slots at `user://saves/slot_N.json` with `.bak` backup. Auto-save every 5 game-days. Legacy migration from single-file save.
+5 save slots at `user://saves/slot_N.json` with `.bak` backup. Auto-save every 5 game-days. Legacy migration from single-file save. Save v4 adds confessionals; the restore sits outside the version gate so pre-v4 saves still load.
+
+### Episode Recap
+`EpisodeRecap` (`scripts/utils/`) assembles a shareable Markdown recap from Narrator storylines + ConfessionalDirector quips. Pure synchronous read — storylines already carry LLM summaries, so it needs no LLM call. Viewable with **E**, exports to `user://recaps/`, and shown on the game-over overlay.
 
 ### Audio
 Procedural fallback (AudioGenerator) when WAV/OGG files missing. File-based audio takes priority when present. Music crossfade between tracks.

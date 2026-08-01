@@ -198,6 +198,28 @@ small screens; Godot exports to Android/iOS natively.
 | Desktop-only features | Per-pixel transparency and desktop-pet mode are meaningless on mobile |
 | LLM | Ollama impossible on-device; GDLlama 1.7B is slow/hot → heuristic-only |
 
+### 🤫 M7 — Secrets & lies (agreed direction, **low priority**)
+
+The chosen next direction, but deliberately parked — **do not start it ahead of M1–M4**.
+
+Confessional Cam created something the sim otherwise lacks: a **truth channel**. Give an agent
+a private secret (broke the coffee machine, job-hunting, resents Opal). In *conversation* they
+deny or deflect; in the *confessional* they admit it. The player then knows more than the cast,
+which is the actual engine of reality TV — dramatic irony, not just drama.
+
+Reuses conversations, relationships, memory, and the existing director. Mostly additive, but
+the lying happens inside `ConversationInstance`, so unlike Confessional Cam it is **not** purely
+observational — it changes what agents say. Treat it as behaviour-changing and validate at
+runtime.
+
+**Sequencing:** wait for M3 to land. Secrets want to live alongside memories, and building a
+parallel store while `MemoryEntry` is being reworked would guarantee a conflict.
+
+**Groundwork that helps and is independently useful:** `PersonalityProfile.goals` is currently
+decoration — interpolated into prompts (`agent_brain.gd:88`, `conversation_instance.gd:269`)
+and never pursued, achieved, or failed. Giving goals real resolution is the natural precursor:
+a secret is just a goal an agent is hiding.
+
 ---
 
 ## Gotchas discovered

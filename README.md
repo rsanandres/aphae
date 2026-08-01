@@ -18,6 +18,7 @@ Built with **Godot 4.6** (GDScript). Bundled LLM for offline AI decisions.
 - **Conversations** — Multi-turn dialogues driven by LLM or heuristic fallback, flavored by personality traits, recent memories, and emotional state.
 - **Confessional Cam** — Reality-TV style talking heads. When drama strikes, an involved agent cuts away to the confessional booth and reacts in first person, in their own voice. A host narrator delivers day recaps as tension builds. Agents *remember* what they said on camera, so a confession or a bit of trash talk colors how they behave afterward. Press **C** for the full confessional history.
 - **Episode Recap** — Press **E** for a shareable Markdown writeup of your run: the top storylines, the best confessional quotes, and the full cast. Export it to a file, or read it on the game-over screen when the office finally falls silent.
+- **Producer Controls** — Press **P** to stop being a spectator. *Nudge* an agent toward something — and watch them refuse if they're disagreeable or busy, because a nudge is a suggestion, not a command. *Interview* them and get an answer in their own voice, drawn from what they actually remember. Or *plant a rumour*, true or not, and let it colour how they treat someone.
 - **God Mode** — Place and remove objects, spawn/remove agents, and reshape the office environment.
 - **Desktop Pet Mode** — Shrink the window to a transparent, borderless, always-on-top overlay with 3 agents living on your desktop.
 - **24 Achievements** — Discovery, relationship, community, and milestone achievements to track your sandbox's progress.
@@ -34,8 +35,8 @@ Built with **Godot 4.6** (GDScript). Bundled LLM for offline AI decisions.
 
 ```bash
 # Clone the repo
-git clone https://github.com/rsanandres/ayle.git
-cd ayle
+git clone https://github.com/rsanandres/aphae.git
+cd aphae
 
 # Open in Godot
 godot --editor project.godot
@@ -46,7 +47,7 @@ Press **F5** or click Play to launch.
 ### Run from CLI
 
 ```bash
-godot --path /path/to/ayle
+godot --path /path/to/aphae
 ```
 
 ### LLM Setup (Optional)
@@ -72,6 +73,7 @@ Configure the Ollama endpoint in **Settings > LLM** from the main menu. The game
 | **R** | Relationships |
 | **C** | Confessional Cam |
 | **E** | Episode Recap |
+| **P** | Producer panel |
 | **F5** | Quick Save |
 | **F9** | Quick Load |
 | **F12** | Screenshot |
@@ -84,7 +86,7 @@ Right-click anywhere for the context menu.
 
 ## Architecture
 
-18 autoload singletons orchestrated through a global **EventBus** (~40 signals):
+19 autoload singletons orchestrated through a global **EventBus** (~40 signals):
 
 ```
 EventBus ← TimeManager ← Config ← SettingsManager
@@ -93,7 +95,7 @@ AgentManager → LLMManager → GameManager → ConversationManager
     ↓
 DramaDirector → EventManager → SaveManager → GroupManager
     ↓
-Narrator → ConfessionalDirector → AudioManager → AchievementManager → TutorialManager → SteamManager
+Narrator → ConfessionalDirector → PlayerDirector → AudioManager → AchievementManager → TutorialManager → SteamManager
 ```
 
 ### Agent Pipeline
@@ -110,7 +112,7 @@ Think Tick (5s round-robin)
 
 | Directory | Contents |
 |-----------|----------|
-| `autoloads/` | 18 singleton scripts + LLM backend modules |
+| `autoloads/` | 19 singleton scripts + LLM backend modules |
 | `scenes/agents/` | Agent scene, needs, brain, memory, relationships, health |
 | `scenes/objects/` | InteractableObject base + 9 office object types |
 | `scenes/conversations/` | Multi-turn LLM/heuristic dialogue system |

@@ -1,6 +1,6 @@
 # Ayle — Confessional Cam Roadmap
 
-**Status:** M1 in progress · **Branch:** `feat/confessional-cam` · **Last updated:** 2026-07-31
+**Status:** M0–M4 and M8 shipped · **Branch:** `main` · **Open:** M1.3, M1.4, M2 (GUI only), M7
 
 Shared working plan. Other agents: read the **Coordination** and **Environment** sections
 before touching anything — they record findings that are expensive to rediscover.
@@ -9,11 +9,20 @@ before touching anything — they record findings that are expensive to rediscov
 
 ## Coordination for other agents
 
-- Work happens on `feat/confessional-cam`, **not** `main`.
-- Milestones are tracked as tasks M1.1–M6. Claim one before starting so we don't collide.
-- **M1 needs no Godot.** M2+ do. If you're waiting on the engine, take M1 work.
+- **Work happens on `main`.** `feat/confessional-cam` was merged and is finished — do not
+  branch from it. (This line previously said the opposite; it went stale at the merge.)
+- Milestones run M0–M8 plus the player-agency backlog. Claim one before starting.
+- **Stage explicit paths. Never `git add -A` or `git commit -a`.** This has already gone
+  wrong once: an `add -A` swept another agent's uncommitted work into an unrelated commit,
+  so three separate features now live inside one titled "Feed confessionals back into agent
+  memory". Nothing was lost, but the history is misleading.
+- **Before editing, run `git status`.** A modified file is someone's in-flight work — leave
+  it alone and pick something else. Running their tests is fine; editing their files is not.
 - Everything lives under this repo. Don't modify files outside it.
 - Confine temp/scratch files to a scratch dir — never commit them.
+- **Correct this file when you prove it wrong.** Two claims here have already been falsified
+  (the branch line above; "LLM fallbacks are the degradation path working, not a defect").
+  A stale doc costs the next agent a full investigation.
 
 ## Environment status
 

@@ -46,6 +46,7 @@ func _ready() -> void:
 	EventBus.group_formed.connect(_on_group_formed)
 	EventBus.group_rivalry_detected.connect(_on_rivalry)
 	EventBus.storyline_updated.connect(_on_storyline)
+	EventBus.confessional_recorded.connect(_on_confessional)
 
 	EventBus.game_ready.emit()
 	print("[SIM] Simulation started. Ctrl+C to stop.\n")
@@ -170,6 +171,13 @@ func _on_narrative(text: String, agents: Array, importance: float) -> void:
 	elif importance >= 5.0:
 		prefix = " ! "
 	print("%s[Day %d %s] %s" % [prefix, TimeManager.day, TimeManager.time_string, text])
+
+
+func _on_confessional(confessional: RefCounted) -> void:
+	var c: Confessional = confessional as Confessional
+	if not c:
+		return
+	print("CAM[Day %d %s] %s: \"%s\"" % [c.day, c.timestamp, c.speaker, c.line])
 
 
 func _on_state_changed(agent: Node2D, _old: AgentState.Type, new_state: AgentState.Type) -> void:

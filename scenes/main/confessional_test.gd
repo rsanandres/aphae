@@ -83,9 +83,20 @@ func _check(label: String, expect_kind: String, before: int) -> void:
 	while waited < budget and _received.size() <= before:
 		await get_tree().create_timer(0.25).timeout
 		waited += 0.25
+	# Scan everything that arrived since `before` rather than only the newest.
+	# Host recaps emit synchronously while LLM-backed quips return whenever the
+	# model finishes, so a straggler from an earlier step can land *after* the
+	# entry under test and make a correct result look wrong. That flaked once
+	# in three runs before this.
 	var got := _received.size() > before
-	var kind_ok := got and _received[-1].kind == expect_kind
-	var speaker_ok := got and _received[-1].speaker != "" and _received[-1].line != ""
+	var kind_ok := false
+	var speaker_ok := false
+	for i in range(before, _received.size()):
+		var c: Confessional = _received[i]
+		if c.kind == expect_kind:
+			kind_ok = true
+			speaker_ok = c.speaker != "" and c.line != ""
+			break
 	if got and kind_ok and speaker_ok:
 		_results.append("PASS  %s" % label)
 	else:
@@ -166,7 +177,13 @@ func _run() -> void:
 	var n8 := _received.size()
 	EventBus.day_changed.emit(3)
 	await _check("day change produces host recap", "host", n8)
-	if not _received.is_empty() and _received[-1].is_host and _received[-1].speaker == "Narrator":
+	# Same race as _check — find the host entry rather than trusting the tail.
+	var host_ok := false
+	for c in _received:
+		if c.kind == "host" and c.is_host and c.speaker == "Narrator":
+			host_ok = true
+			break
+	if host_ok:
 		_results.append("PASS  host recap flagged is_host with Narrator speaker")
 	else:
 		_results.append("FAIL  host recap not flagged correctly")

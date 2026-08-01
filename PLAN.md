@@ -20,19 +20,35 @@ the whole feature programme, including producer controls and the player-agency b
 Not a wish list. Each phase makes the next one possible or better, so **do them in order**.
 Items inside a phase are independent and can run in parallel.
 
-### 🔴 Phase 0 — Validate what already exists · **do this first**
+### 🟠 Phase 0 — Validate what already exists
 
-| Item | Effort | Needs |
+| Item | Status | Needs |
 |---|---|---|
-| **M2 — GUI check** | small | windowed Godot |
-| **M4 — demo GIF** | small | windowed Godot |
+| **M2 — GUI check** | ✅ **done** (`e8c5e9b`) | — |
+| **M4 — demo GIF** | ❌ open | windowed Godot |
 
-Every feature in this repo — Confessional Cam, Episode Recap, producer controls — was
-validated **headless only**. That catches logic bugs well and is structurally blind to layout.
-The icon bar has gained CAM, EP and DIR buttons and been widened twice with nobody looking at
-it. This is the largest open risk in the project and it is a small job.
+**The GUI check was worth doing — it found six real defects in one pass**, none of which any
+headless run could have seen. The viewport is **320×214** and every offset is authored in that
+space:
 
-Do both in one sitting; the GIF needs the same windowed session.
+| Defect | Was | Now |
+|---|---|---|
+| Icon bar clipped both ends | 13 buttons ≈358px in a 320px viewport — pause and half of SET unreachable | buttons 20px, gaps 1px |
+| Producer panel off-screen | `250→490` (+170px) | `78→308` |
+| Story feed off-screen | `250→470` (+150px) | `90→310` |
+| Relationship web off-screen | `100→380` (+60px) | `20→300` |
+| Agent inspector below screen | `bottom 280` in a 214-tall viewport | `24→200` |
+| **Narrative log offsets silently ignored** | `anchors_preset` assigned *after* offsets, which resets them — the log started above the screen top and sprayed text over the world | anchors first, then offsets |
+
+That last one is the trap worth remembering: **set anchors before offsets, always.** Assigning
+`anchors_preset` discards any offsets already set, and it fails silently.
+
+Confirmed fine: the confessional toast sits cleanly above the icon bar — the collision we
+expected is not real.
+
+**Harness:** `scenes/main/gui_check.tscn` boots the real game in a window, drives it with real
+key events, and saves PNGs of every overlay at both window sizes to `user://gui_check/`. It
+**must not** be run headless (no rendering → blank captures). Re-run it after any UI change.
 
 ### ✅ Phase 1 — Done and pushed
 
@@ -181,11 +197,15 @@ missing, re-download `Godot_v4.6-stable_win64.exe.zip` (79,418,197 bytes) from
 **Match 4.6 exactly** — `project.godot` declares `config/features=PackedStringArray("4.6", ...)`.
 Opening it in 4.7 can rewrite that file, which shows up as an unwanted repo change.
 
+**Always pass `--audio-driver Dummy`.** Every run below includes it. The game generates audio
+procedurally, so a test run makes noise on the owner's machine — headless runs included. This
+is a standing request from the repo owner, not a preference. Do not omit it.
+
 ```bash
 G="C:/Users/quort/Godot/Godot_v4.6-stable_win64_console.exe"
-"$G" --headless --path . -e --quit-after 5                          # parse check — exit 0
-"$G" --headless --path . res://scenes/main/confessional_test.tscn   # 13/13 pass
-"$G" --headless --path . res://scenes/main/headless_sim.tscn -- --agents=12 --speed=3
+"$G" --headless --path . --audio-driver Dummy -e --quit-after 5                          # parse check — exit 0
+"$G" --headless --path . --audio-driver Dummy res://scenes/main/confessional_test.tscn   # 13/13 pass
+"$G" --headless --path . --audio-driver Dummy res://scenes/main/headless_sim.tscn -- --agents=12 --speed=3
 ```
 
 Pass a scene path directly rather than using `run_headless.sh` — the script `sed`s

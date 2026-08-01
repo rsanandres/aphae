@@ -64,10 +64,18 @@ Pass a scene path directly rather than using `run_headless.sh` — the script `s
 `run/main_scene` in `project.godot` and restores it via an `EXIT` trap, which corrupts the
 file if the run is killed. Passing the scene leaves `project.godot` untouched.
 
-**Organic drama is slow.** At 3× speed one real second is three game-minutes, so a game-day
-costs ~8 real minutes. A 90-second `headless_sim` run reaches roughly 08:40 on Day 1 and
-produces no confessionals. Use `confessional_test.tscn` to exercise the pipeline directly;
-reserve `headless_sim` for long soak runs.
+**Organic drama is slow.** Measured: a 10-minute soak at 3× with 12 agents reached Day 1
+10:43 and produced exactly **one** confessional. (Wall-clock lags the nominal 3× badly in
+headless — 600 real seconds bought ~163 game-minutes, not 1800.) Use
+`confessional_test.tscn` to exercise the pipeline; reserve `headless_sim` for soaks.
+
+That soak did confirm the organic path end to end, and the quip came from the
+`neuroticism > 0.6` branch, so personality conditioning works on live agents.
+
+**`COOLDOWN = 8.0` needs no tuning.** At roughly one confessional per ten minutes it never
+binds. It exists to absorb bursts — a mass-casualty event or a rivalry cascade firing several
+signals in one frame — not to throttle steady state. Lowering it would change nothing;
+raising it would risk dropping the only quip in a long stretch.
 
 `ObjectDB instances leaked at exit` on shutdown is a benign artifact of quitting mid-frame,
 not a defect in this feature.

@@ -1,8 +1,10 @@
 extends Node2D
-## Functional test harness for ConfessionalDirector (dev tool, not shipped content).
+## Functional test harness for the Confessional Cam feature (dev tool, not shipped).
 ## Fires every EventBus path the director listens to and asserts it responds
 ## correctly, including the negative cases (cooldown suppression, low-importance
 ## filtering). Exercises the heuristic path when no LLM backend is present.
+## Also covers the episode recap and confessional persistence across save/load,
+## including a pre-v4 save that predates the confessionals key.
 ##
 ## Run: godot --headless --path . res://scenes/main/confessional_test.tscn
 
@@ -22,14 +24,33 @@ func _ready() -> void:
 
 
 func _build_world() -> void:
-	# Minimal world: AgentManager.spawn_procedural_agent needs a "world"
-	# group node with an "Agents" child.
+	# AgentManager.spawn_procedural_agent needs a "world" group node with an
+	# "Agents" child. office.gd is attached so the world answers get_all_objects()
+	# — SaveManager calls it while serializing, so the save/load tests need it.
 	var world := Node2D.new()
 	world.add_to_group("world")
-	add_child(world)
+	world.set_script(load("res://scenes/world/office.gd"))
+
+	# Build the hierarchy BEFORE entering the tree: office.gd resolves $Objects
+	# and $Agents via @onready, which fires on tree entry.
+	var objects_node := Node2D.new()
+	objects_node.name = "Objects"
+	world.add_child(objects_node)
 	var agents_node := Node2D.new()
 	agents_node.name = "Agents"
 	world.add_child(agents_node)
+
+	var nav_region := NavigationRegion2D.new()
+	nav_region.name = "NavigationRegion2D"
+	var poly := NavigationPolygon.new()
+	poly.add_outline(PackedVector2Array([
+		Vector2(10, 10), Vector2(300, 10), Vector2(300, 200), Vector2(10, 200),
+	]))
+	poly.make_polygons_from_outlines()
+	nav_region.navigation_polygon = poly
+	world.add_child(nav_region)
+
+	add_child(world)
 
 
 func _spawn(n: int) -> void:
@@ -137,6 +158,54 @@ func _run() -> void:
 		_results.append("PASS  host recap flagged is_host with Narrator speaker")
 	else:
 		_results.append("FAIL  host recap not flagged correctly")
+
+	print("[TEST] 9. episode recap assembles from storylines + confessionals")
+	var recap := EpisodeRecap.build()
+	var recap_ok: bool = recap.begins_with("# Ayle — Episode Recap") \
+		and "## From the Confessional Booth" in recap \
+		and "## The Cast" in recap \
+		and not ("{" in recap and "}" in recap)
+	_results.append(("PASS  " if recap_ok else "FAIL  ") + "episode recap renders every section")
+
+	print("[TEST] 10. recap exports to a file")
+	var path := EpisodeRecap.export_to_file()
+	var export_ok := path != "" and FileAccess.file_exists(path)
+	var content_ok := false
+	if export_ok:
+		var f := FileAccess.open(path, FileAccess.READ)
+		content_ok = f.get_as_text().length() == recap.length()
+		f.close()
+		print("   -> %s" % ProjectSettings.globalize_path(path))
+	_results.append(("PASS  " if export_ok and content_ok else "FAIL  ") + "recap exports to user://recaps/")
+
+	print("[TEST] 11. confessionals survive save/load (v4)")
+	var before_save := _fingerprint()
+	var saved := SaveManager.save_game(0)
+	ConfessionalDirector.confessionals.clear()
+	var loaded := SaveManager.load_game(0)
+	await get_tree().process_frame
+	var round_trip: bool = saved and loaded and not before_save.is_empty() \
+		and _fingerprint() == before_save
+	_results.append(("PASS  " if round_trip else "FAIL  ") + "confessionals survive save/load")
+
+	print("[TEST] 12. pre-v4 save without a confessionals key still loads")
+	var lf := FileAccess.open("user://saves/slot_4.json", FileAccess.WRITE)
+	lf.store_string(JSON.stringify({
+		"version": 3, "game_time": 500.0, "agents": [], "objects": [],
+	}, "\t"))
+	lf.close()
+	var legacy_ok := SaveManager.load_game(4)
+	await get_tree().process_frame
+	_results.append(("PASS  " if legacy_ok and ConfessionalDirector.confessionals.is_empty() else "FAIL  ")
+		+ "pre-v4 save loads with empty confessionals")
+
+
+func _fingerprint() -> Array[String]:
+	## Stable identity of the current confessional list, for round-trip comparison.
+	var out: Array[String] = []
+	for c in ConfessionalDirector.confessionals:
+		out.append("%s|%s|%d|%s" % [c.speaker, c.line, c.day, c.kind])
+	return out
 
 
 func _report() -> void:

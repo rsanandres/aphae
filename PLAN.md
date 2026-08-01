@@ -19,7 +19,7 @@ before touching anything — they record findings that are expensive to rediscov
 
 | Dependency | State | Consequence |
 |---|---|---|
-| **Godot 4.6** | ✅ installed — portable build, see "Test vehicle" below | M2+ unblocked; parse check + headless run both pass |
+| **Godot 4.6** | ✅ installed — portable, `C:\Users\quort\Godot\Godot_v4.6-stable_win64.exe` (not on PATH) | M2+ unblocked; parse check + headless run + integration test all pass |
 | **Ollama** | ⚠️ installed at `%LOCALAPPDATA%\Programs\Ollama`, **service not running** | LLM calls fail until `ollama serve` |
 | **Ollama model** | ❓ unverified (service down) | need `ollama pull smollm2:1.7b` |
 | **`addons/gdllama`** | ❌ empty dir, not committed | bundled LLM backend won't load |
@@ -32,7 +32,7 @@ Ollama is up. This is by design — `AgentBrain` degrades the same way.
 
 ### Verification without Godot
 
-Static checks that caught real issues so far:
+Still useful for a fast inner loop before spending a Godot run. These caught real issues:
 1. Confirm every external symbol exists (`grep` the definition) before trusting a call.
 2. Structural pass — balanced delimiters, **tab** indentation (repo convention), no orphaned blocks.
 3. Prompt templates: every `{token}` in `resources/prompts/*.txt` must be supplied by the
@@ -40,20 +40,37 @@ Static checks that caught real issues so far:
 
 ### Test vehicle — Godot has landed
 
-Portable build, no system install: `Godot_v4.6-stable_win64.exe.zip` (79,418,197 bytes) from
-`https://github.com/godotengine/godot-builds/releases/download/4.6-stable/`. Extracted to a
-session scratch dir, so **it may be gone in a fresh session** — re-download from that URL and
-use the `_console.exe` variant (the plain `.exe` detaches and gives no stdout).
+Portable build, no system install, at a **persistent** path that survives a new session:
+
+```
+C:\Users\quort\Godot\Godot_v4.6-stable_win64_console.exe
+```
+
+Use the `_console.exe` variant — the plain `.exe` detaches and gives no stdout. If it is ever
+missing, re-download `Godot_v4.6-stable_win64.exe.zip` (79,418,197 bytes) from
+`https://github.com/godotengine/godot/releases/download/4.6-stable/` and extract there.
+
+**Match 4.6 exactly** — `project.godot` declares `config/features=PackedStringArray("4.6", ...)`.
+Opening it in 4.7 can rewrite that file, which shows up as an unwanted repo change.
 
 ```bash
-godot --headless --path . -e --quit-after 300              # parse check — passes, exit 0
-godot --headless --path . res://scenes/main/confessional_test.tscn   # 9/9 pass
-godot --headless --path . res://scenes/main/headless_sim.tscn -- --agents=12 --speed=3
+G="C:/Users/quort/Godot/Godot_v4.6-stable_win64_console.exe"
+"$G" --headless --path . -e --quit-after 5                          # parse check — exit 0
+"$G" --headless --path . res://scenes/main/confessional_test.tscn   # 13/13 pass
+"$G" --headless --path . res://scenes/main/headless_sim.tscn -- --agents=12 --speed=3
 ```
 
 Pass a scene path directly rather than using `run_headless.sh` — the script `sed`s
 `run/main_scene` in `project.godot` and restores it via an `EXIT` trap, which corrupts the
 file if the run is killed. Passing the scene leaves `project.godot` untouched.
+
+**Organic drama is slow.** At 3× speed one real second is three game-minutes, so a game-day
+costs ~8 real minutes. A 90-second `headless_sim` run reaches roughly 08:40 on Day 1 and
+produces no confessionals. Use `confessional_test.tscn` to exercise the pipeline directly;
+reserve `headless_sim` for long soak runs.
+
+`ObjectDB instances leaked at exit` on shutdown is a benign artifact of quitting mid-frame,
+not a defect in this feature.
 
 `scenes/main/headless_sim.gd` prints `CAM[Day N HH:MM] Speaker: "line"` for every
 confessional, so the whole pipeline is verifiable from stdout with no GUI.

@@ -1,10 +1,11 @@
 extends Node
 ## Autoload: multi-slot save system with backup and corruption recovery.
 ## V3: 5 save slots, .bak backup, corruption recovery.
+## V4: confessionals persisted alongside storylines.
 
 const SAVE_DIR := "user://saves/"
 var AUTO_SAVE_INTERVAL_DAYS: int = 5
-const SAVE_VERSION := 3
+const SAVE_VERSION := 4
 const MAX_SLOTS := 5
 const LEGACY_PATH := "user://ayle_save.json"
 const LAST_SLOT_PATH := "user://last_slot.cfg"
@@ -177,6 +178,7 @@ func _serialize_world() -> Dictionary:
 		"groups": [],
 		"storylines": [],
 		"story_feed": [],
+		"confessionals": [],
 	}
 
 	for agent in AgentManager.agents:
@@ -235,6 +237,9 @@ func _serialize_world() -> Dictionary:
 
 	for entry in Narrator.feed:
 		data["story_feed"].append(entry.to_dict())
+
+	for c in ConfessionalDirector.confessionals:
+		data["confessionals"].append(c.to_dict())
 
 	return data
 
@@ -314,6 +319,17 @@ func _deserialize_world(data: Dictionary) -> void:
 		for fd in feed_data:
 			var entry := StoryEntry.from_dict(fd)
 			Narrator.feed.append(entry)
+
+	# Confessionals (v4+). Deliberately outside the version gate: an absent key
+	# restores as empty, so pre-v4 saves stay valid instead of failing to load.
+	var confessionals_data: Array = data.get("confessionals", [])
+	ConfessionalDirector.confessionals.clear()
+	for cd in confessionals_data:
+		if cd is Dictionary:
+			ConfessionalDirector.confessionals.append(Confessional.from_dict(cd))
+	# Drop oldest if a save predates a lower cap.
+	while ConfessionalDirector.confessionals.size() > ConfessionalDirector.MAX_CONFESSIONALS:
+		ConfessionalDirector.confessionals.pop_front()
 
 	# Restore _last_auto_save_day from save data
 	_last_auto_save_day = int(data.get("last_auto_save_day", 0))
@@ -463,5 +479,15 @@ func get_load_summary(slot: int = -1) -> String:
 	dating_pairs = dating_pairs / 2  # Each pair counted twice
 	if dating_pairs > 0:
 		lines.append("%d romantic couple%s" % [dating_pairs, "s" if dating_pairs > 1 else ""])
+
+	# Leave off with the last thing someone said to camera.
+	var saved_confessionals: Array = data.get("confessionals", [])
+	if not saved_confessionals.is_empty():
+		var last = saved_confessionals[saved_confessionals.size() - 1]
+		if last is Dictionary:
+			var who: String = last.get("speaker", "")
+			var quip: String = last.get("line", "")
+			if who != "" and quip != "":
+				lines.append("Last confessional — %s: \"%s\"" % [who, quip])
 
 	return "\n".join(lines)

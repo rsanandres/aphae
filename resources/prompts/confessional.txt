@@ -6,4 +6,6 @@ Your speech style: {speech_style}
 
 What just happened: {event}
 
-React in FIRST PERSON with ONE punchy confessional line — like a reality-TV talking head. Keep it under 20 words. Be candid, a little dramatic, and unmistakably true to your personality. No quotation marks. Never narrate in third person.
+{tone}
+
+React in FIRST PERSON with ONE punchy confessional line — like a reality-TV talking head. React to THIS specific event; name what actually happened rather than reaching for a stock reaction. Keep it under 20 words. No quotation marks. Never narrate in third person.

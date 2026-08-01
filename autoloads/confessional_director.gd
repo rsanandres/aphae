@@ -13,6 +13,7 @@ const MAX_CONFESSIONALS := 40
 const COOLDOWN := 8.0            # min real seconds between confessionals (rate limit)
 const HOST_RECAP_MIN_DAYS := 2   # don't recap before this day
 const PENDING_TIMEOUT := 20.0    # give up on a stalled LLM request rather than jam the feed
+const QUIRK_CHANCE := 0.3        # how often a quirk is offered to the model — see _request_llm
 var _cooldown: float = 0.0
 var _pending: bool = false       # true while an LLM request is in flight
 var _pending_time: float = 0.0
@@ -117,15 +118,22 @@ func _request_llm(kind: String, event_text: String, speaker: Node2D) -> void:
 		_emit(kind, _heuristic_line(kind, speaker), speaker)
 		return
 
+	# Quirks are strong attractors for small models. Listing them on every call
+	# turns a character detail into a catchphrase: measured against gemma3, the
+	# quirk appeared in 4 of 4 lines across unrelated events — including a death,
+	# which came out as "KPIs are tanking!". Instructing the model to use them
+	# sparingly barely helped (3 of 4); not putting them in the prompt is the only
+	# reliable control. So: one quirk, occasionally.
 	var quirks_line := ""
-	if not profile.quirks.is_empty():
-		quirks_line = "Your quirks: %s." % ", ".join(profile.quirks)
+	if not profile.quirks.is_empty() and randf() < QUIRK_CHANCE:
+		quirks_line = "A quirk of yours: %s." % profile.quirks[randi() % profile.quirks.size()]
 
 	var prompt := PromptBuilder.build("confessional", {
 		"name": speaker.agent_name,
 		"personality": profile.get_personality_summary(),
 		"speech_style": profile.speech_style if profile.speech_style != "" else "casual",
 		"quirks_line": quirks_line,
+		"tone": _tone_for(kind),
 		"event": event_text,
 	})
 
@@ -211,6 +219,20 @@ func _pick_survivor(exclude_name: String) -> Node2D:
 	if pool.is_empty():
 		return null
 	return pool[randi() % pool.size()]
+
+
+func _tone_for(kind: String) -> String:
+	## Without a tone cue the model answers every event in the same register —
+	## a death drew the same upbeat work-speak as a promotion.
+	match kind:
+		"tragedy":
+			return "Someone has died. Be subdued and human. No jokes, no work-speak."
+		"romance":
+			return "Be candid and a little exposed."
+		"rivalry":
+			return "Be combative, or smug about your side."
+		_:
+			return "Be candid and a little dramatic."
 
 
 func _clean(raw: String) -> String:

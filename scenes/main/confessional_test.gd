@@ -75,8 +75,14 @@ func _on_confessional(c: RefCounted) -> void:
 
 func _check(label: String, expect_kind: String, before: int) -> void:
 	# `before` must be sampled BEFORE the emit — signals deliver synchronously,
-	# and LLM-backed quips arrive later via callback.
-	await get_tree().create_timer(1.5).timeout
+	# but an LLM-backed quip arrives later via callback, so poll instead of
+	# assuming a fixed delay. A fixed wait tuned for the synchronous heuristic
+	# path reports false failures the moment a real backend is configured.
+	var budget: float = 45.0 if LLMManager.is_available else 2.0
+	var waited: float = 0.0
+	while waited < budget and _received.size() <= before:
+		await get_tree().create_timer(0.25).timeout
+		waited += 0.25
 	var got := _received.size() > before
 	var kind_ok := got and _received[-1].kind == expect_kind
 	var speaker_ok := got and _received[-1].speaker != "" and _received[-1].line != ""
@@ -87,8 +93,14 @@ func _check(label: String, expect_kind: String, before: int) -> void:
 
 
 func _cool() -> void:
-	# Director enforces an 8s cooldown between quips.
+	# Director enforces an 8s cooldown between quips, and drops anything raised
+	# while a request is still in flight — so wait out both, or the next emit is
+	# silently swallowed and reads as a failure.
 	await get_tree().create_timer(9.0).timeout
+	var waited: float = 0.0
+	while ConfessionalDirector._pending and waited < 45.0:
+		await get_tree().create_timer(0.25).timeout
+		waited += 0.25
 
 
 func _run() -> void:

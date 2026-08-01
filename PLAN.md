@@ -20,15 +20,31 @@ before touching anything — they record findings that are expensive to rediscov
 | Dependency | State | Consequence |
 |---|---|---|
 | **Godot 4.6** | ✅ installed — portable, `C:\Users\quort\Godot\Godot_v4.6-stable_win64.exe` (not on PATH) | M2+ unblocked; parse check + headless run + integration test all pass |
-| **Ollama** | ⚠️ installed at `%LOCALAPPDATA%\Programs\Ollama`, **service not running** | LLM calls fail until `ollama serve` |
-| **Ollama model** | ❓ unverified (service down) | need `ollama pull smollm2:1.7b` |
+| **Ollama** | ✅ works, but **only on port 11500** — 11434 is unusable on this machine (see gotchas) | start with `OLLAMA_HOST=127.0.0.1:11500 ollama serve` |
+| **Ollama model** | ✅ `gemma3:latest` (4.3B Q4_K_M). `smollm2:1.7b` — the project default — is **not** installed | point `ollama_model` at `gemma3:latest`, or pull smollm2 |
 | **`addons/gdllama`** | ❌ empty dir, not committed | bundled LLM backend won't load |
 | **`addons/godotsteam`** | ❌ empty dir, not committed | SteamManager no-ops (by design) |
 | **`models/*.gguf`** | ❌ gitignored ("ship with builds") | no bundled model |
 
-**Net effect:** the LLM chain resolves bundled (missing) → Ollama (down) → **heuristic fallback**.
-The game runs and confessionals appear, but they're canned personality-flavored lines until
-Ollama is up. This is by design — `AgentBrain` degrades the same way.
+**Net effect:** with Ollama up the chain resolves bundled (missing) → **Ollama**. Without it,
+→ heuristic fallback. Both paths are verified. To use Ollama, write
+`user://settings.cfg` (`%APPDATA%\Godot\app_userdata\Ayle\settings.cfg`):
+
+```ini
+[llm]
+
+backend="ollama"
+ollama_url="http://127.0.0.1:11500"
+ollama_model="gemma3:latest"
+```
+
+Quality difference is stark. Heuristic: *"I keep expecting them to walk back in."* Same event
+via gemma3: *"Dios mio, it's* triste*. Just… *triste*."* — and a second agent in the same run
+produced *"Her rejection is a cruel, obsidian bloom upon my otherwise perfect day."*
+Distinct voices per personality, which the canned lines cannot do.
+
+Individual LLM requests still fail sometimes and fall back mid-run — observed once in a
+13-check pass. That is the degradation path working, not a defect.
 
 ### Verification without Godot
 
@@ -198,6 +214,15 @@ small screens; Godot exports to Android/iOS natively.
 - Repo is `aphae`; the project/product name is **Ayle**.
 - **`Time.get_datetime_string_from_system()` contains colons**, which are illegal in Windows
   filenames. Sanitize before using it in a path — `EpisodeRecap._file_stamp()` does.
+- **Port 11434 is unusable on this machine.** A `svchost` PID holds it LISTENING, accepts
+  connections, then drops them without responding — so `ollama serve` fails to bind and the
+  client reports `wsarecv: An existing connection was forcibly closed`. It is *not* a Windows
+  reserved range (`netsh interface ipv4 show excludedportrange protocol=tcp` does not list it).
+  Do **not** kill the svchost. Use `OLLAMA_HOST=127.0.0.1:11500` and set `ollama_url` to match.
+- **A fixed wait in a test is invalid once an LLM backend is configured.** The harness used a
+  1.5s sleep tuned for the synchronous heuristic path; with gemma3 the callback lands later and
+  three checks reported false failures. `_check()` and `_cool()` now poll for arrival and for
+  `ConfessionalDirector._pending` to clear. Keep it that way.
 - **Storylines and confessionals outlive their agents.** After a total party death
   `AgentManager.agents` is empty, so anything summarizing a run must derive its cast from
   storylines/confessionals rather than the live agent list.

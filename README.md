@@ -6,6 +6,16 @@ Built with **Godot 4.6** (GDScript). Bundled LLM for offline AI decisions.
 
 ![Godot 4.6](https://img.shields.io/badge/Godot-4.6-blue) ![GDScript](https://img.shields.io/badge/Language-GDScript-green)
 
+![Confessional Cam](docs/screenshots/02_confessional.png)
+
+*Drama strikes, and an agent cuts away to the confessional booth. Every line is generated live
+from that character's personality and memories — nothing here is scripted.*
+
+| | |
+|:--:|:--:|
+| ![The office](docs/screenshots/01_office.png) | ![Producer panel](docs/screenshots/03_producer.png) |
+| Agents living their own lives | Producer panel — nudge, interview, plant a rumour |
+
 ---
 
 ## Features

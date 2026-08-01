@@ -19,8 +19,20 @@ var _action_rows: VBoxContainer
 
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(240, 210)
+	# Keep inside the rect HUD assigns; a larger minimum silently overrides it.
+	custom_minimum_size = Vector2(224, 168)
+	clip_contents = true
 	visible = false
+
+	# The default PanelContainer theme is translucent, so the agent inspector
+	# behind this panel showed through and made both unreadable.
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.07, 0.08, 0.11, 0.97)
+	style.border_color = Color(0.35, 0.55, 0.7, 0.9)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(3)
+	style.set_content_margin_all(4)
+	add_theme_stylebox_override("panel", style)
 	_build_ui()
 
 	EventBus.agent_selected.connect(_on_agent_selected)
@@ -43,6 +55,10 @@ func toggle() -> void:
 func _build_ui() -> void:
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	# Without this the container hands children their natural width, which for
+	# a two-button row exceeds the panel — the right column was clipped to
+	# "Coffe" and "Mingl". Disabling horizontal scroll forces content to fit.
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	add_child(scroll)
 
 	var outer := VBoxContainer.new()
@@ -129,13 +145,18 @@ func _build_ui() -> void:
 	rumor_lbl.add_theme_color_override("font_color", Color(1.0, 0.6, 0.5))
 	outer.add_child(rumor_lbl)
 
+	# clip_text is essential: rumour lines are full sentences, and without it the
+	# OptionButton demands enough width to show one, which propagates up and
+	# drags the whole panel off the right of a 320px-wide screen.
 	_rumor_target = OptionButton.new()
 	_rumor_target.add_theme_font_size_override("font_size", 9)
+	_rumor_target.clip_text = true
 	_rumor_target.item_selected.connect(func(_i: int) -> void: _rebuild_rumor_text())
 	outer.add_child(_rumor_target)
 
 	_rumor_text = OptionButton.new()
 	_rumor_text.add_theme_font_size_override("font_size", 9)
+	_rumor_text.clip_text = true
 	outer.add_child(_rumor_text)
 
 	var plant := _small_button("Plant it")

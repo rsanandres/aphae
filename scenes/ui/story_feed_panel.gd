@@ -8,7 +8,7 @@ var _title: Label
 
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(220, 180)
+	custom_minimum_size = Vector2(214, 170)  # must fit the rect HUD assigns
 	visible = false
 	_build_ui()
 	EventBus.storyline_updated.connect(func(_sl: RefCounted) -> void:

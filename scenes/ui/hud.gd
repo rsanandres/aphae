@@ -75,8 +75,8 @@ func _ready() -> void:
 	_narrative_log.anchor_bottom = 1.0
 	_narrative_log.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	_narrative_log.offset_left = 8
-	_narrative_log.offset_top = -120
-	_narrative_log.offset_right = 200
+	_narrative_log.offset_top = -106
+	_narrative_log.offset_right = 186
 	_narrative_log.offset_bottom = -26
 	add_child(_narrative_log)
 

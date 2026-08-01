@@ -14,7 +14,12 @@ const MAX_ENTRIES := 100
 
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(280, 200)
+	# Must fit the rect HUD assigns inside a 320x214 viewport. A minimum size
+	# larger than that rect silently wins over the offsets — at 280x200 this
+	# panel covered most of the screen and its text collided with the agents'
+	# speech bubbles.
+	custom_minimum_size = Vector2(170, 76)
+	clip_contents = true  # long entries must not spill outside the panel
 	visible = true  # Visible by default
 	_build_ui()
 	EventBus.narrative_event.connect(_on_narrative_event)

@@ -16,25 +16,25 @@ extends Node
 ## Suggestions the player can make, and what each one means mechanically.
 const NUDGES := {
 	"rest": {
-		"label": "Take a break",
+		"label": "Break",
 		"objects": ["couch", "bed"],
 		"need": NeedType.Type.ENERGY,
 		"phrasing": "take a break",
 	},
 	"refuel": {
-		"label": "Get a coffee",
+		"label": "Coffee",
 		"objects": ["coffee_machine", "water_cooler"],
 		"need": NeedType.Type.HUNGER,
 		"phrasing": "go get a coffee",
 	},
 	"work": {
-		"label": "Get to work",
+		"label": "Work",
 		"objects": ["desk", "whiteboard"],
 		"need": NeedType.Type.PRODUCTIVITY,
 		"phrasing": "get back to work",
 	},
 	"mingle": {
-		"label": "Go mingle",
+		"label": "Mingle",
 		"objects": [],
 		"need": NeedType.Type.SOCIAL,
 		"phrasing": "go talk to someone",

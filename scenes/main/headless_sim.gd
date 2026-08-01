@@ -63,9 +63,10 @@ func _build_world() -> void:
 	_world = Node2D.new()
 	_world.add_to_group("world")
 	_world.set_script(load("res://scenes/world/office.gd"))
-	add_child(_world)
 
-	# Create containers the office.gd expects
+	# Build the child hierarchy BEFORE entering the tree. office.gd resolves
+	# $Objects and $Agents via @onready, which fires on tree entry — adding
+	# _world first left both null and silently placed no objects at all.
 	var objects_node := Node2D.new()
 	objects_node.name = "Objects"
 	_world.add_child(objects_node)
@@ -86,6 +87,9 @@ func _build_world() -> void:
 	poly.make_polygons_from_outlines()
 	nav_region.navigation_polygon = poly
 	_world.add_child(nav_region)
+
+	# Hierarchy is complete — now it is safe to enter the tree.
+	add_child(_world)
 
 	# Resize for agent count
 	if _world.has_method("resize_for_agents"):

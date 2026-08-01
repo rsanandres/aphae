@@ -38,15 +38,38 @@ Static checks that caught real issues so far:
 3. Prompt templates: every `{token}` in `resources/prompts/*.txt` must be supplied by the
    caller's `PromptBuilder.build()` dict, or it leaks literally into the prompt.
 
-### Once Godot lands — primary test vehicle
+### Test vehicle — Godot has landed
+
+Portable build, no system install: `Godot_v4.6-stable_win64.exe.zip` (79,418,197 bytes) from
+`https://github.com/godotengine/godot-builds/releases/download/4.6-stable/`. Extracted to a
+session scratch dir, so **it may be gone in a fresh session** — re-download from that URL and
+use the `_console.exe` variant (the plain `.exe` detaches and gives no stdout).
 
 ```bash
-godot --headless -e --quit-after 5     # parse check
-./run_headless.sh 10 3                 # 10 agents at 3x, no rendering
+godot --headless --path . -e --quit-after 300              # parse check — passes, exit 0
+godot --headless --path . res://scenes/main/confessional_test.tscn   # 9/9 pass
+godot --headless --path . res://scenes/main/headless_sim.tscn -- --agents=12 --speed=3
 ```
+
+Pass a scene path directly rather than using `run_headless.sh` — the script `sed`s
+`run/main_scene` in `project.godot` and restores it via an `EXIT` trap, which corrupts the
+file if the run is killed. Passing the scene leaves `project.godot` untouched.
 
 `scenes/main/headless_sim.gd` prints `CAM[Day N HH:MM] Speaker: "line"` for every
 confessional, so the whole pipeline is verifiable from stdout with no GUI.
+
+**Verified end-to-end** (heuristic path; Ollama still down): all six trigger paths fire with
+correct speaker/kind/line — confession, romance, high-importance narrative event, rivalry,
+death (a survivor reacts), host day recap — plus both negative cases (cooldown suppresses
+back-to-back quips; importance < 6 fires nothing). Harness: `scenes/main/confessional_test.tscn`.
+
+**Two findings worth not rediscovering:**
+1. **`headless_sim.gd` is broken on `main`** (pre-existing, not ours): `_build_world` assigns
+   `office.gd` to the world node *before* adding its `Objects`/`Agents` children, so every
+   `@onready` resolves to null and **no objects are ever placed**. Agents can't eat, sleep, or
+   use desks — needs decay unopposed. Fix by adding the children before `set_script`.
+2. Signals deliver **synchronously**, so a test must sample its "before" count *prior* to
+   `emit()`. LLM-backed quips, by contrast, arrive later via callback — assert on both.
 
 ---
 

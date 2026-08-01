@@ -220,6 +220,32 @@ decoration — interpolated into prompts (`agent_brain.gd:88`, `conversation_ins
 and never pursued, achieved, or failed. Giving goals real resolution is the natural precursor:
 a secret is just a goal an agent is hiding.
 
+### 🎛️ Backlog — player agency
+
+**The gap:** the player can reshape the *world* (god toolbar places objects, spawns/removes
+agents, triggers events) but can never touch an *agent*. `agent_inspector.gd` is entirely
+read-only — every method is `_update_*`, there is not one button. You are a landlord, not a
+participant.
+
+**The frame:** Confessional Cam made this a reality-TV sim, so player control should feel like
+**producing an episode**, not piloting a character.
+
+| # | Idea | Notes |
+|---|---|---|
+| 1 | **Nudge an agent** | Suggest an action; they may **refuse** on personality/need. Refusal is the point — influence, not puppetry. Reuses `ActionType` + decision pipeline. Best value-to-effort. |
+| 2 | **Interview an agent** | Ask a question, answered in character from real memories. Biggest "these are people" moment; reuses memory + LLM + the confessional voice. |
+| 3 | **Plant a rumor** | Inject a memory, true or not. They act on it and it spreads. Wait for M3. |
+| 4 | **Call someone to the confessional** | Force a booth cutaway on a chosen topic. Nearly free on `ConfessionalDirector`; makes the marquee feature interactive. |
+| 5 | **Assign desks** | Seat an agent beside a rival or crush. Proximity already drives interaction. |
+| 6 | **Pick the episode's star** | Pin an agent: camera follows and think-tier stays `ACTIVE`, so attention literally buys them the LLM brain. `ThinkTier` already supports it. |
+| 7 | **Promote / fire** | Power with fallout — resentment, grief, new rivalries. |
+| 8 | **One purchase per week** | Forced tradeoffs make the player own the room's problems. |
+| 9 | **Mediate a conflict** | Outcome depends on personalities; can backfire. |
+| 10 | **"Because of you" log** | Ties interventions to consequences. Control you cannot see the effect of does not feel like control. |
+| 11 | **Predict the day** | Commit a guess, scored by the Narrator. Turns watching into playing. |
+
+Start with **1**; it is the smallest change that turns a spectator into a participant.
+
 ---
 
 ## Gotchas discovered

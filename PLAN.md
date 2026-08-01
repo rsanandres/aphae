@@ -15,20 +15,85 @@ the whole feature programme, including producer controls and the player-agency b
 
 ---
 
-## Start here — work you can claim
+## Priority order — build in this sequence
 
-Ordered by readiness, not importance. Nothing here is blocked unless stated.
+Not a wish list. Each phase makes the next one possible or better, so **do them in order**.
+Items inside a phase are independent and can run in parallel.
 
-| Item | Effort | Needs Godot? | Notes |
-|---|---|---|---|
-| **M2 — GUI check** | small | **yes, windowed** | *Highest value.* Nobody has run this game in a window. All testing has been headless, so the entire layout is unverified — and the icon bar has gained CAM, EP and DIR buttons since anyone looked. Also unblocks the M4 demo GIF. |
-| **M1.4 — Cleanup** | small | no | Verified still open: 4 commented-out dead signals in `event_bus.gd` (lines 48, 61, 79, 80), and `Narrator._generate_title()` still truncates raw event text into titles like `"Maya's relationship with Devon chan..."`. |
-| **M1.3 — Achievements** | small | no | Verified still open: all 20 achievements predate Confessional Cam. The two matching "confession" are `office_romance` / `heartbreak` — the romance event, not the cam. Nothing covers confessionals, recaps, or producer actions. |
-| **M4 — Demo GIF** | small | **yes, windowed** | Merge and push are done. Only the capture remains. |
-| **Rumour propagation** | medium | yes | Planting works (M8); spreading agent-to-agent does not. Natural companion to M7. |
-| **M7 — Secrets & lies** | large | yes | Was blocked on M3; **M3 has landed, so it is unblocked.** Low priority by owner's decision — do not jump the queue with it. |
+### 🔴 Phase 0 — Validate what already exists · **do this first**
 
-**Before claiming:** run `git status`. A modified file is someone's in-flight work.
+| Item | Effort | Needs |
+|---|---|---|
+| **M2 — GUI check** | small | windowed Godot |
+| **M4 — demo GIF** | small | windowed Godot |
+
+Every feature in this repo — Confessional Cam, Episode Recap, producer controls — was
+validated **headless only**. That catches logic bugs well and is structurally blind to layout.
+The icon bar has gained CAM, EP and DIR buttons and been widened twice with nobody looking at
+it. This is the largest open risk in the project and it is a small job.
+
+Do both in one sitting; the GIF needs the same windowed session.
+
+### 🟡 Phase 1 — In flight · **claimed, do not touch**
+
+`M1.3` achievements and `M1.4` cleanup are being worked on now — `event_bus.gd`,
+`narrator.gd`, `achievement_manager.gd`, `achievements.json` and `resources/achievements.json`
+are all modified in the working tree. The dead signals are already gone and `_generate_title`
+already names the cast instead of truncating.
+
+### 🟢 Phase 2 — Make agents *want* things
+
+| Item | Effort | Needs |
+|---|---|---|
+| **Goals that resolve** | medium | Phase 0 |
+
+`PersonalityProfile.goals` is decoration today: interpolated into prompts
+(`agent_brain.gd:88`, `conversation_instance.gd:269`) and never pursued, achieved, or failed.
+Give goals real progress and resolution, emitting a `narrative_event` when one lands.
+
+**Why here:** agents currently drift. Goals give them intent, which every later feature reads
+from — and **a secret is just a goal an agent is hiding**, so this is the structural precursor
+to Phase 4. Cheapest change on this list with the largest downstream effect.
+
+### 🔵 Phase 3 — Let information move between agents
+
+| Item | Effort | Needs |
+|---|---|---|
+| **Rumour propagation** | medium | M8 ✅, M3 ✅ |
+
+Planting a rumour works (M8); it does not *spread*. Let memories pass agent-to-agent through
+conversation, distorting as they go.
+
+**Why here:** it creates information asymmetry — different agents believing different things.
+Without it a secret cannot leak, and a secret that cannot leak carries no tension.
+
+### 🟣 Phase 4 — The payoff
+
+| Item | Effort | Needs |
+|---|---|---|
+| **M7 — Secrets & lies** | large | Phase 2 + Phase 3 |
+
+Agents hold a private truth, deny it in conversation, and admit it to the confessional camera.
+The player knows more than the cast: dramatic irony, not just drama.
+
+**Not purely additive** — the lying lives inside `ConversationInstance`, so it changes what
+agents say. Validate at runtime, not by static review.
+
+### ⚫ Phase 5 — A game on top of the simulation
+
+| Item | Effort | Needs |
+|---|---|---|
+| **M5 — Social deduction** | large | Phase 4 |
+
+Hidden roles, accusations, voting. This is Phase 4 plus a win condition — attempting it before
+secrets exist means building the same machinery twice.
+
+### Unscheduled
+
+**M6 — mobile port.** A real project in its own right; the interaction model, not the port, is
+the cost. See its section for the blocker list.
+
+**Before claiming anything:** run `git status`. A modified file is someone's in-flight work.
 
 ---
 

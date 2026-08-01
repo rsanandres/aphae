@@ -54,42 +54,46 @@ func _ready() -> void:
 
 	# Create agent inspector (right side)
 	_agent_inspector = AgentInspector.new()
-	_agent_inspector.offset_left = -180
-	_agent_inspector.offset_top = 10
-	_agent_inspector.offset_right = -10
-	_agent_inspector.offset_bottom = 280
+	# Same ordering trap as the narrative log — anchors first, then offsets.
 	_agent_inspector.anchors_preset = Control.PRESET_TOP_RIGHT
 	_agent_inspector.anchor_left = 1.0
 	_agent_inspector.anchor_right = 1.0
 	_agent_inspector.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_agent_inspector.offset_left = -150
+	_agent_inspector.offset_top = 24
+	_agent_inspector.offset_right = -8
+	_agent_inspector.offset_bottom = 200
 	add_child(_agent_inspector)
 
 	# Create narrative log (bottom-left, always visible)
 	_narrative_log = NarrativeLog.new()
-	_narrative_log.offset_left = 10
-	_narrative_log.offset_top = -250
-	_narrative_log.offset_right = 320
-	_narrative_log.offset_bottom = -10
+	# Anchors MUST be set before offsets: assigning anchors_preset resets the
+	# offsets, so the old order silently discarded every value below. That is
+	# why the log ignored its bounds and sprayed text across the world view.
 	_narrative_log.anchors_preset = Control.PRESET_BOTTOM_LEFT
 	_narrative_log.anchor_top = 1.0
 	_narrative_log.anchor_bottom = 1.0
 	_narrative_log.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_narrative_log.offset_left = 8
+	_narrative_log.offset_top = -120
+	_narrative_log.offset_right = 200
+	_narrative_log.offset_bottom = -26
 	add_child(_narrative_log)
 
 	# Create relationship web (center overlay)
 	_relationship_web = RelationshipWeb.new()
-	_relationship_web.offset_left = 100
-	_relationship_web.offset_top = 30
-	_relationship_web.offset_right = 380
-	_relationship_web.offset_bottom = 270
+	_relationship_web.offset_left = 20
+	_relationship_web.offset_top = 24
+	_relationship_web.offset_right = 300
+	_relationship_web.offset_bottom = 200
 	add_child(_relationship_web)
 
 	# Create story feed panel (center-right)
 	_story_feed = StoryFeedPanel.new()
-	_story_feed.offset_left = 250
-	_story_feed.offset_top = 30
-	_story_feed.offset_right = 470
-	_story_feed.offset_bottom = 270
+	_story_feed.offset_left = 90
+	_story_feed.offset_top = 24
+	_story_feed.offset_right = 310
+	_story_feed.offset_bottom = 200
 	add_child(_story_feed)
 
 	# Create confessional feed panel (center-left, toggled with C)
@@ -126,10 +130,11 @@ func _ready() -> void:
 	# Producer panel (right of centre, toggled with P). Acts on the selected
 	# agent — the inspector shows you a person, this one lets you touch them.
 	_producer_panel = ProducerPanel.new()
-	_producer_panel.offset_left = 250
-	_producer_panel.offset_top = 26
-	_producer_panel.offset_right = 490
-	_producer_panel.offset_bottom = 240
+	# Viewport is 320x214 — anything past those bounds is simply off-screen.
+	_producer_panel.offset_left = 78
+	_producer_panel.offset_top = 24
+	_producer_panel.offset_right = 308
+	_producer_panel.offset_bottom = 200
 	add_child(_producer_panel)
 
 	# Persistent icon bar (bottom-center quick access)
@@ -455,13 +460,16 @@ func _setup_icon_bar() -> void:
 	bar.anchor_right = 0.5
 	bar.anchor_top = 1.0
 	bar.anchor_bottom = 1.0
-	bar.offset_left = -160
-	bar.offset_right = 160
+	# 13 buttons must fit inside a 320px viewport. At 24px wide with 3px gaps
+	# the row needed ~358px and was clipped at both ends, losing the pause
+	# button and half of SET.
+	bar.offset_left = -145
+	bar.offset_right = 145
 	bar.offset_top = -22
 	bar.offset_bottom = -4
 	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	bar.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	bar.add_theme_constant_override("separation", 3)
+	bar.add_theme_constant_override("separation", 1)
 	bar.alignment = BoxContainer.ALIGNMENT_CENTER
 	add_child(bar)
 
@@ -478,8 +486,8 @@ func _setup_icon_bar() -> void:
 	bar_bg.anchor_right = 0.5
 	bar_bg.anchor_top = 1.0
 	bar_bg.anchor_bottom = 1.0
-	bar_bg.offset_left = -165
-	bar_bg.offset_right = 165
+	bar_bg.offset_left = -150
+	bar_bg.offset_right = 150
 	bar_bg.offset_top = -24
 	bar_bg.offset_bottom = -2
 	bar_bg.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -517,7 +525,7 @@ func _add_icon_btn(parent: HBoxContainer, text: String, tooltip: String, callbac
 	var btn := Button.new()
 	btn.text = text
 	btn.tooltip_text = tooltip
-	btn.custom_minimum_size = Vector2(24, 16)
+	btn.custom_minimum_size = Vector2(20, 16)
 	btn.add_theme_font_size_override("font_size", 9)
 	btn.pressed.connect(callback)
 	var style := StyleBoxFlat.new()

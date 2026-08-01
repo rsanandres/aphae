@@ -1,9 +1,34 @@
-# Ayle — Confessional Cam Roadmap
+# Ayle — Working Plan
+
+**The single source of truth for this project.** If you are an agent joining this repo, read
+this file before touching anything. It records decisions, environment setup, and findings that
+are expensive to rediscover — several entries here exist because someone already lost an hour
+to them.
 
 **Status:** M0–M4 and M8 shipped · **Branch:** `main` · **Open:** M1.3, M1.4, M2 (GUI only), M7
+**Maintainer:** this file is owned and kept current. Amend it when you learn something; do not
+let it drift. Two claims in it have already been proven false and corrected — a stale doc is
+worse than no doc, because it is trusted.
 
-Shared working plan. Other agents: read the **Coordination** and **Environment** sections
-before touching anything — they record findings that are expensive to rediscover.
+**Scope note:** this began as the Confessional Cam roadmap and has outgrown that. It now covers
+the whole feature programme, including producer controls and the player-agency backlog.
+
+---
+
+## Start here — work you can claim
+
+Ordered by readiness, not importance. Nothing here is blocked unless stated.
+
+| Item | Effort | Needs Godot? | Notes |
+|---|---|---|---|
+| **M2 — GUI check** | small | **yes, windowed** | *Highest value.* Nobody has run this game in a window. All testing has been headless, so the entire layout is unverified — and the icon bar has gained CAM, EP and DIR buttons since anyone looked. Also unblocks the M4 demo GIF. |
+| **M1.4 — Cleanup** | small | no | Verified still open: 4 commented-out dead signals in `event_bus.gd` (lines 48, 61, 79, 80), and `Narrator._generate_title()` still truncates raw event text into titles like `"Maya's relationship with Devon chan..."`. |
+| **M1.3 — Achievements** | small | no | Verified still open: all 20 achievements predate Confessional Cam. The two matching "confession" are `office_romance` / `heartbreak` — the romance event, not the cam. Nothing covers confessionals, recaps, or producer actions. |
+| **M4 — Demo GIF** | small | **yes, windowed** | Merge and push are done. Only the capture remains. |
+| **Rumour propagation** | medium | yes | Planting works (M8); spreading agent-to-agent does not. Natural companion to M7. |
+| **M7 — Secrets & lies** | large | yes | Was blocked on M3; **M3 has landed, so it is unblocked.** Low priority by owner's decision — do not jump the queue with it. |
+
+**Before claiming:** run `git status`. A modified file is someone's in-flight work.
 
 ---
 
@@ -181,11 +206,20 @@ menu), `headless_sim.gd` (stdout logging), `project.godot` (autoload).
   `Narrator._generate_title()`, which truncates raw event text into titles like
   `"Maya's relationship with Devon chan..."`.
 
-### 🧪 M2 — Validate & tune (blocked on Godot)
+### 🧪 M2 — Validate & tune (**GUI check only** — no longer blocked)
 
-Parse check → headless smoke test → start Ollama and compare LLM vs heuristic quality →
-GUI check (toast vs icon bar collision; layout at 320×214 and 960×640) → tune `COOLDOWN`
-(currently 8.0s, a conservative guess) based on how much good material gets dropped.
+Godot is installed, so this is mostly done:
+
+- ✅ Parse check — exit 0
+- ✅ Headless smoke test — `headless_sim` runs, agents spawn, converse, use objects
+- ✅ LLM vs heuristic compared — see Environment. The gap is large and in the LLM's favour
+- ✅ `COOLDOWN` resolved at 8.0s — measured, never binds, needs no tuning
+- ❌ **GUI check — never done.** Toast vs icon-bar collision, and layout at 320×214 (desktop
+  pet) and 960×640. The icon bar has since gained CAM, EP and DIR buttons and its width was
+  widened twice, all unverified in a window.
+
+**This is the largest remaining risk in the project.** Every feature shipped so far was
+validated headless, which cannot see a layout defect.
 
 ### ✅ M3 — Confessionals feed agent memory
 
@@ -207,9 +241,12 @@ push `_importance_accumulator` toward the reflection threshold too aggressively.
 Host recaps are skipped — "Narrator" is not an agent, and a test asserts no agent memory
 carries `confessional_host`.
 
-### 🚀 M4 — Ship
+### 🚀 M4 — Ship (mostly done)
 
-Merge/PR, push, capture a demo GIF of cutaways firing during a live run.
+- ✅ `feat/confessional-cam` merged into `main`
+- ✅ Pushed to `origin/main`
+- ❌ **Demo GIF** of cutaways firing during a live run — needs a windowed session, so it is
+  gated behind the M2 GUI check. Do both in one sitting.
 
 ### 🎭 M5 — Social deduction mode (stretch)
 

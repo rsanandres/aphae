@@ -5,7 +5,7 @@ this file before touching anything. It records decisions, environment setup, and
 are expensive to rediscover — several entries here exist because someone already lost an hour
 to them.
 
-**Status:** M0–M4 and M8 shipped · **Branch:** `main` · **Open:** M1.3, M1.4, M2 (GUI only), M7
+**Status:** M0–M4 and M8 shipped · **Branch:** `main` · **Open:** M2 (GUI only), M7
 **Maintainer:** this file is owned and kept current. Amend it when you learn something; do not
 let it drift. Two claims in it have already been proven false and corrected — a stale doc is
 worse than no doc, because it is trusted.
@@ -34,12 +34,9 @@ it. This is the largest open risk in the project and it is a small job.
 
 Do both in one sitting; the GIF needs the same windowed session.
 
-### 🟡 Phase 1 — In flight · **claimed, do not touch**
+### ✅ Phase 1 — Done and pushed
 
-`M1.3` achievements and `M1.4` cleanup are being worked on now — `event_bus.gd`,
-`narrator.gd`, `achievement_manager.gd`, `achievements.json` and `resources/achievements.json`
-are all modified in the working tree. The dead signals are already gone and `_generate_title`
-already names the cast instead of truncating.
+`M1.3` and `M1.4` are complete (`d050858`, `b5e8a7f`). Those files are no longer claimed.
 
 ### 🟢 Phase 2 — Make agents *want* things
 
@@ -265,11 +262,16 @@ menu), `headless_sim.gd` (stdout logging), `project.godot` (autoload).
   from storylines + confessionals. **Pure synchronous** — storylines already carry LLM
   summaries, so no LLM call and no async. Viewer at **E** (`scenes/ui/recap_panel.gd`),
   exports to `user://recaps/`, and renders on the game-over overlay with a Save Recap button.
-- **M1.3 — Achievements.** None of the existing 20 cover confessionals.
-- **M1.4 — Cleanup.** Remove 4 commented-out dead signals in `event_bus.gd`
-  (`romance_ended`, `narrator_insight`, `game_paused`, `game_resumed`). Fix
-  `Narrator._generate_title()`, which truncates raw event text into titles like
-  `"Maya's relationship with Devon chan..."`.
+- ✅ **M1.3 — Achievements.** Four added, bringing the set to **24**: Caught on Camera (first
+  confessional), Ensemble Cast (every living agent has faced the camera), Press Tour (25
+  recorded), Sweeps Week (host recap at peak drama). Ensemble Cast tracks speakers **per
+  session** — the roster changes as agents are born and die, so persisting names would unlock
+  it against agents who never spoke — and requires three living agents.
+- ✅ **M1.4 — Cleanup.** Four dead commented-out signals removed from `event_bus.gd` (verified
+  zero references first). `Narrator._generate_title()` now names the cast — "Maya & Devon",
+  "Maya, Devon & 2 more" — instead of cutting raw event text at 37 chars into
+  `"Maya's relationship with Devon change..."`. These titles are player-visible in the story
+  feed until the LLM writes a real one. The no-agent fallback cuts on a word boundary.
 
 ### 🧪 M2 — Validate & tune (**GUI check only** — no longer blocked)
 

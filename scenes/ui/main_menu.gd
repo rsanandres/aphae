@@ -12,6 +12,7 @@ var _mini_agents: Array[Dictionary] = []  # {pos, vel, color, flip}
 
 
 func _ready() -> void:
+	theme = UITheme.get_theme()
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	# Animated background (SubViewportContainer with mini office scene)
@@ -81,7 +82,7 @@ func _ready() -> void:
 	# Version label (bottom-right)
 	_version_label = Label.new()
 	_version_label.text = "v0.2.0"
-	_version_label.add_theme_font_size_override("font_size", 6)
+	_version_label.add_theme_font_size_override("font_size", 8)
 	_version_label.add_theme_color_override("font_color", Color(0.35, 0.35, 0.4))
 	_version_label.anchor_left = 1.0
 	_version_label.anchor_top = 1.0
@@ -96,7 +97,7 @@ func _ready() -> void:
 	# Shortcut hint (bottom-left)
 	var hint := Label.new()
 	hint.text = "Press any button to begin"
-	hint.add_theme_font_size_override("font_size", 6)
+	hint.add_theme_font_size_override("font_size", 8)
 	hint.add_theme_color_override("font_color", Color(0.45, 0.45, 0.5))
 	hint.anchor_top = 1.0
 	hint.anchor_bottom = 1.0
@@ -194,33 +195,7 @@ func _draw_bg() -> void:
 func _add_button(text: String, callback: Callable) -> void:
 	var btn := Button.new()
 	btn.text = text
-	btn.custom_minimum_size = Vector2(160, 24)
-	btn.add_theme_font_size_override("font_size", 9)
-
-	# Styled button
-	var normal_style := StyleBoxFlat.new()
-	normal_style.bg_color = Color(0.15, 0.15, 0.2, 0.8)
-	normal_style.border_color = Color(0.35, 0.35, 0.4)
-	normal_style.set_border_width_all(1)
-	normal_style.set_corner_radius_all(3)
-	normal_style.set_content_margin_all(4)
-	btn.add_theme_stylebox_override("normal", normal_style)
-
-	var hover_style := StyleBoxFlat.new()
-	hover_style.bg_color = Color(0.2, 0.2, 0.28, 0.9)
-	hover_style.border_color = Color(0.6, 0.55, 0.4)
-	hover_style.set_border_width_all(1)
-	hover_style.set_corner_radius_all(3)
-	hover_style.set_content_margin_all(4)
-	btn.add_theme_stylebox_override("hover", hover_style)
-
-	var pressed_style := StyleBoxFlat.new()
-	pressed_style.bg_color = Color(0.25, 0.22, 0.15, 0.9)
-	pressed_style.border_color = Color(0.7, 0.65, 0.45)
-	pressed_style.set_border_width_all(1)
-	pressed_style.set_corner_radius_all(3)
-	pressed_style.set_content_margin_all(4)
-	btn.add_theme_stylebox_override("pressed", pressed_style)
+	btn.custom_minimum_size = Vector2(180, 26)
 
 	btn.pressed.connect(func() -> void:
 		AudioManager.play_sfx("ui_click", -3.0)

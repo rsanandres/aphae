@@ -5,7 +5,7 @@ this file before touching anything. It records decisions, environment setup, and
 are expensive to rediscover — several entries here exist because someone already lost an hour
 to them.
 
-**Status:** M0–M4 and M8 shipped · **Branch:** `main` · **Open:** M2 (GUI only), M7
+**Status:** M0–M4, M8, and V (visual/audio overhaul) shipped · **Branch:** `main` · **Open:** M7
 **Maintainer:** this file is owned and kept current. Amend it when you learn something; do not
 let it drift. Two claims in it have already been proven false and corrected — a stale doc is
 worse than no doc, because it is trusted.
@@ -308,6 +308,11 @@ Godot is installed, so this is mostly done:
 **This is the largest remaining risk in the project.** Every feature shipped so far was
 validated headless, which cannot see a layout defect.
 
+> **Superseded by V (2026-08-08):** the GUI check ran, found six defects, and then the whole
+> layout space changed — the viewport is now **640×360** (window 1280×720) and every offset
+> in this section's tables refers to the dead 320×214 space. `gui_check.gd` sweeps 1280×720
+> and 480×320 and now also asserts overlay mutual exclusion and speech bubbles.
+
 ### ✅ M3 — Confessionals feed agent memory
 
 A confessional is no longer a dead end. `agent.gd` subscribes to `confessional_recorded` and,
@@ -404,6 +409,32 @@ button, context menu). Harness: `scenes/main/producer_test.tscn`, **14/14**.
 Not yet done: rumours do not *spread*. Planting colours one agent's behaviour; propagation
 between agents is the natural follow-up and belongs with M7.
 
+### ✅ V — Visual & audio overhaul (done, 2026-08-08)
+
+The owner's verdict on the old presentation: "cluttered, human eye can't read what's
+happening, audio clutter." Shipped in five stages, each gated on parse + producer 14/14 +
+confessional 15/15 + a windowed `gui_check`/`screenshots` run. Commits `34237ca` → `d57b5c9`.
+
+| Stage | What changed |
+|---|---|
+| **V1 resolution/camera** | Viewport 320×214 → **640×360** (window 1280×720), world drawn at camera zoom 2 (crisp 2×2 world pixels, UI at full res). The two-camera situation (tscn `GameCamera` + a runtime one in `main.gd`) collapsed into `game_camera.gd` alone: smoothing, bounds, pet-mode fit-to-view. The status bar had been off-screen at y=295 since the 480×320 era — restored. Office shrunk to 300×160 so it fits one screen at default zoom. |
+| **V2 theme/UIManager** | `UIPalette` + `UITheme` (code-built Theme; pixel font is a one-line swap), `BasePanel` chrome, `UIManager` with EXCLUSIVE/MODAL/DOCK kinds — one center overlay at a time, Esc closes topmost, toasts stack top-center capped at 3. Every panel rect re-authored for 640×360; the agent-inspector min-size overflow (170×250 in a 142×176 rect) fixed. |
+| **V3 dialogue** | Both LLM backends returned `success=true, {"raw"}` on parse failure — now a real failure (callers already have heuristics), after trying to salvage the first balanced `{...}` object. `LLMSanitizer.clean_line()` guards every model-output→screen path; the `know?"} [{"` class of leak is dead. Bubbles are screen-space (`SpeechBubbleLayer`, CanvasLayer 5): 150px, 2 lines + ellipsis, speaker-colored border + tail, cap 4, zoom-independent. Full transcript in the narrative log's new **Talk** tab; conversation lines no longer flood Events. |
+| **V4 world** | 1px outline pass on all character/object sprites (canvas grown 1px/side), curated 12-color clothing ramp + 5 skin tones (derived from the persisted color — saved agents keep their look), warm checkered floor + wall band, day/night via `CanvasModulate` (world canvas only, actually visible at night), y-sort + feet shadows, selection ring at the feet in front, occupancy dot above objects, ♪ contentment badge removed, names at 60% alpha until hover/select, sprite-derived collision for runtime objects. |
+| **V5 audio** | Footsteps deleted (0.35s/agent unthrottled — the noise floor). `SFX_RULES` per-sound cooldown + concurrency in `play_sfx`. Achievement double-sting and pause+speed-change chord fixed at source. `conversation_end` cut; `conversation_murmur` finally plays — looped on the (previously dead) Ambient bus while conversations run. Three real ~20s music loops (calm/busy/menu) switch on `DramaDirector.drama_level` with 10s hysteresis and duck −6dB under confessional cutaways. All generated buffers peak-normalized. In-game UI clicks at −14dB. Volume logic single-owned by `SettingsManager.apply_audio()`. |
+| **V6 HUD** | Icon bar: readable labels (`Log Talk Cam Rel Prod Recap · God Awards Set`), toggle buttons lit while their panel is open, speed/pause reflect live state. LLM status is a colored ● with the full backend string in its tooltip. God toolbar moved below the status bar (they overlapped at y2) and themed. Main menu on the shared theme. README screenshots regenerated. |
+
+**Gotchas from this work:**
+- **A `custom_minimum_size` larger than the assigned rect silently wins** — this one family
+  of bug accounted for the inspector, settings, recap, god toolbar, and (pre-908d298) the
+  narrative log, producer, and story feed. When authoring any panel: min ≤ rect, always.
+- **Zoomed-out camera limits pin top-left.** If Camera2D limits are smaller than the visible
+  area Godot stops centering; `game_camera.gd::_apply_zoom` floors zoom at fit-to-limits.
+- **`for x in [1, 2, 3]` yields Variant** — `var captured := x` inside the loop is a parse
+  error at *reload* (gui_check caught it; the editor parse check did not). Type the loop var.
+- The sanitizer's schema-echo extraction must run **before** its JSON-artifact cut, or an
+  echoed `{"line": ...}` object gets truncated to nothing at its own opening brace.
+
 ### 🎛️ Backlog — player agency
 
 **The gap:** the player can reshape the *world* (god toolbar places objects, spawns/removes
@@ -446,6 +477,10 @@ Start with **1**; it is the smallest change that turns a spectator into a partic
 - Repo is `aphae`; the project/product name is **Ayle**.
 - **`Time.get_datetime_string_from_system()` contains colons**, which are illegal in Windows
   filenames. Sanitize before using it in a path — `EpisodeRecap._file_stamp()` does.
+- **The Ollama port gotcha below is machine-specific (Windows box).** On the owner's Mac
+  (2026-08-08) plain `11434` works — Ollama.app serves it with `smollm2:1.7b` installed, and
+  Godot is on PATH via Homebrew (`/opt/homebrew/bin/godot`). Confessional test is 15/15 now,
+  not 13/13.
 - **Port 11434 is unusable on this machine.** A `svchost` PID holds it LISTENING, accepts
   connections, then drops them without responding — so `ollama serve` fails to bind and the
   client reports `wsarecv: An existing connection was forcibly closed`. It is *not* a Windows

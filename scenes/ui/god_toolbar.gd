@@ -47,10 +47,12 @@ func _on_god_mode_toggled(enabled: bool) -> void:
 
 func _build_toolbar() -> void:
 	_toolbar = HBoxContainer.new()
+	_toolbar.theme = UITheme.get_theme()
+	# Below the status bar (y 4..18) — at the old y 2 the two overlapped.
 	_toolbar.offset_left = 10
-	_toolbar.offset_top = 2
-	_toolbar.offset_right = 470
-	_toolbar.offset_bottom = 18
+	_toolbar.offset_top = 22
+	_toolbar.offset_right = 620
+	_toolbar.offset_bottom = 40
 	_toolbar.add_theme_constant_override("separation", 4)
 	add_child(_toolbar)
 
@@ -78,10 +80,12 @@ func _build_toolbar() -> void:
 
 func _build_panels() -> void:
 	_panel_bg = PanelContainer.new()
+	_panel_bg.theme = UITheme.get_theme()
+	_panel_bg.add_theme_stylebox_override("panel", UITheme.make_panel_style())
 	_panel_bg.offset_left = 10
-	_panel_bg.offset_top = 20
-	_panel_bg.offset_right = 210
-	_panel_bg.offset_bottom = 280
+	_panel_bg.offset_top = 44
+	_panel_bg.offset_right = 230
+	_panel_bg.offset_bottom = 326
 	_panel_bg.visible = false
 	add_child(_panel_bg)
 

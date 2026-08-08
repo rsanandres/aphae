@@ -264,11 +264,15 @@ func _update_drama() -> void:
 
 
 func _update_llm_label() -> void:
-	llm_label.text = LLMManager.get_status_text()
+	# A dot plus tooltip: the full backend string ("Ollama: Ollama (model)")
+	# ate a third of the status bar and collided with the PAUSED label.
+	llm_label.text = "● AI"
+	llm_label.tooltip_text = LLMManager.get_status_text()
+	llm_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	if LLMManager.is_available:
-		llm_label.add_theme_color_override("font_color", Color(0.5, 0.9, 0.5))
+		llm_label.add_theme_color_override("font_color", UIPalette.ACCENT_POS)
 	else:
-		llm_label.add_theme_color_override("font_color", Color(0.9, 0.5, 0.5))
+		llm_label.add_theme_color_override("font_color", UIPalette.ACCENT_NEG)
 
 
 func _on_confessional_recorded(confessional: RefCounted) -> void:
@@ -442,8 +446,8 @@ func _setup_icon_bar() -> void:
 	bar.anchor_right = 0.5
 	bar.anchor_top = 1.0
 	bar.anchor_bottom = 1.0
-	bar.offset_left = -220
-	bar.offset_right = 220
+	bar.offset_left = -252
+	bar.offset_right = 252
 	bar.offset_top = -26
 	bar.offset_bottom = -4
 	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -462,8 +466,8 @@ func _setup_icon_bar() -> void:
 	bar_bg.anchor_right = 0.5
 	bar_bg.anchor_top = 1.0
 	bar_bg.anchor_bottom = 1.0
-	bar_bg.offset_left = -226
-	bar_bg.offset_right = 226
+	bar_bg.offset_left = -258
+	bar_bg.offset_right = 258
 	bar_bg.offset_top = -28
 	bar_bg.offset_bottom = -2
 	bar_bg.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -473,40 +477,64 @@ func _setup_icon_bar() -> void:
 	# Move bar on top of background
 	move_child(bar, get_child_count() - 1)
 
-	_add_icon_btn(bar, "||", "Pause [Space]", func() -> void: TimeManager.toggle_pause())
-	_add_icon_btn(bar, "1x", "Speed 1x", func() -> void: TimeManager.set_speed(1))
-	_add_icon_btn(bar, "2x", "Speed 2x", func() -> void: TimeManager.set_speed(2))
-	_add_icon_btn(bar, "3x", "Speed 3x", func() -> void: TimeManager.set_speed(3))
+	# Time group: pause + speeds, highlighted to reflect the live state.
+	var pause_btn := _add_icon_btn(bar, "| |", "Pause [Space]", func() -> void: TimeManager.toggle_pause())
+	var speed_btns: Array[Button] = []
+	for speed: int in [1, 2, 3]:
+		var captured: int = speed
+		speed_btns.append(_add_icon_btn(bar, "%dx" % speed, "Speed %dx [%d]" % [speed, speed],
+			func() -> void: TimeManager.set_speed(captured)))
+	var sync_time := func() -> void:
+		pause_btn.set_pressed_no_signal(TimeManager.is_paused)
+		for i in range(speed_btns.size()):
+			speed_btns[i].set_pressed_no_signal(TimeManager.speed_index == i + 1)
+	for b: Button in [pause_btn] + speed_btns:
+		b.toggle_mode = true
+	EventBus.time_speed_changed.connect(func(_s: int) -> void: sync_time.call())
+	EventBus.time_paused.connect(sync_time)
+	EventBus.time_resumed.connect(sync_time)
+	sync_time.call()
 
 	var sep1 := VSeparator.new()
 	sep1.custom_minimum_size = Vector2(2, 0)
 	bar.add_child(sep1)
 
-	_add_icon_btn(bar, "GOD", "God Mode [Tab]", func() -> void: _toggle_god_mode())
-	_add_icon_btn(bar, "LOG", "Narrative Log [L]", func() -> void: _ui.toggle("log"))
-	_add_icon_btn(bar, "REL", "Relationships [R]", func() -> void: _ui.toggle("relationships"))
-	_add_icon_btn(bar, "CAM", "Confessional Cam [C]", func() -> void: _ui.toggle("confessionals"))
-	_add_icon_btn(bar, "EP", "Episode Recap [E]", func() -> void: _ui.toggle("recap"))
-	_add_icon_btn(bar, "DIR", "Producer [P]", func() -> void: _ui.toggle("producer"))
+	# Panel group: buttons stay lit while their panel is open.
+	_add_panel_btn(bar, "Log", "Narrative Log [L]", "log", _narrative_log)
+	_add_panel_btn(bar, "Talk", "Story Feed", "stories", _story_feed)
+	_add_panel_btn(bar, "Cam", "Confessional Cam [C]", "confessionals", _confessional_feed)
+	_add_panel_btn(bar, "Rel", "Relationships [R]", "relationships", _relationship_web)
+	_add_panel_btn(bar, "Prod", "Producer [P]", "producer", _producer_panel)
+	_add_panel_btn(bar, "Recap", "Episode Recap [E]", "recap", _recap_panel)
 
 	var sep2 := VSeparator.new()
 	sep2.custom_minimum_size = Vector2(2, 0)
 	bar.add_child(sep2)
 
-	_add_icon_btn(bar, "ACH", "Achievements", func() -> void: _toggle_achievements())
-	_add_icon_btn(bar, "SET", "Settings", func() -> void: _toggle_settings())
+	_add_icon_btn(bar, "God", "God Mode [Tab]", func() -> void: _toggle_god_mode())
+	_add_icon_btn(bar, "Awards", "Achievements", func() -> void: _toggle_achievements())
+	_add_icon_btn(bar, "Set", "Settings", func() -> void: _toggle_settings())
 
 
-func _add_icon_btn(parent: HBoxContainer, text: String, tooltip: String, callback: Callable) -> void:
+func _add_panel_btn(parent: HBoxContainer, text: String, tooltip: String, panel_name: String, panel: Control) -> void:
+	var btn := _add_icon_btn(parent, text, tooltip, func() -> void: _ui.toggle(panel_name))
+	btn.toggle_mode = true
+	panel.visibility_changed.connect(func() -> void:
+		btn.set_pressed_no_signal(panel.visible)
+	)
+
+
+func _add_icon_btn(parent: HBoxContainer, text: String, tooltip: String, callback: Callable) -> Button:
 	var btn := Button.new()
 	btn.text = text
 	btn.tooltip_text = tooltip
-	btn.custom_minimum_size = Vector2(28, 18)
+	btn.custom_minimum_size = Vector2(30, 18)
 	btn.pressed.connect(func() -> void:
 		AudioManager.play_sfx("ui_click", -14.0)
 		callback.call()
 	)
 	parent.add_child(btn)
+	return btn
 
 
 func _setup_pause_overlay() -> void:

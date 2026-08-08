@@ -97,6 +97,21 @@ func _sweep(size: Vector2i, tag: String) -> void:
 	await _shoot("%s_06_toast_plus_panel" % tag)
 	await _press(KEY_P)
 
+	# Mutual exclusion: opening R while P is up must close P (UIManager).
+	await _press(KEY_P)
+	await _press(KEY_R)
+	await get_tree().create_timer(0.4).timeout
+	await _shoot("%s_07_exclusion" % tag)
+	await _press(KEY_R)
+
+	# Speech bubbles: force two speakers and confirm screen-space bubbles.
+	if AgentManager.agents.size() >= 2:
+		AgentManager.agents[0].show_speech("Bubble check: a long line that has to wrap and then truncate with an ellipsis somewhere.", 4.0)
+		AgentManager.agents[1].show_speech("Short.", 4.0)
+	await get_tree().create_timer(0.4).timeout
+	await _shoot("%s_08_bubbles" % tag)
+	await get_tree().create_timer(4.0).timeout
+
 
 func _panel(key: Key, name: String) -> void:
 	await _press(key)

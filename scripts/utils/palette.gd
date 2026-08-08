@@ -23,6 +23,34 @@ const ORANGE := Color("#ef7d57")         # Warm mid accent
 const PURPLE := Color("#5d275d")         # Deep accent
 const TEAL := Color("#257179")           # Cool secondary
 
+# Skin tones for procedural agents (WOOD_LIGHT kept first for save compat
+# with sprites that always used it).
+const SKIN_TONES: Array[Color] = [
+	Color("#e4a672"),
+	Color("#f0c8a0"),
+	Color("#c68d5e"),
+	Color("#9c6a44"),
+	Color("#6f4a2f"),
+]
+
+# Curated clothing ramp for procedural agents: palette-adjacent, saturated,
+# and mutually distinct — replaces uniform HSV pastels that made everyone
+# look like the same person in a different wash.
+const CLOTHING_COLORS: Array[Color] = [
+	Color("#3b5dc9"),  # royal blue
+	Color("#38b764"),  # green
+	Color("#b55088"),  # magenta
+	Color("#ef7d57"),  # orange
+	Color("#41a6f6"),  # sky
+	Color("#e43b44"),  # red
+	Color("#257179"),  # teal
+	Color("#d9a740"),  # mustard
+	Color("#8e6fc9"),  # lavender
+	Color("#265c42"),  # forest
+	Color("#a3535e"),  # wine
+	Color("#5a6988"),  # slate
+]
+
 # Agent-specific hair/clothing palettes
 const ALICE_PRIMARY := Color("#3b5dc9")  # Blue uniform
 const ALICE_SECONDARY := Color("#29366f")

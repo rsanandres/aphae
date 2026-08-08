@@ -1,5 +1,5 @@
 extends Node2D
-## The office world. Clean white room with subtle details.
+## The office world: warm floor, perimeter walls, day/night via CanvasModulate.
 
 @onready var objects_container: Node2D = $Objects
 @onready var agents_container: Node2D = $Agents
@@ -8,11 +8,25 @@ var _all_objects: Array[InteractableObject] = []
 var _w: float = Config.DESKTOP_OFFICE_WIDTH
 var _h: float = Config.DESKTOP_OFFICE_HEIGHT
 var _m: float = 10.0  # margin
+var _day_night: CanvasModulate = null
+var _last_tint_hour: int = -1
+
+# Floor family: warm tan with a barely-there checker.
+const FLOOR_BASE := Color(0.847, 0.769, 0.604)
+const FLOOR_ALT := Color(0.818, 0.737, 0.572)
+const WALL_FACE := Color("#3a4466")
+const WALL_TOP := Color("#5a6988")
+const BASEBOARD := Color("#6b5b4a")
 
 
 func _ready() -> void:
 	add_to_group("world")
 	_collect_objects()
+	# Day/night lives on a CanvasModulate: it tints the whole world canvas
+	# (agents and objects included) while the UI CanvasLayers stay untouched.
+	_day_night = CanvasModulate.new()
+	add_child(_day_night)
+	_update_day_night()
 	queue_redraw()
 
 
@@ -91,52 +105,71 @@ func _collect_objects() -> void:
 			_all_objects.append(child)
 
 
-var _redraw_timer: float = 0.0
+var _tint_timer: float = 0.0
 
 
 func _process(delta: float) -> void:
-	_redraw_timer += delta
-	if _redraw_timer >= 5.0:
-		_redraw_timer = 0.0
+	_tint_timer += delta
+	if _tint_timer >= 2.0:
+		_tint_timer = 0.0
+		_update_day_night()
+
+
+func _update_day_night() -> void:
+	if _day_night == null:
+		return
+	var hour := fmod(TimeManager.game_minutes / 60.0, 24.0)
+	_day_night.color = _get_day_night_tint(hour)
+	# The floor itself is static; only redraw when the hour ticks over so the
+	# _draw cost isn't paid every couple of seconds.
+	if int(hour) != _last_tint_hour:
+		_last_tint_hour = int(hour)
 		queue_redraw()
 
 
 func _draw() -> void:
 	var floor_rect := Rect2(_m, _m, _w, _h)
 
-	# Day/night tint based on game time
-	var hour := fmod(TimeManager.game_minutes / 60.0, 24.0)
-	var tint := _get_day_night_tint(hour)
-	var floor_color := Color(0.96, 0.96, 0.97, 0.95).lerp(tint, 0.15)
+	# Warm floor with a 32px checker at ~3-4% value difference: enough for the
+	# eye to anchor scale and motion, quiet enough to stay background.
+	draw_rect(floor_rect, FLOOR_BASE)
+	var checker := 32
+	for ty in range(int(_h / checker) + 1):
+		for tx in range(int(_w / checker) + 1):
+			if (tx + ty) % 2 == 1:
+				var cell := Rect2(
+					_m + tx * checker, _m + ty * checker,
+					minf(checker, _w - tx * checker), minf(checker, _h - ty * checker)
+				)
+				if cell.size.x > 0 and cell.size.y > 0:
+					draw_rect(cell, FLOOR_ALT)
 
-	draw_rect(floor_rect, floor_color)
+	# Perimeter walls: a 10px face along the top (rooms have backs), thin
+	# baseboards on the other three sides.
+	draw_rect(Rect2(_m - 4, _m - 10, _w + 8, 10), WALL_FACE)
+	draw_rect(Rect2(_m - 4, _m - 10, _w + 8, 2), WALL_TOP)
+	draw_rect(Rect2(_m - 4, _m, _w + 8, 2), Palette.OUTLINE * Color(1, 1, 1, 0.35))
+	draw_rect(Rect2(_m - 4, _m + _h, _w + 8, 3), BASEBOARD)
+	draw_rect(Rect2(_m - 4, _m, 4, _h), BASEBOARD)
+	draw_rect(Rect2(_m + _w, _m, 4, _h), BASEBOARD)
 
-	# Subtle tile grid
-	var grid_color := Color(0.88, 0.88, 0.9, 0.4)
-	for x in range(int(_m), int(_m + _w) + 1, 16):
-		draw_line(Vector2(x, _m), Vector2(x, _m + _h), grid_color, 1.0)
-	for y in range(int(_m), int(_m + _h) + 1, 16):
-		draw_line(Vector2(_m, y), Vector2(_m + _w, y), grid_color, 1.0)
-
-	# Thin border
-	draw_rect(floor_rect, Color(0.75, 0.75, 0.78, 0.8), false, 1.0)
-
-	# Soft shadow along bottom and right edges (depth)
-	draw_line(Vector2(_m, _m + _h), Vector2(_m + _w, _m + _h), Color(0.7, 0.7, 0.72, 0.5), 2.0)
-	draw_line(Vector2(_m + _w, _m), Vector2(_m + _w, _m + _h), Color(0.7, 0.7, 0.72, 0.5), 2.0)
+	# Outline the whole room so it reads as one object against the void.
+	draw_rect(Rect2(_m - 4, _m - 10, _w + 8, _h + 13), Palette.OUTLINE, false, 1.0)
 
 
 func _get_day_night_tint(hour: float) -> Color:
+	## Whole-canvas modulate. Perceptibly dark at night, warm at the edges of
+	## the day, neutral at noon.
 	if hour < 5.0 or hour >= 22.0:
-		return Color(0.7, 0.75, 0.95)  # Night blue
+		return Color(0.58, 0.62, 0.82)  # Night
 	elif hour < 7.0:
 		var t := (hour - 5.0) / 2.0
-		return Color(0.7, 0.75, 0.95).lerp(Color(1.0, 0.95, 0.85), t)
+		return Color(0.58, 0.62, 0.82).lerp(Color(1.02, 0.98, 0.92), t)
 	elif hour < 17.0:
-		return Color(0.98, 0.97, 0.95)  # Daytime warm white
+		return Color(1.0, 1.0, 1.0)  # Day
 	elif hour < 20.0:
 		var t := (hour - 17.0) / 3.0
-		return Color(0.98, 0.97, 0.95).lerp(Color(0.95, 0.85, 0.7), t)
+		return Color(1.0, 1.0, 1.0).lerp(Color(0.95, 0.82, 0.68), t)
 	else:
 		var t := (hour - 20.0) / 2.0
-		return Color(0.95, 0.85, 0.7).lerp(Color(0.7, 0.75, 0.95), t)
+		return Color(0.95, 0.82, 0.68).lerp(Color(0.58, 0.62, 0.82), t)

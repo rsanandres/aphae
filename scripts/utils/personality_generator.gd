@@ -98,9 +98,9 @@ static func generate_heuristic(spawn_index: int) -> PersonalityProfile:
 	profile.agreeableness = _beta_random()
 	profile.neuroticism = _beta_random()
 
-	# Color via golden-angle HSV spacing
-	var hue: float = fmod(spawn_index * 137.508, 360.0) / 360.0
-	profile.color = Color.from_hsv(hue, 0.6, 0.8)
+	# Curated palette ramp: distinct, saturated, and consistent with the
+	# hand-authored cast (uniform HSV pastels made everyone near-identical).
+	profile.color = Palette.CLOTHING_COLORS[spawn_index % Palette.CLOTHING_COLORS.size()]
 
 	# Description from dominant trait
 	profile.description = _generate_description(profile)
@@ -193,9 +193,8 @@ static func generate_with_llm(existing_names: Array, spawn_index: int, callback:
 		for q in raw_quirks:
 			profile.quirks.append(str(q))
 
-		# Golden angle color
-		var hue: float = fmod(spawn_index * 137.508, 360.0) / 360.0
-		profile.color = Color.from_hsv(hue, 0.6, 0.8)
+		# Curated palette ramp (see generate_profile)
+		profile.color = Palette.CLOTHING_COLORS[spawn_index % Palette.CLOTHING_COLORS.size()]
 		profile.need_decay_multipliers = _generate_decay_multipliers(profile)
 		callback.call(profile)
 	, LLMManager.Priority.LOW)

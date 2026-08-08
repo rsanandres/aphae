@@ -5,21 +5,50 @@ class_name SpriteFactory
 # --- CHARACTERS (12x16, chibi proportions: big head, small body) ---
 
 static func create_character(primary: Color, secondary: Color, hair_color: Color, skin: Color = Palette.WOOD_LIGHT) -> Array[ImageTexture]:
-	## Returns [idle_0, idle_1, walk_0, walk_1, walk_2, walk_3]
+	## Returns [idle_0, idle_1, walk_0, walk_1, walk_2, walk_3].
+	## Frames are outlined on a 14x18 canvas so the silhouette separates from
+	## any floor color.
 	var frames: Array[ImageTexture] = []
 	# Idle frames (bob)
 	for frame_idx in range(2):
 		var img := Image.create(12, 16, false, Image.FORMAT_RGBA8)
 		img.fill(Color(0, 0, 0, 0))
 		_draw_character(img, primary, secondary, hair_color, skin, frame_idx)
-		frames.append(ImageTexture.create_from_image(img))
+		frames.append(ImageTexture.create_from_image(_outlined(img)))
 	# Walk frames (4-frame cycle)
 	for walk_idx in range(4):
 		var img := Image.create(12, 16, false, Image.FORMAT_RGBA8)
 		img.fill(Color(0, 0, 0, 0))
 		_draw_character_walk(img, primary, secondary, hair_color, skin, walk_idx)
-		frames.append(ImageTexture.create_from_image(img))
+		frames.append(ImageTexture.create_from_image(_outlined(img)))
 	return frames
+
+
+static func _outlined(src: Image, outline: Color = Palette.OUTLINE) -> Image:
+	## Copy src onto a canvas grown by 1px per side and draw a 1px outline
+	## around every opaque region (4-connected).
+	var w := src.get_width()
+	var h := src.get_height()
+	var out := Image.create(w + 2, h + 2, false, Image.FORMAT_RGBA8)
+	out.fill(Color(0, 0, 0, 0))
+	out.blit_rect(src, Rect2i(0, 0, w, h), Vector2i(1, 1))
+	for y in range(h + 2):
+		for x in range(w + 2):
+			if out.get_pixel(x, y).a > 0.01:
+				continue
+			var touches_opaque := false
+			for offset: Vector2i in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+				var nx := x + offset.x
+				var ny := y + offset.y
+				if nx < 0 or ny < 0 or nx >= w + 2 or ny >= h + 2:
+					continue
+				var p := out.get_pixel(nx, ny)
+				if p.a > 0.01 and not p.is_equal_approx(outline):
+					touches_opaque = true
+					break
+			if touches_opaque:
+				out.set_pixel(x, y, outline)
+	return out
 
 
 static func _draw_character(img: Image, primary: Color, secondary: Color, hair: Color, skin: Color, frame: int) -> void:
@@ -203,7 +232,7 @@ static func create_desk_sprite() -> ImageTexture:
 	for x in range(9, 15):
 		_px(img, x, 0, Palette.BLUE); _px(img, x, 1, Palette.BLUE.darkened(0.2))
 	_px(img, 11, 2, Palette.MID_GRAY); _px(img, 12, 2, Palette.MID_GRAY)
-	return ImageTexture.create_from_image(img)
+	return ImageTexture.create_from_image(_outlined(img))
 
 
 static func create_coffee_machine_sprite() -> ImageTexture:
@@ -227,7 +256,7 @@ static func create_coffee_machine_sprite() -> ImageTexture:
 	_px(img, 6, 10, Palette.WOOD_LIGHT); _px(img, 7, 10, Palette.WOOD_LIGHT); _px(img, 8, 10, Palette.CREAM)
 	for x in range(1, 13):
 		_px(img, x, 12, Palette.OUTLINE)
-	return ImageTexture.create_from_image(img)
+	return ImageTexture.create_from_image(_outlined(img))
 
 
 static func create_couch_sprite() -> ImageTexture:
@@ -261,7 +290,7 @@ static func create_couch_sprite() -> ImageTexture:
 		_px(img, 27, y, Palette.OUTLINE); _px(img, 28, y, Palette.OUTLINE)
 	for x in range(3, 29):
 		_px(img, x, 11, frame_c)
-	return ImageTexture.create_from_image(img)
+	return ImageTexture.create_from_image(_outlined(img))
 
 
 static func create_water_cooler_sprite() -> ImageTexture:
@@ -282,7 +311,7 @@ static func create_water_cooler_sprite() -> ImageTexture:
 		_px(img, x, 12, Palette.DARK_GRAY)
 	for y in range(12, 15):
 		_px(img, 3, y, Palette.OUTLINE); _px(img, 8, y, Palette.OUTLINE)
-	return ImageTexture.create_from_image(img)
+	return ImageTexture.create_from_image(_outlined(img))
 
 
 static func create_whiteboard_sprite() -> ImageTexture:
@@ -310,7 +339,7 @@ static func create_whiteboard_sprite() -> ImageTexture:
 		_px(img, x, 15, Palette.OUTLINE)
 	for x in range(17, 23):
 		_px(img, x, 15, Palette.OUTLINE)
-	return ImageTexture.create_from_image(img)
+	return ImageTexture.create_from_image(_outlined(img))
 
 
 static func create_bookshelf_sprite() -> ImageTexture:
@@ -340,7 +369,7 @@ static func create_bookshelf_sprite() -> ImageTexture:
 		for y in range(11, 15):
 			_px(img, bx, y, c); _px(img, bx + 1, y, c.darkened(0.2))
 		bx += 3
-	return ImageTexture.create_from_image(img)
+	return ImageTexture.create_from_image(_outlined(img))
 
 
 static func create_plant_sprite() -> ImageTexture:
@@ -362,7 +391,7 @@ static func create_plant_sprite() -> ImageTexture:
 	_px(img, 5, 4, Palette.GREEN.lightened(0.3))
 	_px(img, 3, 3, Palette.GREEN.lightened(0.1)); _px(img, 7, 3, Palette.GREEN.lightened(0.1))
 	_px(img, 2, 4, Palette.GREEN); _px(img, 8, 4, Palette.GREEN)
-	return ImageTexture.create_from_image(img)
+	return ImageTexture.create_from_image(_outlined(img))
 
 
 static func create_radio_sprite() -> ImageTexture:
@@ -384,7 +413,7 @@ static func create_radio_sprite() -> ImageTexture:
 	_px(img, 11, 4, Palette.GREEN)
 	for x in range(1, 13):
 		_px(img, x, 9, Palette.OUTLINE)
-	return ImageTexture.create_from_image(img)
+	return ImageTexture.create_from_image(_outlined(img))
 
 
 static func create_bed_sprite() -> ImageTexture:
@@ -413,15 +442,17 @@ static func create_bed_sprite() -> ImageTexture:
 	for x in range(23, 27):
 		for y in range(4, 9):
 			_px(img, x, y, frame_c)
-	return ImageTexture.create_from_image(img)
+	return ImageTexture.create_from_image(_outlined(img))
 
 
 static func create_from_color(primary: Color) -> Array[ImageTexture]:
-	## Generate a character sprite from a primary color.
+	## Generate a character sprite from a primary color. Hair and skin derive
+	## deterministically from the color so a saved agent keeps their look.
 	var secondary: Color = primary.darkened(0.3)
 	var hair_idx := int(primary.h * 137.508) % PersonalityGenerator.HAIR_TONES.size()
 	var hair_color: Color = PersonalityGenerator.HAIR_TONES[hair_idx]
-	return create_character(primary, secondary, hair_color)
+	var skin_idx := int(primary.r * 255.0 + primary.g * 97.0 + primary.b * 31.0) % Palette.SKIN_TONES.size()
+	return create_character(primary, secondary, hair_color, Palette.SKIN_TONES[skin_idx])
 
 
 # --- Character presets for each personality ---

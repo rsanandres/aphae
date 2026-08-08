@@ -55,7 +55,11 @@ var _behavior_modifiers: Array[Dictionary] = []  # {type, target, duration_days,
 func _ready() -> void:
 	_load_personality()
 	label.text = agent_name
+	# Names read at 60% until the agent is hovered or selected — always-on
+	# full-strength labels were half the on-screen noise.
+	label.self_modulate.a = 0.6
 	_setup_sprite()
+	_setup_shadow()
 	_setup_particles()
 	_setup_selection_ring()
 	memory.setup(agent_name)
@@ -448,18 +452,11 @@ func _apply_personality_decay_rates() -> void:
 
 
 func _on_thought(thought: String) -> void:
-	thought_bubble.text = thought
-	thought_bubble.visible = true
+	# Thoughts go to the narrative log only. The floating world-space label
+	# collided with the mood indicator and name and doubled the screen noise.
 	EventBus.narrative_event.emit(
 		"%s thinks: \"%s\"" % [agent_name, thought],
 		[agent_name], 2.0
-	)
-	var tween := create_tween()
-	tween.tween_interval(4.0)
-	tween.tween_property(thought_bubble, "modulate:a", 0.0, 1.0)
-	tween.tween_callback(func() -> void:
-		thought_bubble.visible = false
-		thought_bubble.modulate.a = 1.0
 	)
 
 
@@ -549,20 +546,39 @@ func _setup_particles() -> void:
 func _setup_selection_ring() -> void:
 	_selection_ring = Node2D.new()
 	_selection_ring.visible = false
-	_selection_ring.z_index = -1
+	# In front of the sprite: at z -1 the ring hid behind the body and floor.
+	_selection_ring.z_index = 1
 	add_child(_selection_ring)
 	_selection_ring.draw.connect(_draw_selection_ring)
+
+
+func _setup_shadow() -> void:
+	var shadow := Node2D.new()
+	shadow.show_behind_parent = true
+	add_child(shadow)
+	shadow.draw.connect(func() -> void:
+		shadow.draw_set_transform(Vector2(0, 8), 0.0, Vector2(1.0, 0.35))
+		shadow.draw_circle(Vector2.ZERO, 5.0, Color(0, 0, 0, 0.22))
+	)
+	shadow.queue_redraw()
 
 
 func _draw_selection_ring() -> void:
 	if _selection_ring:
 		var pulse := 0.6 + sin(Time.get_ticks_msec() * 0.005) * 0.2
-		_selection_ring.draw_arc(Vector2(0, 2), 10.0, 0, TAU, 24, Color(1.0, 0.9, 0.3, pulse), 1.0)
+		# Flattened ring at the feet, like a unit marker.
+		_selection_ring.draw_set_transform(Vector2(0, 8), 0.0, Vector2(1.0, 0.4))
+		_selection_ring.draw_arc(Vector2.ZERO, 9.0, 0, TAU, 24, Color(1.0, 0.9, 0.3, pulse), 1.5)
+
+
+func _set_name_emphasis(emphasized: bool) -> void:
+	label.self_modulate.a = 1.0 if (emphasized or _is_selected) else 0.6
 
 
 func _on_global_agent_selected(agent: Node2D) -> void:
 	_is_selected = (agent == self)
 	_selection_ring.visible = _is_selected
+	_set_name_emphasis(_is_hovered)
 	if _is_selected and _hover_tooltip:
 		_hover_tooltip.visible = false
 
@@ -570,6 +586,7 @@ func _on_global_agent_selected(agent: Node2D) -> void:
 func _on_global_agent_deselected() -> void:
 	_is_selected = false
 	_selection_ring.visible = false
+	_set_name_emphasis(_is_hovered)
 
 
 func _update_need_warning() -> void:
@@ -642,11 +659,8 @@ func _determine_mood() -> String:
 	# 7. Romantic (dating/partners or high romantic interest)
 	if _has_romantic_bond():
 		return "♥"
-	# 8. Happy (high social + energy)
-	var social: float = needs.get_value(NeedType.Type.SOCIAL)
-	if social > 70.0 and energy > 60.0:
-		return "♪"
-	# 9. Neutral — no indicator
+	# 8. Neutral or content — no indicator. Contentment is the default state;
+	# badging it (the old ♪) put a glyph over nearly every head all day.
 	return ""
 
 
@@ -835,6 +849,7 @@ func _on_mouse_entered() -> void:
 
 func _on_mouse_exited() -> void:
 	_is_hovered = false
+	_set_name_emphasis(false)
 	_hover_tooltip.visible = false
 
 

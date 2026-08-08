@@ -21,6 +21,35 @@ func _ready() -> void:
 		EventBus.time_tick.connect(_on_passive_tick)
 	_setup_use_indicator()
 	_setup_hover_tooltip()
+	_setup_shadow()
+	# Subclasses assign their sprite texture in their own _ready, which runs
+	# after this one — defer so the fit sees the real texture.
+	call_deferred("_fit_collision_to_sprite")
+
+
+func _setup_shadow() -> void:
+	var shadow := Node2D.new()
+	shadow.show_behind_parent = true
+	add_child(shadow)
+	shadow.draw.connect(func() -> void:
+		var sp: Sprite2D = get_node_or_null("Sprite2D")
+		var half_w: float = (sp.texture.get_width() / 2.0) if sp and sp.texture else 10.0
+		var half_h: float = (sp.texture.get_height() / 2.0) if sp and sp.texture else 6.0
+		shadow.draw_set_transform(Vector2(0, half_h - 1.0), 0.0, Vector2(1.0, 0.3))
+		shadow.draw_circle(Vector2.ZERO, half_w * 0.9, Color(0, 0, 0, 0.18))
+	)
+	shadow.queue_redraw()
+
+
+func _fit_collision_to_sprite() -> void:
+	## Runtime-spawned objects historically got a hardcoded 24x16 box no
+	## matter the sprite (a couch is 32 wide, a plant 10). Derive it instead.
+	var sp: Sprite2D = get_node_or_null("Sprite2D")
+	var cs: CollisionShape2D = get_node_or_null("CollisionShape2D")
+	if sp and sp.texture and cs and cs.shape is RectangleShape2D:
+		var shape: RectangleShape2D = cs.shape.duplicate()
+		shape.size = sp.texture.get_size()
+		cs.shape = shape
 
 
 func get_object_type() -> String:
@@ -76,15 +105,18 @@ func _on_passive_tick(_game_minutes: float) -> void:
 func _setup_use_indicator() -> void:
 	_use_indicator = Node2D.new()
 	_use_indicator.visible = false
-	_use_indicator.z_index = -1
+	# In front: the old 1px arc at z -1 was invisible behind the sprite.
+	_use_indicator.z_index = 1
 	add_child(_use_indicator)
 	_use_indicator.draw.connect(_draw_use_indicator)
 
 
 func _draw_use_indicator() -> void:
 	if _use_indicator:
-		var pulse := 0.3 + sin(Time.get_ticks_msec() * 0.004) * 0.15
-		_use_indicator.draw_arc(Vector2.ZERO, 12.0, 0, TAU, 16, Color(0.4, 0.7, 1.0, pulse), 1.0)
+		var pulse := 0.55 + sin(Time.get_ticks_msec() * 0.004) * 0.25
+		var sp: Sprite2D = get_node_or_null("Sprite2D")
+		var top: float = -((sp.texture.get_height() / 2.0) if sp and sp.texture else 8.0) - 3.0
+		_use_indicator.draw_circle(Vector2(0, top), 1.6, Color(1.0, 0.8, 0.45, pulse))
 
 
 func _update_use_indicator() -> void:

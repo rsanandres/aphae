@@ -24,12 +24,14 @@ size = Vector2(14, 14)
 size = Vector2(32, 16)
 
 [node name="Office" type="Node2D"]
+y_sort_enabled = true
 script = ExtResource("1_office")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
 navigation_polygon = SubResource("NavigationPolygon_1")
 
 [node name="Objects" type="Node2D" parent="."]
+y_sort_enabled = true
 
 [node name="Desk1" type="StaticBody2D" parent="Objects"]
 position = Vector2(80, 50)
@@ -80,6 +82,7 @@ texture_filter = 0
 shape = SubResource("couch_shape")
 
 [node name="Agents" type="Node2D" parent="."]
+y_sort_enabled = true
 
 [node name="Alice" parent="Agents" instance=ExtResource("5_agent")]
 position = Vector2(90, 120)

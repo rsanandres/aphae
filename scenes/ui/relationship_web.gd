@@ -5,19 +5,27 @@ extends Control
 
 enum FilterMode { ALL, SIGNIFICANT, SELECTED, GROUPS }
 
-var _visible_flag: bool = false
 var _filter_mode: FilterMode = FilterMode.SIGNIFICANT
-var _filter_buttons: HBoxContainer = null
 
 
 func _ready() -> void:
+	theme = UITheme.get_theme()
 	visible = false
 	custom_minimum_size = Vector2(200, 150)
+	# Redraw on a slow pulse instead of every frame: relationships move on
+	# think ticks, not render frames, and this view is data-driven.
+	var timer := Timer.new()
+	timer.wait_time = 0.25
+	timer.timeout.connect(func() -> void:
+		if visible:
+			queue_redraw()
+	)
+	add_child(timer)
+	timer.start()
 
 
 func toggle() -> void:
-	_visible_flag = not _visible_flag
-	visible = _visible_flag
+	visible = not visible
 	if visible:
 		queue_redraw()
 
@@ -28,23 +36,19 @@ func set_filter(mode: FilterMode) -> void:
 		queue_redraw()
 
 
-func _process(_delta: float) -> void:
-	if visible:
-		queue_redraw()
-
-
 func _draw() -> void:
 	if not visible:
 		return
 
 	# Background
-	draw_rect(Rect2(Vector2.ZERO, size), Color(0.1, 0.1, 0.15, 0.9))
+	draw_rect(Rect2(Vector2.ZERO, size), UIPalette.BG_PANEL)
+	draw_rect(Rect2(Vector2.ZERO, size), UIPalette.BORDER, false, 1.0)
 
 	# Filter label
 	var filter_names := ["All", "Significant", "Selected", "Groups"]
 	var filter_text := "Filter: %s" % filter_names[_filter_mode]
 	var font := ThemeDB.fallback_font
-	draw_string(font, Vector2(4.0, 12.0), filter_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 7, Color(0.6, 0.6, 0.7))
+	draw_string(font, Vector2(6.0, 14.0), filter_text + "   (right-click to change)", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, UIPalette.TEXT_DIM)
 
 	var agents := AgentManager.agents
 	if agents.is_empty():
@@ -111,7 +115,7 @@ func _draw() -> void:
 		draw_circle(pos, 8.0, Palette.OUTLINE, false, 1.0)
 
 		# Name label
-		var font_size := 8
+		var font_size := 10
 		var text_size := font.get_string_size(agent.agent_name, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size)
 		draw_string(font, pos - Vector2(text_size.x / 2.0, -14.0), agent.agent_name, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, Color.WHITE)
 

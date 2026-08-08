@@ -1,15 +1,13 @@
 class_name StoryFeedPanel
-extends PanelContainer
+extends BasePanel
 ## UI panel showing ranked storylines from the Narrator.
 
 var _scroll: ScrollContainer
 var _vbox: VBoxContainer
-var _title: Label
 
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(214, 170)  # must fit the rect HUD assigns
-	visible = false
+	_setup_chrome("Top Stories")
 	_build_ui()
 	EventBus.storyline_updated.connect(func(_sl: RefCounted) -> void:
 		if visible:
@@ -17,32 +15,19 @@ func _ready() -> void:
 	)
 
 
-func toggle() -> void:
-	visible = not visible
-	if visible:
-		_rebuild_display()
+func _on_opened() -> void:
+	_rebuild_display()
 
 
 func _build_ui() -> void:
 	_scroll = ScrollContainer.new()
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	add_child(_scroll)
-
-	var outer := VBoxContainer.new()
-	outer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_scroll.add_child(outer)
-
-	_title = Label.new()
-	_title.text = "Top Stories"
-	_title.add_theme_font_size_override("font_size", 10)
-	_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
-	outer.add_child(_title)
-
-	outer.add_child(HSeparator.new())
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	body.add_child(_scroll)
 
 	_vbox = VBoxContainer.new()
 	_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	outer.add_child(_vbox)
+	_scroll.add_child(_vbox)
 
 
 func _rebuild_display() -> void:
@@ -53,8 +38,7 @@ func _rebuild_display() -> void:
 	if top_stories.is_empty():
 		var empty_lbl := Label.new()
 		empty_lbl.text = "No stories yet..."
-		empty_lbl.add_theme_font_size_override("font_size", 9)
-		empty_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+		empty_lbl.theme_type_variation = "DimLabel"
 		_vbox.add_child(empty_lbl)
 		return
 
@@ -65,7 +49,6 @@ func _rebuild_display() -> void:
 		var header := HBoxContainer.new()
 		var title_lbl := Label.new()
 		title_lbl.text = sl.title
-		title_lbl.add_theme_font_size_override("font_size", 9)
 		title_lbl.add_theme_color_override("font_color", _drama_color(sl.drama_score))
 		title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		title_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -73,7 +56,6 @@ func _rebuild_display() -> void:
 
 		var drama_lbl := Label.new()
 		drama_lbl.text = "%.0f" % sl.drama_score
-		drama_lbl.add_theme_font_size_override("font_size", 9)
 		drama_lbl.add_theme_color_override("font_color", _drama_color(sl.drama_score))
 		header.add_child(drama_lbl)
 		entry_box.add_child(header)
@@ -84,8 +66,7 @@ func _rebuild_display() -> void:
 			detail_lbl.text = sl.summary
 		else:
 			detail_lbl.text = "Involving: %s" % ", ".join(sl.involved_agents)
-		detail_lbl.add_theme_font_size_override("font_size", 9)
-		detail_lbl.add_theme_color_override("font_color", Color(0.65, 0.65, 0.7))
+		detail_lbl.theme_type_variation = "DimLabel"
 		detail_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		entry_box.add_child(detail_lbl)
 
@@ -94,11 +75,4 @@ func _rebuild_display() -> void:
 
 
 func _drama_color(score: float) -> Color:
-	if score >= 8.0:
-		return Color(1.0, 0.4, 0.3)  # Hot red
-	elif score >= 5.0:
-		return Color(1.0, 0.75, 0.3)  # Warm orange
-	elif score >= 3.0:
-		return Color(0.8, 0.8, 0.5)  # Mild yellow
-	else:
-		return Color(0.6, 0.6, 0.7)  # Cool gray
+	return UIPalette.drama_color(score)

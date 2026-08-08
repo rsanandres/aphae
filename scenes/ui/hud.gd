@@ -25,9 +25,13 @@ var _producer_panel: ProducerPanel
 var _settings_panel: Control = null
 var _achievement_panel: Control = null
 var _save_picker: SaveSlotPicker = null
+var _ui: UIManager = null
 
 
 func _ready() -> void:
+	status_bar.theme = UITheme.get_theme()
+	_ui = UIManager.new()
+	add_child(_ui)
 	EventBus.time_tick.connect(_on_time_tick)
 	EventBus.time_speed_changed.connect(_on_speed_changed)
 	EventBus.agent_selected.connect(_on_agent_selected)
@@ -52,18 +56,20 @@ func _ready() -> void:
 	_god_toolbar = GodToolbar.new()
 	add_child(_god_toolbar)
 
-	# Create agent inspector (right side)
+	# Create agent inspector (right rail dock, full height between the bars)
 	_agent_inspector = AgentInspector.new()
 	# Same ordering trap as the narrative log — anchors first, then offsets.
 	_agent_inspector.anchors_preset = Control.PRESET_TOP_RIGHT
 	_agent_inspector.anchor_left = 1.0
 	_agent_inspector.anchor_right = 1.0
+	_agent_inspector.anchor_bottom = 1.0
 	_agent_inspector.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	_agent_inspector.offset_left = -150
+	_agent_inspector.offset_left = -178
 	_agent_inspector.offset_top = 24
-	_agent_inspector.offset_right = -8
-	_agent_inspector.offset_bottom = 200
+	_agent_inspector.offset_right = -6
+	_agent_inspector.offset_bottom = -32
 	add_child(_agent_inspector)
+	_ui.register("inspector", _agent_inspector, UIManager.Kind.DOCK)
 
 	# Create narrative log (bottom-left, always visible)
 	_narrative_log = NarrativeLog.new()
@@ -75,34 +81,38 @@ func _ready() -> void:
 	_narrative_log.anchor_bottom = 1.0
 	_narrative_log.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	_narrative_log.offset_left = 8
-	_narrative_log.offset_top = -106
-	_narrative_log.offset_right = 186
-	_narrative_log.offset_bottom = -26
+	_narrative_log.offset_top = -140
+	_narrative_log.offset_right = 254
+	_narrative_log.offset_bottom = -32
 	add_child(_narrative_log)
+	_ui.register("log", _narrative_log, UIManager.Kind.DOCK)
 
 	# Create relationship web (center overlay)
 	_relationship_web = RelationshipWeb.new()
-	_relationship_web.offset_left = 20
-	_relationship_web.offset_top = 24
-	_relationship_web.offset_right = 300
-	_relationship_web.offset_bottom = 200
+	_relationship_web.offset_left = 120
+	_relationship_web.offset_top = 40
+	_relationship_web.offset_right = 520
+	_relationship_web.offset_bottom = 320
 	add_child(_relationship_web)
+	_ui.register("relationships", _relationship_web, UIManager.Kind.EXCLUSIVE)
 
-	# Create story feed panel (center-right)
+	# Create story feed panel (center overlay)
 	_story_feed = StoryFeedPanel.new()
-	_story_feed.offset_left = 90
-	_story_feed.offset_top = 24
-	_story_feed.offset_right = 310
-	_story_feed.offset_bottom = 200
+	_story_feed.offset_left = 170
+	_story_feed.offset_top = 40
+	_story_feed.offset_right = 470
+	_story_feed.offset_bottom = 320
 	add_child(_story_feed)
+	_ui.register("stories", _story_feed, UIManager.Kind.EXCLUSIVE)
 
-	# Create confessional feed panel (center-left, toggled with C)
+	# Create confessional feed panel (center overlay, toggled with C)
 	_confessional_feed = ConfessionalFeed.new()
-	_confessional_feed.offset_left = 20
-	_confessional_feed.offset_top = 26
-	_confessional_feed.offset_right = 250
-	_confessional_feed.offset_bottom = 190
+	_confessional_feed.offset_left = 170
+	_confessional_feed.offset_top = 40
+	_confessional_feed.offset_right = 470
+	_confessional_feed.offset_bottom = 320
 	add_child(_confessional_feed)
+	_ui.register("confessionals", _confessional_feed, UIManager.Kind.EXCLUSIVE)
 
 	# Confessional cutaway toast (lower third, above the icon bar)
 	_confessional_toast = ConfessionalToast.new()
@@ -110,10 +120,10 @@ func _ready() -> void:
 	_confessional_toast.anchor_right = 0.5
 	_confessional_toast.anchor_top = 1.0
 	_confessional_toast.anchor_bottom = 1.0
-	_confessional_toast.offset_left = -130
-	_confessional_toast.offset_right = 130
-	_confessional_toast.offset_top = -78
-	_confessional_toast.offset_bottom = -30
+	_confessional_toast.offset_left = -170
+	_confessional_toast.offset_right = 170
+	_confessional_toast.offset_top = -100
+	_confessional_toast.offset_bottom = -38
 	_confessional_toast.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_confessional_toast.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	add_child(_confessional_toast)
@@ -121,24 +131,28 @@ func _ready() -> void:
 
 	# Episode recap viewer (center overlay, toggled with E)
 	_recap_panel = RecapPanel.new()
-	_recap_panel.offset_left = 40
-	_recap_panel.offset_top = 26
-	_recap_panel.offset_right = 300
-	_recap_panel.offset_bottom = 240
+	_recap_panel.offset_left = 150
+	_recap_panel.offset_top = 36
+	_recap_panel.offset_right = 490
+	_recap_panel.offset_bottom = 324
 	add_child(_recap_panel)
+	_ui.register("recap", _recap_panel, UIManager.Kind.EXCLUSIVE)
 
 	# Producer panel (right of centre, toggled with P). Acts on the selected
 	# agent — the inspector shows you a person, this one lets you touch them.
 	_producer_panel = ProducerPanel.new()
-	# Viewport is 320x214 — anything past those bounds is simply off-screen.
-	_producer_panel.offset_left = 78
-	_producer_panel.offset_top = 24
-	_producer_panel.offset_right = 308
-	_producer_panel.offset_bottom = 200
+	_producer_panel.offset_left = 190
+	_producer_panel.offset_top = 40
+	_producer_panel.offset_right = 450
+	_producer_panel.offset_bottom = 320
 	add_child(_producer_panel)
+	_ui.register("producer", _producer_panel, UIManager.Kind.EXCLUSIVE)
 
 	# Persistent icon bar (bottom-center quick access)
 	_setup_icon_bar()
+
+	# Toast stack (top-center, capped)
+	_ui.setup_toasts(self)
 
 	# Achievement toast listener
 	EventBus.achievement_unlocked.connect(_on_achievement_unlocked)
@@ -175,7 +189,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				TimeManager.set_speed(3)
 				get_viewport().set_input_as_handled()
 			KEY_ESCAPE:
-				_close_all_overlays()
+				_ui.close_top()
 				get_viewport().set_input_as_handled()
 			KEY_F5:
 				SaveManager.save_game()
@@ -184,19 +198,19 @@ func _unhandled_input(event: InputEvent) -> void:
 				SaveManager.load_game()
 				get_viewport().set_input_as_handled()
 			KEY_L:
-				_narrative_log.toggle()
+				_ui.toggle("log")
 				get_viewport().set_input_as_handled()
 			KEY_R:
-				_relationship_web.toggle()
+				_ui.toggle("relationships")
 				get_viewport().set_input_as_handled()
 			KEY_C:
-				_confessional_feed.toggle()
+				_ui.toggle("confessionals")
 				get_viewport().set_input_as_handled()
 			KEY_E:
-				_recap_panel.toggle()
+				_ui.toggle("recap")
 				get_viewport().set_input_as_handled()
 			KEY_P:
-				_producer_panel.toggle()
+				_ui.toggle("producer")
 				get_viewport().set_input_as_handled()
 
 
@@ -272,33 +286,6 @@ func _toggle_god_mode() -> void:
 	EventBus.god_mode_toggled.emit(_god_mode)
 
 
-func _close_all_overlays() -> void:
-	if _settings_panel and _settings_panel.visible:
-		_settings_panel.visible = false
-		return
-	if _achievement_panel and _achievement_panel.visible:
-		_achievement_panel.visible = false
-		return
-	if _save_picker and _save_picker.visible:
-		_save_picker.visible = false
-		return
-	if _relationship_web.visible:
-		_relationship_web.visible = false
-		return
-	if _story_feed.visible:
-		_story_feed.visible = false
-		return
-	if _confessional_feed.visible:
-		_confessional_feed.visible = false
-		return
-	if _recap_panel.visible:
-		_recap_panel.visible = false
-		return
-	if _producer_panel.visible:
-		_producer_panel.visible = false
-		return
-
-
 func _show_context_menu(pos: Vector2) -> void:
 	context_menu.clear()
 	context_menu.add_item("Pause / Resume  [Space]", 0)
@@ -340,17 +327,17 @@ func _on_context_menu(id: int) -> void:
 		2: TimeManager.decrease_speed()
 		3: LLMManager.retry_health_check()
 		5: _toggle_god_mode()
-		6: _narrative_log.toggle()
-		7: _relationship_web.toggle()
-		8: _story_feed.toggle()
-		9: _confessional_feed.toggle()
-		15: _recap_panel.toggle()
+		6: _ui.toggle("log")
+		7: _ui.toggle("relationships")
+		8: _ui.toggle("stories")
+		9: _ui.toggle("confessionals")
+		15: _ui.toggle("recap")
 		10: _show_save_picker("save")
 		11: _show_save_picker("load")
 		12: _toggle_settings()
 		13: _toggle_achievements()
 		14: _return_to_menu()
-		16: _producer_panel.toggle()
+		16: _ui.toggle("producer")
 		20:
 			var root := get_tree().current_scene
 			if root and root.has_method("set_expanded_mode"):
@@ -384,7 +371,8 @@ func _toggle_settings() -> void:
 	if not _settings_panel:
 		_settings_panel = preload("res://scenes/ui/settings_panel.gd").new()
 		add_child(_settings_panel)
-	_settings_panel.visible = not _settings_panel.visible
+		_ui.register("settings", _settings_panel, UIManager.Kind.MODAL)
+	_ui.toggle("settings")
 
 
 func _toggle_achievements() -> void:
@@ -393,14 +381,17 @@ func _toggle_achievements() -> void:
 		if panel_script:
 			_achievement_panel = panel_script.new()
 			add_child(_achievement_panel)
+			_ui.register("achievements", _achievement_panel, UIManager.Kind.MODAL)
 	if _achievement_panel:
-		_achievement_panel.visible = not _achievement_panel.visible
+		_ui.toggle("achievements")
 
 
 func _show_save_picker(mode: String) -> void:
 	if not _save_picker:
 		_save_picker = SaveSlotPicker.new()
 		add_child(_save_picker)
+		_ui.register("saves", _save_picker, UIManager.Kind.MODAL)
+	_ui.open("saves")
 	_save_picker.show_picker(mode)
 
 
@@ -410,27 +401,13 @@ func _return_to_menu() -> void:
 
 func _on_achievement_unlocked(_id: String, achievement_name: String) -> void:
 	var toast := AchievementToast.new()
-	toast.anchor_left = 0.5
-	toast.anchor_right = 0.5
-	toast.anchor_top = 0.0
-	toast.offset_left = -80
-	toast.offset_right = 80
-	toast.offset_top = 4
-	toast.offset_bottom = 24
-	add_child(toast)
+	_ui.add_toast(toast)
 	toast.show_achievement(achievement_name)
 
 
 func _show_toast(text: String, is_error: bool = false) -> void:
 	var toast := ErrorToast.new()
-	toast.anchor_left = 0.5
-	toast.anchor_right = 0.5
-	toast.anchor_top = 0.0
-	toast.offset_left = -100
-	toast.offset_right = 100
-	toast.offset_top = 28
-	toast.offset_bottom = 48
-	add_child(toast)
+	_ui.add_toast(toast)
 	if is_error:
 		toast.show_error(text, 4.0)
 	else:
@@ -456,39 +433,34 @@ func _on_llm_backend_changed(backend_name: String) -> void:
 
 func _setup_icon_bar() -> void:
 	var bar := HBoxContainer.new()
+	bar.theme = UITheme.get_theme()
 	bar.anchor_left = 0.5
 	bar.anchor_right = 0.5
 	bar.anchor_top = 1.0
 	bar.anchor_bottom = 1.0
-	# 13 buttons must fit inside a 320px viewport. At 24px wide with 3px gaps
-	# the row needed ~358px and was clipped at both ends, losing the pause
-	# button and half of SET.
-	bar.offset_left = -145
-	bar.offset_right = 145
-	bar.offset_top = -22
+	bar.offset_left = -220
+	bar.offset_right = 220
+	bar.offset_top = -26
 	bar.offset_bottom = -4
 	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	bar.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	bar.add_theme_constant_override("separation", 1)
+	bar.add_theme_constant_override("separation", 2)
 	bar.alignment = BoxContainer.ALIGNMENT_CENTER
 	add_child(bar)
 
 	# Background for the bar
 	var bar_bg := PanelContainer.new()
-	var bar_style := StyleBoxFlat.new()
-	bar_style.bg_color = Color(0.08, 0.08, 0.12, 0.8)
-	bar_style.border_color = Color(0.25, 0.25, 0.3, 0.6)
-	bar_style.set_border_width_all(1)
-	bar_style.set_corner_radius_all(3)
+	bar_bg.theme = UITheme.get_theme()
+	var bar_style := UITheme.make_panel_style(UIPalette.BORDER_DIM)
 	bar_style.set_content_margin_all(2)
 	bar_bg.add_theme_stylebox_override("panel", bar_style)
 	bar_bg.anchor_left = 0.5
 	bar_bg.anchor_right = 0.5
 	bar_bg.anchor_top = 1.0
 	bar_bg.anchor_bottom = 1.0
-	bar_bg.offset_left = -150
-	bar_bg.offset_right = 150
-	bar_bg.offset_top = -24
+	bar_bg.offset_left = -226
+	bar_bg.offset_right = 226
+	bar_bg.offset_top = -28
 	bar_bg.offset_bottom = -2
 	bar_bg.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	bar_bg.grow_vertical = Control.GROW_DIRECTION_BEGIN
@@ -507,11 +479,11 @@ func _setup_icon_bar() -> void:
 	bar.add_child(sep1)
 
 	_add_icon_btn(bar, "GOD", "God Mode [Tab]", func() -> void: _toggle_god_mode())
-	_add_icon_btn(bar, "LOG", "Narrative Log [L]", func() -> void: _narrative_log.toggle())
-	_add_icon_btn(bar, "REL", "Relationships [R]", func() -> void: _relationship_web.toggle())
-	_add_icon_btn(bar, "CAM", "Confessional Cam [C]", func() -> void: _confessional_feed.toggle())
-	_add_icon_btn(bar, "EP", "Episode Recap [E]", func() -> void: _recap_panel.toggle())
-	_add_icon_btn(bar, "DIR", "Producer [P]", func() -> void: _producer_panel.toggle())
+	_add_icon_btn(bar, "LOG", "Narrative Log [L]", func() -> void: _ui.toggle("log"))
+	_add_icon_btn(bar, "REL", "Relationships [R]", func() -> void: _ui.toggle("relationships"))
+	_add_icon_btn(bar, "CAM", "Confessional Cam [C]", func() -> void: _ui.toggle("confessionals"))
+	_add_icon_btn(bar, "EP", "Episode Recap [E]", func() -> void: _ui.toggle("recap"))
+	_add_icon_btn(bar, "DIR", "Producer [P]", func() -> void: _ui.toggle("producer"))
 
 	var sep2 := VSeparator.new()
 	sep2.custom_minimum_size = Vector2(2, 0)
@@ -525,19 +497,8 @@ func _add_icon_btn(parent: HBoxContainer, text: String, tooltip: String, callbac
 	var btn := Button.new()
 	btn.text = text
 	btn.tooltip_text = tooltip
-	btn.custom_minimum_size = Vector2(20, 16)
-	btn.add_theme_font_size_override("font_size", 9)
+	btn.custom_minimum_size = Vector2(28, 18)
 	btn.pressed.connect(callback)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.15, 0.15, 0.2, 0.6)
-	style.set_corner_radius_all(2)
-	style.set_content_margin_all(1)
-	btn.add_theme_stylebox_override("normal", style)
-	var hover_style := StyleBoxFlat.new()
-	hover_style.bg_color = Color(0.25, 0.25, 0.35, 0.8)
-	hover_style.set_corner_radius_all(2)
-	hover_style.set_content_margin_all(1)
-	btn.add_theme_stylebox_override("hover", hover_style)
 	parent.add_child(btn)
 
 

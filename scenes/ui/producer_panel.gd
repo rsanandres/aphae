@@ -1,5 +1,5 @@
 class_name ProducerPanel
-extends PanelContainer
+extends BasePanel
 ## The player's control surface for a single agent: nudge, interview, plant a rumor.
 ##
 ## Deliberately separate from AgentInspector, which stays a read-only readout.
@@ -8,7 +8,6 @@ extends PanelContainer
 
 var _agent: Node2D = null
 
-var _title: Label
 var _subject: Label
 var _result: Label
 var _answer: Label
@@ -19,20 +18,7 @@ var _action_rows: VBoxContainer
 
 
 func _ready() -> void:
-	# Keep inside the rect HUD assigns; a larger minimum silently overrides it.
-	custom_minimum_size = Vector2(224, 168)
-	clip_contents = true
-	visible = false
-
-	# The default PanelContainer theme is translucent, so the agent inspector
-	# behind this panel showed through and made both unreadable.
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.07, 0.08, 0.11, 0.97)
-	style.border_color = Color(0.35, 0.55, 0.7, 0.9)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(3)
-	style.set_content_margin_all(4)
-	add_theme_stylebox_override("panel", style)
+	_setup_chrome("Producer", UIPalette.ACCENT_COOL)
 	_build_ui()
 
 	EventBus.agent_selected.connect(_on_agent_selected)
@@ -45,11 +31,9 @@ func _ready() -> void:
 	_refresh_subject()
 
 
-func toggle() -> void:
-	visible = not visible
-	if visible:
-		_agent = GameManager.selected_agent
-		_refresh_subject()
+func _on_opened() -> void:
+	_agent = GameManager.selected_agent
+	_refresh_subject()
 
 
 func _build_ui() -> void:
@@ -59,21 +43,13 @@ func _build_ui() -> void:
 	# a two-button row exceeds the panel — the right column was clipped to
 	# "Coffe" and "Mingl". Disabling horizontal scroll forces content to fit.
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	add_child(scroll)
+	body.add_child(scroll)
 
 	var outer := VBoxContainer.new()
 	outer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(outer)
 
-	_title = Label.new()
-	_title.text = "Producer"
-	_title.add_theme_font_size_override("font_size", 10)
-	_title.add_theme_color_override("font_color", Color(0.55, 0.85, 1.0))
-	outer.add_child(_title)
-
 	_subject = Label.new()
-	_subject.add_theme_font_size_override("font_size", 9)
-	_subject.add_theme_color_override("font_color", Color(0.8, 0.8, 0.88))
 	_subject.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	outer.add_child(_subject)
 
@@ -101,8 +77,7 @@ func _build_ui() -> void:
 			_action_rows.add_child(row)
 
 	_result = Label.new()
-	_result.add_theme_font_size_override("font_size", 9)
-	_result.add_theme_color_override("font_color", Color(0.7, 0.7, 0.78))
+	_result.theme_type_variation = "DimLabel"
 	_result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	outer.add_child(_result)
 
@@ -111,8 +86,7 @@ func _build_ui() -> void:
 	# --- Interview ---
 	var ask_lbl := Label.new()
 	ask_lbl.text = "Ask them something"
-	ask_lbl.add_theme_font_size_override("font_size", 9)
-	ask_lbl.add_theme_color_override("font_color", Color(0.55, 0.85, 1.0))
+	ask_lbl.add_theme_color_override("font_color", UIPalette.ACCENT_COOL)
 	outer.add_child(ask_lbl)
 
 	var ask_row := HBoxContainer.new()
@@ -121,7 +95,6 @@ func _build_ui() -> void:
 
 	_question = LineEdit.new()
 	_question.placeholder_text = "How are you feeling?"
-	_question.add_theme_font_size_override("font_size", 9)
 	_question.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_question.text_submitted.connect(func(_t: String) -> void: _do_interview())
 	ask_row.add_child(_question)
@@ -131,8 +104,7 @@ func _build_ui() -> void:
 	ask_row.add_child(ask_btn)
 
 	_answer = Label.new()
-	_answer.add_theme_font_size_override("font_size", 9)
-	_answer.add_theme_color_override("font_color", Color(0.95, 0.93, 0.85))
+	_answer.add_theme_color_override("font_color", UIPalette.ACCENT_WARM)
 	_answer.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	outer.add_child(_answer)
 
@@ -141,21 +113,18 @@ func _build_ui() -> void:
 	# --- Rumor ---
 	var rumor_lbl := Label.new()
 	rumor_lbl.text = "Plant a rumour"
-	rumor_lbl.add_theme_font_size_override("font_size", 9)
-	rumor_lbl.add_theme_color_override("font_color", Color(1.0, 0.6, 0.5))
+	rumor_lbl.add_theme_color_override("font_color", UIPalette.ACCENT_NEG)
 	outer.add_child(rumor_lbl)
 
 	# clip_text is essential: rumour lines are full sentences, and without it the
 	# OptionButton demands enough width to show one, which propagates up and
 	# drags the whole panel off the right of a 320px-wide screen.
 	_rumor_target = OptionButton.new()
-	_rumor_target.add_theme_font_size_override("font_size", 9)
 	_rumor_target.clip_text = true
 	_rumor_target.item_selected.connect(func(_i: int) -> void: _rebuild_rumor_text())
 	outer.add_child(_rumor_target)
 
 	_rumor_text = OptionButton.new()
-	_rumor_text.add_theme_font_size_override("font_size", 9)
 	_rumor_text.clip_text = true
 	outer.add_child(_rumor_text)
 
@@ -167,19 +136,8 @@ func _build_ui() -> void:
 func _small_button(text: String) -> Button:
 	var btn := Button.new()
 	btn.text = text
-	btn.add_theme_font_size_override("font_size", 9)
-	btn.custom_minimum_size = Vector2(0, 16)
+	btn.custom_minimum_size = Vector2(0, 18)
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.15, 0.15, 0.2, 0.7)
-	style.set_corner_radius_all(2)
-	style.set_content_margin_all(2)
-	btn.add_theme_stylebox_override("normal", style)
-	var hover := StyleBoxFlat.new()
-	hover.bg_color = Color(0.25, 0.25, 0.35, 0.85)
-	hover.set_corner_radius_all(2)
-	hover.set_content_margin_all(2)
-	btn.add_theme_stylebox_override("hover", hover)
 	return btn
 
 
@@ -272,10 +230,10 @@ func _rebuild_rumor_text() -> void:
 func _on_nudge_answered(agent_name: String, request: String, complied: bool, reason: String) -> void:
 	if complied:
 		_result.text = "%s agrees to %s." % [agent_name, request]
-		_result.add_theme_color_override("font_color", Color(0.5, 0.9, 0.6))
+		_result.add_theme_color_override("font_color", UIPalette.ACCENT_POS)
 	else:
 		_result.text = "%s %s." % [agent_name, reason]
-		_result.add_theme_color_override("font_color", Color(1.0, 0.6, 0.5))
+		_result.add_theme_color_override("font_color", UIPalette.ACCENT_NEG)
 
 
 func _on_interview_answered(agent_name: String, _question: String, answer: String) -> void:
@@ -284,4 +242,4 @@ func _on_interview_answered(agent_name: String, _question: String, answer: Strin
 
 func _on_rumor_planted(agent_name: String, _text: String) -> void:
 	_result.text = "%s heard it. Now we wait." % agent_name
-	_result.add_theme_color_override("font_color", Color(1.0, 0.75, 0.4))
+	_result.add_theme_color_override("font_color", UIPalette.ACCENT_WARM)

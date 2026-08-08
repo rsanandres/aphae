@@ -16,13 +16,8 @@ func _ready() -> void:
 	offset_right = 120
 	offset_bottom = 100
 
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.1, 0.14, 0.95)
-	style.border_color = Color(0.4, 0.4, 0.5)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(4)
-	style.set_content_margin_all(8)
-	add_theme_stylebox_override("panel", style)
+	theme = UITheme.get_theme()
+	add_theme_stylebox_override("panel", UITheme.make_panel_style())
 
 	_content = VBoxContainer.new()
 	_content.add_theme_constant_override("separation", 3)
@@ -42,8 +37,7 @@ func _rebuild() -> void:
 	var title := Label.new()
 	title.text = "Save Game" if _mode == "save" else "Load Game"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 10)
-	title.add_theme_color_override("font_color", Color(0.9, 0.85, 0.7))
+	title.theme_type_variation = "HeaderLabel"
 	_content.add_child(title)
 
 	var sep := HSeparator.new()

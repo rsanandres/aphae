@@ -14,12 +14,12 @@ const MAX_ENTRIES := 100
 
 
 func _ready() -> void:
-	# Must fit the rect HUD assigns inside a 320x214 viewport. A minimum size
-	# larger than that rect silently wins over the offsets — at 280x200 this
-	# panel covered most of the screen and its text collided with the agents'
-	# speech bubbles.
-	custom_minimum_size = Vector2(170, 76)
+	theme = UITheme.get_theme()
+	# Must fit the rect HUD assigns — a larger minimum silently wins over the
+	# offsets and pushes the panel over the world view.
+	custom_minimum_size = Vector2(240, 104)
 	clip_contents = true  # long entries must not spill outside the panel
+	add_theme_stylebox_override("panel", UITheme.make_panel_style(UIPalette.BORDER_DIM))
 	visible = true  # Visible by default
 	_build_ui()
 	EventBus.narrative_event.connect(_on_narrative_event)

@@ -1,24 +1,13 @@
 class_name ConfessionalFeed
-extends PanelContainer
+extends BasePanel
 ## Scrollable history of reality-TV confessionals recorded by ConfessionalDirector.
 
 var _scroll: ScrollContainer
 var _vbox: VBoxContainer
-var _title: Label
 
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(230, 160)
-	visible = false
-	# Opaque background: without one the narrative log shows straight through
-	# the quips, which is unreadable at the 480x320 size.
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.07, 0.07, 0.1, 0.96)
-	style.border_color = Color(0.5, 0.25, 0.25, 0.9)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(3)
-	style.set_content_margin_all(4)
-	add_theme_stylebox_override("panel", style)
+	_setup_chrome("Confessional Cam", UIPalette.ACCENT_REC)
 	_build_ui()
 	EventBus.confessional_recorded.connect(func(_c: RefCounted) -> void:
 		if visible:
@@ -26,29 +15,15 @@ func _ready() -> void:
 	)
 
 
-func toggle() -> void:
-	visible = not visible
-	if visible:
-		_rebuild_display()
+func _on_opened() -> void:
+	_rebuild_display()
 
 
 func _build_ui() -> void:
-	var outer := VBoxContainer.new()
-	outer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	outer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	add_child(outer)
-
-	_title = Label.new()
-	_title.text = "Confessional Cam"
-	_title.add_theme_font_size_override("font_size", 10)
-	_title.add_theme_color_override("font_color", Color(1.0, 0.5, 0.5))
-	outer.add_child(_title)
-
-	outer.add_child(HSeparator.new())
-
 	_scroll = ScrollContainer.new()
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	outer.add_child(_scroll)
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	body.add_child(_scroll)
 
 	_vbox = VBoxContainer.new()
 	_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -63,8 +38,7 @@ func _rebuild_display() -> void:
 	if recent.is_empty():
 		var empty := Label.new()
 		empty.text = "No confessionals yet. Drama takes time..."
-		empty.add_theme_font_size_override("font_size", 9)
-		empty.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+		empty.theme_type_variation = "DimLabel"
 		empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_vbox.add_child(empty)
 		return
@@ -76,14 +50,11 @@ func _rebuild_display() -> void:
 
 		var who := Label.new()
 		who.text = "%s  [Day %d %s]" % [c.speaker, c.day, c.timestamp]
-		who.add_theme_font_size_override("font_size", 9)
 		who.add_theme_color_override("font_color", c.color)
 		box.add_child(who)
 
 		var quote := Label.new()
 		quote.text = "\"%s\"" % c.line
-		quote.add_theme_font_size_override("font_size", 9)
-		quote.add_theme_color_override("font_color", Color(0.8, 0.8, 0.88))
 		quote.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		box.add_child(quote)
 

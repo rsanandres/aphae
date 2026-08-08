@@ -17,18 +17,28 @@ var _need_bars: Dictionary = {}
 
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(170, 250)
+	theme = UITheme.get_theme()
+	# Min must not exceed the rect the HUD assigns — a larger minimum silently
+	# wins and pushes the panel off-screen (the old 170x250-vs-142x176 bug).
+	custom_minimum_size = Vector2(170, 220)
+	clip_contents = true
+	add_theme_stylebox_override("panel", UITheme.make_panel_style())
 	_build_ui()
 	visible = false
 	EventBus.agent_selected.connect(_on_agent_selected)
 	EventBus.agent_deselected.connect(_on_agent_deselected)
 	EventBus.agent_need_changed.connect(_on_need_changed)
 	EventBus.agent_state_changed.connect(_on_state_changed)
-
-
-func _process(_delta: float) -> void:
-	if visible and _agent and is_instance_valid(_agent):
-		_update_dynamic()
+	# Rebuilding relationship rows every render frame churned nodes for no
+	# visual gain; a 0.5s pulse is indistinguishable and far cheaper.
+	var timer := Timer.new()
+	timer.wait_time = 0.5
+	timer.timeout.connect(func() -> void:
+		if visible and _agent and is_instance_valid(_agent):
+			_update_dynamic()
+	)
+	add_child(timer)
+	timer.start()
 
 
 func _build_ui() -> void:

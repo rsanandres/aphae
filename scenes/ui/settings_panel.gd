@@ -3,21 +3,14 @@ extends PanelContainer
 
 
 func _ready() -> void:
+	theme = UITheme.get_theme()
 	set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	custom_minimum_size = Vector2(280, 240)
 	offset_left = -140
 	offset_top = -120
 	offset_right = 140
 	offset_bottom = 120
-
-	# Panel style
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.12, 0.12, 0.16, 0.95)
-	style.border_color = Color(0.3, 0.3, 0.35)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(4)
-	style.set_content_margin_all(8)
-	add_theme_stylebox_override("panel", style)
+	add_theme_stylebox_override("panel", UITheme.make_panel_style())
 
 	var scroll := ScrollContainer.new()
 	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -32,8 +25,7 @@ func _ready() -> void:
 	var title := Label.new()
 	title.text = "Settings"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 10)
-	title.add_theme_color_override("font_color", Color(0.9, 0.85, 0.7))
+	title.theme_type_variation = "HeaderLabel"
 	vbox.add_child(title)
 
 	# --- Audio ---
@@ -82,7 +74,6 @@ func _ready() -> void:
 
 	var save_btn := Button.new()
 	save_btn.text = "Save"
-	save_btn.add_theme_font_size_override("font_size", 9)
 	save_btn.pressed.connect(func() -> void:
 		SettingsManager.save_settings()
 	)
@@ -90,7 +81,6 @@ func _ready() -> void:
 
 	var close_btn := Button.new()
 	close_btn.text = "Close"
-	close_btn.add_theme_font_size_override("font_size", 9)
 	close_btn.pressed.connect(func() -> void:
 		SettingsManager.save_settings()
 		visible = false
@@ -103,8 +93,7 @@ func _add_section(parent: VBoxContainer, title: String) -> void:
 	parent.add_child(sep)
 	var lbl := Label.new()
 	lbl.text = title
-	lbl.add_theme_font_size_override("font_size", 9)
-	lbl.add_theme_color_override("font_color", Color(0.7, 0.7, 0.75))
+	lbl.theme_type_variation = "DimLabel"
 	parent.add_child(lbl)
 
 
@@ -116,7 +105,6 @@ func _add_slider(parent: VBoxContainer, label_text: String, initial: float, call
 	var lbl := Label.new()
 	lbl.text = label_text
 	lbl.custom_minimum_size = Vector2(60, 0)
-	lbl.add_theme_font_size_override("font_size", 9)
 	row.add_child(lbl)
 
 	var slider := HSlider.new()
@@ -138,7 +126,6 @@ func _add_slider_int(parent: VBoxContainer, label_text: String, initial: int, mi
 	var lbl := Label.new()
 	lbl.text = label_text
 	lbl.custom_minimum_size = Vector2(60, 0)
-	lbl.add_theme_font_size_override("font_size", 9)
 	row.add_child(lbl)
 
 	var slider := HSlider.new()
@@ -151,7 +138,6 @@ func _add_slider_int(parent: VBoxContainer, label_text: String, initial: int, mi
 
 	var val_label := Label.new()
 	val_label.text = str(initial)
-	val_label.add_theme_font_size_override("font_size", 9)
 	val_label.custom_minimum_size = Vector2(20, 0)
 
 	slider.value_changed.connect(func(v: float) -> void:
@@ -166,7 +152,6 @@ func _add_checkbox(parent: VBoxContainer, label_text: String, initial: bool, cal
 	var cb := CheckBox.new()
 	cb.text = label_text
 	cb.button_pressed = initial
-	cb.add_theme_font_size_override("font_size", 9)
 	cb.toggled.connect(callback)
 	parent.add_child(cb)
 
@@ -179,11 +164,9 @@ func _add_dropdown(parent: VBoxContainer, label_text: String, options: Array, se
 	var lbl := Label.new()
 	lbl.text = label_text
 	lbl.custom_minimum_size = Vector2(60, 0)
-	lbl.add_theme_font_size_override("font_size", 9)
 	row.add_child(lbl)
 
 	var opt := OptionButton.new()
-	opt.add_theme_font_size_override("font_size", 9)
 	for o in options:
 		opt.add_item(o)
 	opt.selected = selected
@@ -200,12 +183,10 @@ func _add_text_input(parent: VBoxContainer, label_text: String, initial: String,
 	var lbl := Label.new()
 	lbl.text = label_text
 	lbl.custom_minimum_size = Vector2(60, 0)
-	lbl.add_theme_font_size_override("font_size", 9)
 	row.add_child(lbl)
 
 	var input := LineEdit.new()
 	input.text = initial
-	input.add_theme_font_size_override("font_size", 9)
 	input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	input.text_submitted.connect(callback)
 	row.add_child(input)

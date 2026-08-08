@@ -32,30 +32,50 @@ static func generate_all_sfx() -> Dictionary:
 	}
 
 
-static func generate_music_calm() -> AudioStreamWAV:
-	## Generate a gentle ambient loop (~8 seconds).
-	var duration := 8.0
+static func generate_music_track(track: String) -> AudioStreamWAV:
+	## Three related-but-distinct loops in C: calm (pad), busy (pad + moving
+	## arpeggio, a fifth up), menu (sparse low pad). ~20s so the repeat is far
+	## less fatiguing than the original single 8-second drone.
+	match track:
+		"busy":
+			return _music_pad(
+				[130.81, 196.0, 261.63, 329.63, 392.0],
+				[0.22, 0.18, 0.14, 0.1, 0.08],
+				20.0, true)
+		"menu":
+			return _music_pad([130.81, 196.0], [0.28, 0.2], 16.0, false)
+		_:
+			return _music_pad(
+				[130.81, 196.0, 261.63, 329.63],
+				[0.25, 0.2, 0.15, 0.1],
+				20.0, false)
+
+
+static func _music_pad(freqs: Array, amps: Array, duration: float, movement: bool) -> AudioStreamWAV:
 	var samples := int(duration * SAMPLE_RATE)
 	var data := PackedByteArray()
 	data.resize(samples * 2)
 
-	# Layered sine waves with slow modulation for an ambient feel
-	var freqs: Array[float] = [130.81, 196.0, 261.63, 329.63]  # C3, G3, C4, E4
-	var amps: Array[float] = [0.25, 0.2, 0.15, 0.1]
+	# C-major pentatonic steps for the movement voice.
+	var arp_notes: Array[float] = [523.25, 587.33, 659.25, 783.99, 880.0]
 
 	for i in range(samples):
 		var t: float = float(i) / SAMPLE_RATE
 		var val: float = 0.0
 
 		for j in range(freqs.size()):
-			# Each voice has slow vibrato
 			var vibrato: float = sin(t * (0.3 + j * 0.15)) * 2.0
 			val += sin(TAU * (freqs[j] + vibrato) * t) * amps[j]
 
-		# Gentle volume swell
-		var envelope: float = 0.7 + sin(t * 0.5) * 0.3
+		if movement:
+			# A soft plucked note every 1.25s wandering the pentatonic.
+			var step := int(t / 1.25)
+			var note_t := fmod(t, 1.25)
+			var note: float = arp_notes[step % arp_notes.size()]
+			var pluck_env: float = exp(-note_t * 3.0) * 0.12
+			val += sin(TAU * note * note_t) * pluck_env
 
-		# Crossfade loop: fade in first 0.5s, fade out last 0.5s
+		var envelope: float = 0.7 + sin(t * 0.5) * 0.3
 		var fade_in: float = clampf(t / 0.5, 0.0, 1.0)
 		var fade_out: float = clampf((duration - t) / 0.5, 0.0, 1.0)
 
@@ -445,9 +465,34 @@ static func _write_sample(data: PackedByteArray, idx: int, val: float) -> void:
 
 
 static func _make_wav(data: PackedByteArray, _samples: int) -> AudioStreamWAV:
+	_normalize(data, 0.5)
 	var stream := AudioStreamWAV.new()
 	stream.format = AudioStreamWAV.FORMAT_16_BITS
 	stream.mix_rate = SAMPLE_RATE
 	stream.stereo = false
 	stream.data = data
 	return stream
+
+
+static func _normalize(data: PackedByteArray, target_peak: float) -> void:
+	## Scale a 16-bit mono buffer so its peak hits target_peak of full scale.
+	## Generated peaks used to vary ~3x between sounds, which made the
+	## per-call volume_db values meaningless as a loudness control.
+	var peak := 0
+	for i in range(0, data.size(), 2):
+		var v := data[i] | (data[i + 1] << 8)
+		if v >= 32768:
+			v -= 65536
+		peak = maxi(peak, absi(v))
+	if peak == 0:
+		return
+	var scale := (target_peak * MAX_16) / float(peak)
+	if absf(scale - 1.0) < 0.05:
+		return
+	for i in range(0, data.size(), 2):
+		var v := data[i] | (data[i + 1] << 8)
+		if v >= 32768:
+			v -= 65536
+		v = clampi(int(v * scale), -32768, 32767)
+		data[i] = v & 0xFF
+		data[i + 1] = (v >> 8) & 0xFF

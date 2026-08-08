@@ -26,7 +26,6 @@ var _idle_frames: Array[ImageTexture] = []
 var _walk_frames: Array[ImageTexture] = []
 var _anim_timer: float = 0.0
 var _anim_frame: int = 0
-var _footstep_timer: float = 0.0
 var _selection_ring: Node2D = null
 var _is_selected: bool = false
 var _interaction_particles: CPUParticles2D = null
@@ -340,13 +339,8 @@ func _process_walking(delta: float) -> void:
 	move_and_slide()
 	if velocity.x != 0:
 		sprite.flip_h = velocity.x < 0
-
-	# Footstep SFX
-	_footstep_timer += delta
-	if _footstep_timer >= AudioManager.FOOTSTEP_INTERVAL:
-		_footstep_timer = 0.0
-		var sfx_name := "footstep_1" if randi() % 2 == 0 else "footstep_2"
-		AudioManager.play_sfx(sfx_name, -12.0)
+	# Footsteps removed: at 0.35s per walking agent with no throttling they
+	# were the dominant noise floor of the whole game.
 
 
 func _process_interacting(delta: float) -> void:

@@ -121,6 +121,12 @@ func _apply_game_settings() -> void:
 	Config.MAX_AGENTS_EXPANDED = max_agents
 
 
+func apply_audio() -> void:
+	## Public entry: AudioManager calls this once its buses exist, making this
+	## file the single owner of volume-to-bus logic.
+	_apply_audio()
+
+
 func _apply_audio() -> void:
 	_set_bus_volume("Master", master_volume)
 	_set_bus_volume("Music", music_volume)

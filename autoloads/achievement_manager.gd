@@ -52,8 +52,9 @@ func unlock(achievement_id: String) -> void:
 	var def: Dictionary = _definitions[achievement_id]
 	var achievement_name: String = def.get("name", achievement_id)
 	print("[Achievement] Unlocked: %s" % achievement_name)
+	# AudioManager listens for achievement_unlocked; playing here as well
+	# stacked the sting twice on the same frame.
 	EventBus.achievement_unlocked.emit(achievement_id, achievement_name)
-	AudioManager.play_sfx("achievement", -3.0)
 	_save_progress()
 
 	# Steam sync

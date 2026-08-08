@@ -67,6 +67,7 @@ func open() -> void:
 	if visible:
 		return
 	visible = true
+	AudioManager.play_sfx("ui_click", -14.0)
 	_on_opened()
 	pivot_offset = size / 2.0
 	modulate.a = 0.0
@@ -88,6 +89,7 @@ func close() -> void:
 	visible = false
 	modulate.a = 1.0
 	scale = Vector2.ONE
+	AudioManager.play_sfx("ui_click", -14.0)
 	closed.emit()
 
 

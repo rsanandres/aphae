@@ -502,7 +502,10 @@ func _add_icon_btn(parent: HBoxContainer, text: String, tooltip: String, callbac
 	btn.text = text
 	btn.tooltip_text = tooltip
 	btn.custom_minimum_size = Vector2(28, 18)
-	btn.pressed.connect(callback)
+	btn.pressed.connect(func() -> void:
+		AudioManager.play_sfx("ui_click", -14.0)
+		callback.call()
+	)
 	parent.add_child(btn)
 
 

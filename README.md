@@ -1,4 +1,4 @@
-# Ayle
+# Aphae
 
 **AI Agent Office Simulation** — A top-down 2D pixel art game where AI-driven agents with distinct personalities live together in an office. You observe, rearrange the environment, and watch emergent social behavior unfold: friendships, rivalries, romances, grief, and drama.
 

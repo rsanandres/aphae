@@ -96,13 +96,34 @@ func _request_next_line() -> void:
 
 func _on_line_received(speaker: Node2D, _listener: Node2D, line: String) -> void:
 	_history.append({"speaker": speaker.agent_name, "line": line})
-	speaker.show_speech(line, Config.CONVERSATION_LINE_DURATION)
+	speaker.show_speech(line, Config.CONVERSATION_LINE_DURATION, _tone(speaker, _listener))
 	EventBus.conversation_line.emit(speaker.agent_name, line)
 	_showing_line = true
 	_line_timer = Config.CONVERSATION_LINE_DURATION + 0.5
 
 
+func _tone(speaker: Node2D, listener: Node2D) -> String:
+	## How this exchange should read at a glance: romantic pink, hostile red,
+	## or neutral. Derived from the pair's relationship, not the line text —
+	## reliable with or without an LLM.
+	if _is_confession:
+		return "romantic"
+	var rel: RelationshipEntry = speaker.relationships.get_relationship(listener.agent_name)
+	if rel.relationship_status == RelationshipEntry.Status.DATING \
+			or rel.relationship_status == RelationshipEntry.Status.PARTNERS \
+			or rel.romantic_interest > 40.0:
+		return "romantic"
+	if rel.affinity < -20.0:
+		return "hostile"
+	return ""
+
+
 func _end_conversation() -> void:
+	# Capture affinity before the relationship update so the outcome can be
+	# shown at the scene as a floating delta.
+	var before_ab: float = agent_a.relationships.get_relationship(agent_b.agent_name).affinity
+	var before_ba: float = agent_b.relationships.get_relationship(agent_a.agent_name).affinity
+
 	# Store conversation as memory for both agents
 	var convo_summary := _summarize_conversation()
 	agent_a.memory.add_conversation(
@@ -121,6 +142,18 @@ func _end_conversation() -> void:
 	# Restore social need
 	agent_a.needs.restore(NeedType.Type.SOCIAL, 20.0)
 	agent_b.needs.restore(NeedType.Type.SOCIAL, 20.0)
+
+	# One glance tells you how it went: ♥ +4 rising over the scene, or ✕ -6.
+	var after_ab: float = agent_a.relationships.get_relationship(agent_b.agent_name).affinity
+	var after_ba: float = agent_b.relationships.get_relationship(agent_a.agent_name).affinity
+	var delta := ((after_ab - before_ab) + (after_ba - before_ba)) / 2.0
+	if absf(delta) >= 1.0 and not _is_confession:
+		var world := agent_a.get_tree().get_first_node_in_group("world")
+		var mid: Vector2 = (agent_a.global_position + agent_b.global_position) / 2.0
+		if delta > 0.0:
+			FloatingText.spawn(world, mid, "♥ +%d" % roundi(delta), Color(1.0, 0.55, 0.7))
+		else:
+			FloatingText.spawn(world, mid, "✕ %d" % roundi(delta), Color(1.0, 0.45, 0.4))
 
 	# Handle confession outcome
 	if _is_confession:
@@ -143,6 +176,12 @@ func _process_confession() -> void:
 	var rel_b: RelationshipEntry = agent_b.relationships.get_relationship(agent_a.agent_name)
 	var accepted: bool = rel_b.romantic_interest > 40.0
 	EventBus.confession_made.emit(agent_a.agent_name, agent_b.agent_name, accepted)
+	var world := agent_a.get_tree().get_first_node_in_group("world")
+	var mid: Vector2 = (agent_a.global_position + agent_b.global_position) / 2.0
+	if accepted:
+		FloatingText.spawn(world, mid, "♥ ♥ ♥", Color(1.0, 0.55, 0.7))
+	else:
+		FloatingText.spawn(world, mid + Vector2(0, -8), "♥ . . .", Color(0.75, 0.6, 0.65))
 	if accepted:
 		var rel_a: RelationshipEntry = agent_a.relationships.get_relationship(agent_b.agent_name)
 		rel_a.relationship_status = RelationshipEntry.Status.DATING

@@ -23,7 +23,7 @@ func _ready() -> void:
 	add_to_group("speech_bubbles")
 
 
-func show_bubble(agent: Node2D, text: String, duration: float) -> void:
+func show_bubble(agent: Node2D, text: String, duration: float, tone: String = "") -> void:
 	if not is_instance_valid(agent):
 		return
 	var bubble: PanelContainer = _bubbles.get(agent)
@@ -33,6 +33,7 @@ func show_bubble(agent: Node2D, text: String, duration: float) -> void:
 		_bubbles[agent] = bubble
 		add_child(bubble)
 
+	_apply_tone(bubble, agent, tone)
 	var line_label: Label = bubble.get_meta("line_label")
 	line_label.text = text
 	bubble.visible = true
@@ -112,6 +113,26 @@ func _make_bubble(agent: Node2D) -> PanelContainer:
 	bubble.set_meta("tail", tail)
 
 	return bubble
+
+
+func _apply_tone(bubble: PanelContainer, agent: Node2D, tone: String) -> void:
+	## Border color telegraphs how the exchange reads: pink for romance, red
+	## for hostility, the speaker's own color otherwise.
+	var accent: Color
+	match tone:
+		"romantic":
+			accent = UIPalette.ACCENT_ROMANCE
+		"hostile":
+			accent = UIPalette.ACCENT_NEG
+		_:
+			accent = agent.agent_color if "agent_color" in agent else UIPalette.BORDER
+	var style := UITheme.make_panel_style(accent)
+	style.set_content_margin_all(4)
+	bubble.add_theme_stylebox_override("panel", style)
+	var tail: Control = bubble.get_meta("tail") if bubble.has_meta("tail") else null
+	if tail:
+		tail.border = accent
+		tail.queue_redraw()
 
 
 func _enforce_cap() -> void:

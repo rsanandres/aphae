@@ -115,12 +115,12 @@ func request_think() -> void:
 	_make_decision()
 
 
-func show_speech(text: String, duration: float = 3.0) -> void:
+func show_speech(text: String, duration: float = 3.0, tone: String = "") -> void:
 	# Bubbles are screen-space now (SpeechBubbleLayer): fixed size regardless
 	# of camera zoom, capped in number, clamped to the play area.
 	var layer := get_tree().get_first_node_in_group("speech_bubbles")
 	if layer:
-		layer.show_bubble(self, text, duration)
+		layer.show_bubble(self, text, duration, tone)
 
 
 func enter_talking_state() -> void:

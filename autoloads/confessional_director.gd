@@ -42,6 +42,28 @@ func _process(delta: float) -> void:
 			_pending_time = 0.0
 
 
+func request_cast_intros() -> void:
+	## Cold open for a fresh sandbox: each cast member files a one-line intro
+	## to camera, staggered so the cutaways play as a sequence. Bypasses the
+	## normal rate limit deliberately — the intros ARE the feed on day one.
+	var delay := 0.0
+	for agent in AgentManager.agents:
+		if not is_instance_valid(agent) or agent.is_dead:
+			continue
+		var captured: Node2D = agent
+		get_tree().create_timer(delay).timeout.connect(func() -> void:
+			if not is_instance_valid(captured) or captured.is_dead:
+				return
+			if LLMManager.is_available and not _pending:
+				_request_llm("intro",
+					"It's day one in the office. Introduce yourself to the audience in a single line, in your own voice.",
+					captured)
+			else:
+				_emit("intro", _heuristic_line("intro", captured), captured)
+		)
+		delay += 6.0
+
+
 func get_recent(count: int = 20) -> Array[Confessional]:
 	var start := maxi(0, confessionals.size() - count)
 	var result: Array[Confessional] = []
@@ -225,6 +247,8 @@ func _tone_for(kind: String) -> String:
 	## Without a tone cue the model answers every event in the same register —
 	## a death drew the same upbeat work-speak as a promotion.
 	match kind:
+		"intro":
+			return "First day, meet-the-cast energy. One punchy line, fully in character."
 		"tragedy":
 			return "Someone has died. Be subdued and human. No jokes, no work-speak."
 		"romance":
@@ -254,6 +278,19 @@ func _heuristic_line(kind: String, speaker: Node2D) -> String:
 
 	var options: Array[String] = []
 	match kind:
+		"intro":
+			var desc: String = p.description if p and p.description != "" else "hard to sum up"
+			options = [
+				"I'm %s — %s. Remember the name." % [speaker.agent_name, desc],
+				"They call me %s. I'm %s, and I'm not here to blend in." % [speaker.agent_name, desc],
+				"%s. %s. That's the whole pitch." % [speaker.agent_name, desc.capitalize()],
+			]
+			if bold:
+				options.append("I'm %s, and let's be honest — this office just got interesting." % speaker.agent_name)
+			if anxious:
+				options.append("Hi, um, %s. I really hope this goes well. It probably won't." % speaker.agent_name)
+			if catty:
+				options.append("I'm %s. I already have opinions about everyone here." % speaker.agent_name)
 		"romance":
 			options = [
 				"Honestly? I did not see that coming. But I'm not mad about it.",

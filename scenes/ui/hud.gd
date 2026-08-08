@@ -26,6 +26,8 @@ var _settings_panel: Control = null
 var _achievement_panel: Control = null
 var _save_picker: SaveSlotPicker = null
 var _ui: UIManager = null
+var _ratings_label: Label = null
+var _viewers: float = 120000.0
 
 
 func _ready() -> void:
@@ -51,6 +53,17 @@ func _ready() -> void:
 	_drama_label.add_theme_font_size_override("font_size", 10)
 	_drama_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8, 0.8))
 	status_bar.add_child(_drama_label)
+
+	# Ratings ticker: the show's viewers chase the drama level. Pure fiction,
+	# real feedback — drama you cultivate makes the number climb.
+	var sep4 := VSeparator.new()
+	sep4.custom_minimum_size = Vector2(12, 0)
+	status_bar.add_child(sep4)
+	_ratings_label = Label.new()
+	_ratings_label.add_theme_font_size_override("font_size", 10)
+	_ratings_label.tooltip_text = "Viewers. Drama makes the number go up."
+	_ratings_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	status_bar.add_child(_ratings_label)
 
 	# Create god mode toolbar
 	_god_toolbar = GodToolbar.new()
@@ -216,11 +229,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_P:
 				_ui.toggle("producer")
 				get_viewport().set_input_as_handled()
+			KEY_X:
+				var director := get_tree().get_first_node_in_group("broadcast")
+				if director and director.cut_to_latest():
+					_show_toast("Cutting to the action")
+				get_viewport().set_input_as_handled()
 
 
 func _on_time_tick(_gm: float) -> void:
 	_update_time()
 	_update_drama()
+	_update_ratings()
 
 
 func _on_speed_changed(_i: int) -> void:
@@ -261,6 +280,23 @@ func _update_drama() -> void:
 		desc = "Calm"
 		_drama_label.add_theme_color_override("font_color", Color(0.5, 0.8, 0.5, 0.8))
 	_drama_label.text = desc
+
+
+func _update_ratings() -> void:
+	if not _ratings_label:
+		return
+	var target: float = 120000.0 + DramaDirector.drama_level * 130000.0
+	_viewers = lerpf(_viewers, target, 0.03) + randf_range(-1500.0, 1500.0)
+	var text: String
+	if _viewers >= 1000000.0:
+		text = "◉ %.1fM" % (_viewers / 1000000.0)
+	else:
+		text = "◉ %dK" % int(_viewers / 1000.0)
+	_ratings_label.text = text
+	if _viewers >= 800000.0:
+		_ratings_label.add_theme_color_override("font_color", UIPalette.ACCENT_WARM)
+	else:
+		_ratings_label.add_theme_color_override("font_color", UIPalette.TEXT_DIM)
 
 
 func _update_llm_label() -> void:
@@ -446,8 +482,8 @@ func _setup_icon_bar() -> void:
 	bar.anchor_right = 0.5
 	bar.anchor_top = 1.0
 	bar.anchor_bottom = 1.0
-	bar.offset_left = -252
-	bar.offset_right = 252
+	bar.offset_left = -272
+	bar.offset_right = 272
 	bar.offset_top = -26
 	bar.offset_bottom = -4
 	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -466,8 +502,8 @@ func _setup_icon_bar() -> void:
 	bar_bg.anchor_right = 0.5
 	bar_bg.anchor_top = 1.0
 	bar_bg.anchor_bottom = 1.0
-	bar_bg.offset_left = -258
-	bar_bg.offset_right = 258
+	bar_bg.offset_left = -278
+	bar_bg.offset_right = 278
 	bar_bg.offset_top = -28
 	bar_bg.offset_bottom = -2
 	bar_bg.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -494,6 +530,16 @@ func _setup_icon_bar() -> void:
 	EventBus.time_paused.connect(sync_time)
 	EventBus.time_resumed.connect(sync_time)
 	sync_time.call()
+
+	# Live mode: the camera directs itself toward the drama.
+	var live_btn := _add_icon_btn(bar, "Live", "Auto-director: camera follows the drama. X cuts manually.",
+		func() -> void: pass)
+	live_btn.toggle_mode = true
+	live_btn.toggled.connect(func(on: bool) -> void:
+		var director := get_tree().get_first_node_in_group("broadcast")
+		if director:
+			director.live_mode = on
+	)
 
 	var sep1 := VSeparator.new()
 	sep1.custom_minimum_size = Vector2(2, 0)

@@ -49,6 +49,18 @@ func clear_follow() -> void:
 	_follow_agent = null
 
 
+func follow(agent: Node2D) -> void:
+	## External follow request (BroadcastDirector cuts, etc.).
+	if not _fit_mode:
+		_follow_agent = agent
+
+
+func focus_position(pos: Vector2) -> void:
+	if not _fit_mode:
+		_follow_agent = null
+		position = pos
+
+
 func center_on_office() -> void:
 	_fit_mode = false
 	var bounds := _office_bounds()

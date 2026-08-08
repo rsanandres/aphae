@@ -18,6 +18,11 @@ func _ready() -> void:
 	# Start in expanded mode
 	_setup_expanded_mode()
 
+	# Broadcast director: knows where the drama is, can drive the camera
+	var director := BroadcastDirector.new()
+	director.setup(_camera)
+	add_child(director)
+
 	EventBus.game_ready.emit()
 
 	# Fade in from menu
@@ -47,9 +52,17 @@ func _ready() -> void:
 	)
 
 	# Try loading save on startup (unless "New Sandbox" was chosen)
-	if SaveManager.has_save() and not SaveManager.skip_auto_load:
+	var fresh_sandbox := not (SaveManager.has_save() and not SaveManager.skip_auto_load)
+	if not fresh_sandbox:
 		call_deferred("_try_load_save")
 	SaveManager.skip_auto_load = false
+
+	# Cold open: on a brand-new sandbox the cast introduces itself to camera,
+	# so the first minutes have personality instead of silent wandering.
+	if fresh_sandbox:
+		get_tree().create_timer(4.0).timeout.connect(func() -> void:
+			ConfessionalDirector.request_cast_intros()
+		)
 
 
 func _try_load_save() -> void:

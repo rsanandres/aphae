@@ -154,6 +154,10 @@ func _ready() -> void:
 	# Toast stack (top-center, capped)
 	_ui.setup_toasts(self)
 
+	# Screen-space speech bubbles render below the HUD chrome
+	var bubbles := SpeechBubbleLayer.new()
+	get_parent().add_child.call_deferred(bubbles)
+
 	# Achievement toast listener
 	EventBus.achievement_unlocked.connect(_on_achievement_unlocked)
 

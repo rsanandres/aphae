@@ -26,7 +26,6 @@ var _idle_frames: Array[ImageTexture] = []
 var _walk_frames: Array[ImageTexture] = []
 var _anim_timer: float = 0.0
 var _anim_frame: int = 0
-var _speech_tween: Tween = null
 var _footstep_timer: float = 0.0
 var _selection_ring: Node2D = null
 var _is_selected: bool = false
@@ -37,8 +36,6 @@ var _current_mood: String = ""
 var _hover_tooltip: PanelContainer = null
 var _is_hovered: bool = false
 var _behavior_modifiers: Array[Dictionary] = []  # {type, target, duration_days, days_remaining, source}
-var _speech_panel: PanelContainer = null
-var _speech_label: Label = null
 
 @onready var needs: AgentNeeds = $AgentNeeds
 @onready var heuristic_brain: HeuristicBrain = $HeuristicBrain
@@ -82,7 +79,6 @@ func _ready() -> void:
 	EventBus.agent_deselected.connect(_on_global_agent_deselected)
 	EventBus.confessional_recorded.connect(_on_confessional_recorded)
 	_setup_hover_tooltip()
-	_setup_speech_panel()
 
 
 func _exit_tree() -> void:
@@ -117,84 +113,11 @@ func request_think() -> void:
 
 
 func show_speech(text: String, duration: float = 3.0) -> void:
-	if _speech_panel:
-		_speech_label.text = text
-		_speech_panel.visible = true
-		if _speech_tween and _speech_tween.is_valid():
-			_speech_tween.kill()
-		_speech_panel.modulate.a = 1.0
-		_speech_tween = create_tween()
-		_speech_tween.tween_interval(duration)
-		_speech_tween.tween_property(_speech_panel, "modulate:a", 0.0, 0.5)
-		_speech_tween.tween_callback(func() -> void:
-			_speech_panel.visible = false
-			_speech_panel.modulate.a = 1.0
-		)
-	else:
-		# Fallback to raw label
-		speech_bubble.text = text
-		speech_bubble.visible = true
-		if _speech_tween and _speech_tween.is_valid():
-			_speech_tween.kill()
-		speech_bubble.modulate.a = 1.0
-		_speech_tween = create_tween()
-		_speech_tween.tween_interval(duration)
-		_speech_tween.tween_property(speech_bubble, "modulate:a", 0.0, 0.5)
-		_speech_tween.tween_callback(func() -> void:
-			speech_bubble.visible = false
-			speech_bubble.modulate.a = 1.0
-		)
-
-
-func _setup_speech_panel() -> void:
-	# Hide the raw label — we replace it with a styled panel
-	speech_bubble.visible = false
-
-	_speech_panel = PanelContainer.new()
-	_speech_panel.visible = false
-	_speech_panel.z_index = 10
-	_speech_panel.position = Vector2(-75, -58)
-	_speech_panel.custom_minimum_size = Vector2(150, 0)
-	_speech_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.08, 0.12, 0.88)
-	style.border_color = Color(0.35, 0.4, 0.5, 0.7)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(3)
-	style.set_content_margin_all(4)
-	_speech_panel.add_theme_stylebox_override("panel", style)
-
-	_speech_label = Label.new()
-	_speech_label.add_theme_font_size_override("font_size", 9)
-	_speech_label.add_theme_color_override("font_color", Color(0.95, 0.93, 0.88))
-	_speech_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_speech_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_speech_label.custom_minimum_size = Vector2(140, 0)
-	_speech_panel.add_child(_speech_label)
-
-	# Speaker name tag
-	var name_tag := Label.new()
-	name_tag.name = "SpeakerTag"
-	name_tag.text = agent_name
-	name_tag.add_theme_font_size_override("font_size", 9)
-	name_tag.add_theme_color_override("font_color", agent_color.lightened(0.3))
-	name_tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	# Insert name tag before the speech text
-	_speech_panel.add_child(name_tag)
-	_speech_panel.move_child(name_tag, 0)
-
-	# Use VBoxContainer to stack name + text
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 1)
-	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_speech_panel.remove_child(name_tag)
-	_speech_panel.remove_child(_speech_label)
-	vbox.add_child(name_tag)
-	vbox.add_child(_speech_label)
-	_speech_panel.add_child(vbox)
-
-	add_child(_speech_panel)
+	# Bubbles are screen-space now (SpeechBubbleLayer): fixed size regardless
+	# of camera zoom, capped in number, clamped to the play area.
+	var layer := get_tree().get_first_node_in_group("speech_bubbles")
+	if layer:
+		layer.show_bubble(self, text, duration)
 
 
 func enter_talking_state() -> void:

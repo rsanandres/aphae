@@ -199,7 +199,7 @@ func interview(agent: Node2D, question: String, callback: Callable = Callable())
 			return
 		var answer := ""
 		if success and data.has("answer"):
-			answer = str(data["answer"]).strip_edges()
+			answer = LLMSanitizer.clean_line(str(data["answer"]))
 		if answer == "":
 			answer = _heuristic_answer(captured, captured_mems)
 		_answer(captured, question, answer, callback)

@@ -159,7 +159,7 @@ func _request_llm(kind: String, event_text: String, speaker: Node2D) -> void:
 			return  # speaker left/died mid-request; drop the quip
 		var line := ""
 		if success and data.has("line"):
-			line = _clean(str(data["line"]))
+			line = LLMSanitizer.clean_line(_clean(str(data["line"])))
 		if line == "":
 			line = _heuristic_line(captured_kind, captured_speaker)
 		_emit(captured_kind, line, captured_speaker)

@@ -122,7 +122,7 @@ func _on_llm_response(success: bool, data: Dictionary, error: String, nearby_obj
 		return
 
 	# Emit thought
-	var thought_text: String = data.get("thought", "")
+	var thought_text: String = LLMSanitizer.clean_line(str(data.get("thought", "")))
 	if thought_text != "":
 		thought_generated.emit(thought_text)
 		_memory.add_observation("Thought: %s" % thought_text, 2.0)

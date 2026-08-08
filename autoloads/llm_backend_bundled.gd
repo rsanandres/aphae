@@ -159,7 +159,9 @@ func _on_generate_finished(result: String) -> void:
 		if json.parse(json_str) == OK:
 			callback.call(true, json.data, "")
 		else:
-			callback.call(true, {"raw": result}, "")
+			# A {"raw"} success here let unparsed scaffolding reach dialogue;
+			# a real failure routes callers to their heuristic fallback.
+			callback.call(false, {}, "unparseable model output")
 	else:
 		callback.call(true, {"raw": result}, "")
 

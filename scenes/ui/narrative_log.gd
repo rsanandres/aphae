@@ -3,14 +3,17 @@ extends PanelContainer
 ## Scrollable log with tabbed Events / Stories view.
 
 var _entries: Array[Dictionary] = []  # {text, agents, importance, timestamp, day}
+var _talk_entries: Array[Dictionary] = []  # {speaker, line, timestamp, day}
 var _vbox: VBoxContainer
 var _scroll: ScrollContainer
 var _tab_bar: HBoxContainer
 var _events_btn: Button
 var _stories_btn: Button
+var _talk_btn: Button
 var _content_vbox: VBoxContainer
 var _active_tab: String = "events"
 const MAX_ENTRIES := 100
+const MAX_TALK_ENTRIES := 200
 
 
 func _ready() -> void:
@@ -60,6 +63,12 @@ func _build_ui() -> void:
 	_stories_btn.pressed.connect(_show_stories_tab)
 	_tab_bar.add_child(_stories_btn)
 
+	_talk_btn = Button.new()
+	_talk_btn.text = "Talk"
+	_talk_btn.add_theme_font_size_override("font_size", 9)
+	_talk_btn.pressed.connect(_show_talk_tab)
+	_tab_bar.add_child(_talk_btn)
+
 	outer.add_child(HSeparator.new())
 
 	_scroll = ScrollContainer.new()
@@ -78,6 +87,11 @@ func _show_events_tab() -> void:
 
 func _show_stories_tab() -> void:
 	_active_tab = "stories"
+	_rebuild_display()
+
+
+func _show_talk_tab() -> void:
+	_active_tab = "talk"
 	_rebuild_display()
 
 
@@ -101,14 +115,19 @@ func _rebuild_display() -> void:
 	for child in _content_vbox.get_children():
 		child.queue_free()
 
+	for btn in [_events_btn, _stories_btn, _talk_btn]:
+		btn.remove_theme_color_override("font_color")
 	if _active_tab == "events":
-		_events_btn.add_theme_color_override("font_color", Color(1.0, 0.9, 0.6))
-		_stories_btn.remove_theme_color_override("font_color")
+		_events_btn.add_theme_color_override("font_color", UIPalette.ACCENT_WARM)
 		for entry in _entries:
 			_add_event_label(entry)
+	elif _active_tab == "talk":
+		_talk_btn.add_theme_color_override("font_color", UIPalette.ACCENT_WARM)
+		for entry in _talk_entries:
+			_add_talk_label(entry)
+		_scroll.call_deferred("set_v_scroll", _scroll.get_v_scroll_bar().max_value as int)
 	else:
-		_stories_btn.add_theme_color_override("font_color", Color(1.0, 0.9, 0.6))
-		_events_btn.remove_theme_color_override("font_color")
+		_stories_btn.add_theme_color_override("font_color", UIPalette.ACCENT_WARM)
 		_build_stories_view()
 
 
@@ -212,11 +231,30 @@ func _on_conversation_started(agent_a: String, agent_b: String) -> void:
 
 
 func _on_conversation_line(speaker: String, line: String) -> void:
-	# Truncate long lines
-	var display_line := line
-	if display_line.length() > 60:
-		display_line = display_line.substr(0, 57) + "..."
-	_log_activity(speaker, "says: \"%s\"" % display_line, 1.5)
+	# Full, untruncated line — the bubble over the agent's head is the teaser,
+	# this tab is the transcript. Kept out of Events, which it used to flood.
+	_talk_entries.append({
+		"speaker": speaker,
+		"line": line,
+		"timestamp": TimeManager.time_string,
+		"day": TimeManager.day,
+	})
+	if _talk_entries.size() > MAX_TALK_ENTRIES:
+		_talk_entries.pop_front()
+	if visible and _active_tab == "talk":
+		_add_talk_label(_talk_entries[-1])
+		_scroll.call_deferred("set_v_scroll", _scroll.get_v_scroll_bar().max_value as int)
+
+
+func _add_talk_label(entry: Dictionary) -> void:
+	var lbl := Label.new()
+	lbl.text = "[%s] %s: %s" % [entry["timestamp"], entry["speaker"], entry["line"]]
+	lbl.add_theme_font_size_override("font_size", 9)
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var agent := AgentManager.get_agent_by_name(entry["speaker"]) if AgentManager.has_method("get_agent_by_name") else null
+	if agent and "agent_color" in agent:
+		lbl.add_theme_color_override("font_color", (agent.agent_color as Color).lightened(0.4))
+	_content_vbox.add_child(lbl)
 
 
 func _on_conversation_ended(agent_a: String, agent_b: String) -> void:

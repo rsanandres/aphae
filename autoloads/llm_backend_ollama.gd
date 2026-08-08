@@ -140,7 +140,16 @@ func _on_pool_request_completed(result: int, response_code: int, _headers: Packe
 		if repaired != content_str and content_json.parse(repaired) == OK:
 			callback.call(true, content_json.data, "")
 		else:
-			callback.call(true, {"raw": content_str}, "")
+			# Models sometimes append junk after a valid object
+			# ({"line":"..."} [{...}]) — recover the object alone.
+			var first_obj := _extract_first_object(content_str)
+			if first_obj != "" and content_json.parse(first_obj) == OK:
+				callback.call(true, content_json.data, "")
+			else:
+				# Reporting success with {"raw": ...} here let unparsed
+				# scaffolding flow into dialogue; a real failure routes every
+				# caller to its heuristic fallback instead.
+				callback.call(false, {}, "unparseable model output")
 
 	_process_next()
 
@@ -165,6 +174,36 @@ func _repair_json(raw: String) -> String:
 	if last != -1:
 		s = s.substr(0, last + 1)
 	return s.strip_edges()
+
+
+func _extract_first_object(raw: String) -> String:
+	## Return the first balanced {...} object in the text, or "" if none.
+	## Quote-aware so braces inside string values don't unbalance the scan.
+	var start := raw.find("{")
+	if start == -1:
+		return ""
+	var depth := 0
+	var in_string := false
+	var i := start
+	while i < raw.length():
+		var c := raw[i]
+		if in_string:
+			if c == "\\":
+				i += 2
+				continue
+			if c == "\"":
+				in_string = false
+		else:
+			if c == "\"":
+				in_string = true
+			elif c == "{":
+				depth += 1
+			elif c == "}":
+				depth -= 1
+				if depth == 0:
+					return raw.substr(start, i - start + 1)
+		i += 1
+	return ""
 
 
 func drain_queue() -> void:

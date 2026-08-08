@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scenes/ui/hud.gd" id="1_hud"]
 
 [node name="HUD" type="CanvasLayer"]
+layer = 10
 script = ExtResource("1_hud")
 
 [node name="StatusBar" type="HBoxContainer" parent="."]

@@ -83,8 +83,11 @@ func _request_next_line() -> void:
 		format_schema,
 		func(success: bool, data: Dictionary, _error: String) -> void:
 			_waiting_for_response = false
+			var line := ""
 			if success and data.has("line"):
-				_on_line_received(speaker, listener, str(data["line"]))
+				line = LLMSanitizer.clean_line(str(data["line"]))
+			if line != "":
+				_on_line_received(speaker, listener, line)
 			else:
 				_on_line_received(speaker, listener, _heuristic_line(speaker, listener)),
 		LLMManager.Priority.HIGH,

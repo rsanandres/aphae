@@ -10,7 +10,7 @@ extends Node
 ## Run: godot --path . --audio-driver Dummy res://scenes/main/screenshots.tscn
 
 const OUT_DIR := "user://screenshots"
-const SIZE := Vector2i(960, 640)
+const SIZE := Vector2i(1280, 720)
 const SETTLE_SEC := 28.0   # let agents disperse and the log fill with real events
 
 var _main: Node = null

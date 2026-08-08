@@ -25,17 +25,20 @@ const HEALTH_DECAY_BASE := 0.02  # per game-minute when senior
 # Tiles
 const TILE_SIZE := 16
 
-# Camera
+# Camera. Default zoom 2 renders each world pixel as 2x2 viewport pixels,
+# so the 640x360 viewport shows a 320x180 slice of the world.
 const CAMERA_ZOOM_MIN := 1.0
-const CAMERA_ZOOM_MAX := 5.0
-const CAMERA_ZOOM_STEP := 0.25
-const CAMERA_PAN_SPEED := 300.0
+const CAMERA_ZOOM_MAX := 6.0
+const CAMERA_ZOOM_STEP := 0.5
+const CAMERA_ZOOM_DEFAULT := 2.0
 
 # Desktop mode
 const DESKTOP_WINDOW_WIDTH := 480
 const DESKTOP_WINDOW_HEIGHT := 320
-const DESKTOP_OFFICE_WIDTH := 460
-const DESKTOP_OFFICE_HEIGHT := 280
+# Default office must fit the camera's 320x180 view at default zoom,
+# including the 10px world margin on every side.
+const DESKTOP_OFFICE_WIDTH := 300
+const DESKTOP_OFFICE_HEIGHT := 160
 
 # Conversation
 const CONVERSATION_TURNS := 4  # exchanges per conversation

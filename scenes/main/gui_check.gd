@@ -12,7 +12,7 @@ extends Node
 ## Output: user://gui_check/*.png
 
 const OUT_DIR := "user://gui_check"
-const EXPANDED := Vector2i(960, 640)
+const EXPANDED := Vector2i(1280, 720)
 const PET := Vector2i(480, 320)
 
 var _main: Node = null

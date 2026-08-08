@@ -7,9 +7,9 @@
 [ext_resource type="PackedScene" uid="uid://cagent001" path="res://scenes/agents/agent.tscn" id="5_agent"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_1"]
-vertices = PackedVector2Array(14, 14, 466, 14, 466, 286, 14, 286)
+vertices = PackedVector2Array(14, 14, 306, 14, 306, 166, 14, 166)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(14, 14, 466, 14, 466, 286, 14, 286)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(14, 14, 306, 14, 306, 166, 14, 166)])
 
 [sub_resource type="RectangleShape2D" id="desk_shape1"]
 size = Vector2(24, 16)
@@ -56,7 +56,7 @@ texture_filter = 0
 shape = SubResource("desk_shape2")
 
 [node name="CoffeeMachine" type="StaticBody2D" parent="Objects"]
-position = Vector2(420, 40)
+position = Vector2(272, 48)
 collision_layer = 4
 collision_mask = 0
 script = ExtResource("3_coffee")
@@ -68,7 +68,7 @@ texture_filter = 0
 shape = SubResource("coffee_shape")
 
 [node name="Couch" type="StaticBody2D" parent="Objects"]
-position = Vector2(360, 250)
+position = Vector2(248, 144)
 collision_layer = 4
 collision_mask = 0
 script = ExtResource("4_couch")
@@ -82,13 +82,13 @@ shape = SubResource("couch_shape")
 [node name="Agents" type="Node2D" parent="."]
 
 [node name="Alice" parent="Agents" instance=ExtResource("5_agent")]
-position = Vector2(100, 150)
+position = Vector2(90, 120)
 personality_file = "alice"
 
 [node name="Bob" parent="Agents" instance=ExtResource("5_agent")]
-position = Vector2(240, 150)
+position = Vector2(160, 130)
 personality_file = "bob"
 
 [node name="Clara" parent="Agents" instance=ExtResource("5_agent")]
-position = Vector2(370, 150)
+position = Vector2(240, 110)
 personality_file = "clara"

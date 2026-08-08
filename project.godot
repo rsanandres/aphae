@@ -44,10 +44,10 @@ SteamManager="*res://autoloads/steam_manager.gd"
 
 [display]
 
-window/size/viewport_width=320
-window/size/viewport_height=214
-window/size/window_width_override=960
-window/size/window_height_override=640
+window/size/viewport_width=640
+window/size/viewport_height=360
+window/size/window_width_override=1280
+window/size/window_height_override=720
 window/size/resizable=true
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
@@ -97,4 +97,5 @@ speed_down={
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
+2d/snap/snap_2d_transforms_to_pixel=true
 viewport/transparent_background=false

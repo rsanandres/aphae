@@ -40,7 +40,7 @@ func _ready() -> void:
 	_update_llm_label()
 
 	# Drama indicator in status bar
-	var sep3 := HSeparator.new()
+	var sep3 := VSeparator.new()
 	sep3.custom_minimum_size = Vector2(12, 0)
 	status_bar.add_child(sep3)
 	_drama_label = Label.new()
@@ -560,10 +560,11 @@ func _setup_pause_overlay() -> void:
 	_pause_label.anchor_left = 0.5
 	_pause_label.anchor_right = 0.5
 	_pause_label.anchor_top = 0.0
+	# Below the status bar (y 4..18), not on top of it.
 	_pause_label.offset_left = -40
 	_pause_label.offset_right = 40
-	_pause_label.offset_top = 2
-	_pause_label.offset_bottom = 18
+	_pause_label.offset_top = 24
+	_pause_label.offset_bottom = 40
 	_pause_label.visible = false
 	add_child(_pause_label)
 

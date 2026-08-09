@@ -3,6 +3,10 @@ extends PanelContainer
 
 
 func _ready() -> void:
+	# Born hidden. The HUD toggles this panel through UIManager, so a panel
+	# that starts visible gets immediately toggled OFF — which cost the
+	# player their first click on Settings and looked like a dead button.
+	visible = false
 	theme = UITheme.get_theme()
 	set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	custom_minimum_size = Vector2(280, 240)

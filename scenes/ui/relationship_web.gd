@@ -23,6 +23,23 @@ func _ready() -> void:
 	add_child(timer)
 	timer.start()
 
+	# A full-screen overlay with no visible way out is a trap: Esc and R work,
+	# but nothing on screen says so.
+	var close_btn := Button.new()
+	close_btn.text = "X"
+	close_btn.tooltip_text = "Close [Esc]"
+	close_btn.theme = UITheme.get_theme()
+	close_btn.custom_minimum_size = Vector2(18, 18)
+	close_btn.anchor_left = 1.0
+	close_btn.anchor_right = 1.0
+	close_btn.offset_left = -24
+	close_btn.offset_top = 4
+	close_btn.offset_right = -6
+	close_btn.offset_bottom = 22
+	close_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	close_btn.pressed.connect(func() -> void: visible = false)
+	add_child(close_btn)
+
 
 func toggle() -> void:
 	visible = not visible

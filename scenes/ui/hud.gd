@@ -131,25 +131,25 @@ func _ready() -> void:
 	_relationship_web = RelationshipWeb.new()
 	_relationship_web.offset_left = 120
 	_relationship_web.offset_top = 40
-	_relationship_web.offset_right = 520
+	_relationship_web.offset_right = 452
 	_relationship_web.offset_bottom = 320
 	add_child(_relationship_web)
 	_ui.register("relationships", _relationship_web, UIManager.Kind.EXCLUSIVE)
 
 	# Create story feed panel (center overlay)
 	_story_feed = StoryFeedPanel.new()
-	_story_feed.offset_left = 170
+	_story_feed.offset_left = 156
 	_story_feed.offset_top = 40
-	_story_feed.offset_right = 470
+	_story_feed.offset_right = 452
 	_story_feed.offset_bottom = 320
 	add_child(_story_feed)
 	_ui.register("stories", _story_feed, UIManager.Kind.EXCLUSIVE)
 
 	# Create confessional feed panel (center overlay, toggled with C)
 	_confessional_feed = ConfessionalFeed.new()
-	_confessional_feed.offset_left = 170
+	_confessional_feed.offset_left = 156
 	_confessional_feed.offset_top = 40
-	_confessional_feed.offset_right = 470
+	_confessional_feed.offset_right = 452
 	_confessional_feed.offset_bottom = 320
 	add_child(_confessional_feed)
 	_ui.register("confessionals", _confessional_feed, UIManager.Kind.EXCLUSIVE)
@@ -171,9 +171,9 @@ func _ready() -> void:
 
 	# Episode recap viewer (center overlay, toggled with E)
 	_recap_panel = RecapPanel.new()
-	_recap_panel.offset_left = 150
+	_recap_panel.offset_left = 140
 	_recap_panel.offset_top = 36
-	_recap_panel.offset_right = 490
+	_recap_panel.offset_right = 452
 	_recap_panel.offset_bottom = 324
 	add_child(_recap_panel)
 	_ui.register("recap", _recap_panel, UIManager.Kind.EXCLUSIVE)
@@ -206,9 +206,9 @@ func _ready() -> void:
 
 	# Producer's Catalog (B): spend Influence on objects and interventions
 	_catalog_panel = CatalogPanel.new()
-	_catalog_panel.offset_left = 170
+	_catalog_panel.offset_left = 156
 	_catalog_panel.offset_top = 40
-	_catalog_panel.offset_right = 470
+	_catalog_panel.offset_right = 452
 	_catalog_panel.offset_bottom = 320
 	add_child(_catalog_panel)
 	_ui.register("catalog", _catalog_panel, UIManager.Kind.EXCLUSIVE)

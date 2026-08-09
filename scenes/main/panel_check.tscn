@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cpanelchk1"]
+
+[ext_resource type="Script" path="res://scenes/main/panel_check.gd" id="1_pc"]
+
+[node name="PanelCheck" type="Node"]
+script = ExtResource("1_pc")

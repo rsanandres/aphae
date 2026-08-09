@@ -5,6 +5,7 @@ var _content: VBoxContainer = null
 
 
 func _ready() -> void:
+	visible = false  # see settings_panel: toggled panels must start hidden
 	theme = UITheme.get_theme()
 	set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	custom_minimum_size = Vector2(280, 240)

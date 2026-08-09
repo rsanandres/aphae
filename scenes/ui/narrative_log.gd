@@ -69,6 +69,17 @@ func _build_ui() -> void:
 	_talk_btn.pressed.connect(_show_talk_tab)
 	_tab_bar.add_child(_talk_btn)
 
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_tab_bar.add_child(spacer)
+
+	var close_btn := Button.new()
+	close_btn.text = "X"
+	close_btn.tooltip_text = "Hide the log [L]"
+	close_btn.add_theme_font_size_override("font_size", 9)
+	close_btn.pressed.connect(func() -> void: visible = false)
+	_tab_bar.add_child(close_btn)
+
 	outer.add_child(HSeparator.new())
 
 	_scroll = ScrollContainer.new()

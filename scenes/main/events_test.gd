@@ -434,6 +434,24 @@ func _run() -> void:
 			ghost_free = false
 	_check("no freed occupants linger", ghost_free)
 
+	# --- Regression: a death mid-conversation must not strand the survivor ---
+	# conversation_finished used to be emitted only after several lines that
+	# throw on a freed participant, so the survivor stayed flagged "in
+	# conversation" permanently and could never speak again.
+	var talker_a: Node2D = AgentManager.spawn_procedural_agent(Vector2(200, 150))
+	var talker_b: Node2D = AgentManager.spawn_procedural_agent(Vector2(206, 150))
+	await get_tree().process_frame
+	var started: bool = ConversationManager.start_conversation(talker_a, talker_b)
+	_check("test conversation starts", started)
+	if started:
+		var survivor_name: String = talker_b.agent_name
+		_check("participants are marked busy", ConversationManager.is_agent_busy(survivor_name))
+		talker_a.die("died mid-sentence")
+		await get_tree().create_timer(4.0).timeout
+		_check("survivor is released when their partner dies",
+			not ConversationManager.is_agent_busy(survivor_name))
+		_check("survivor can talk again", talker_b.state != AgentState.Type.TALKING)
+
 	# --- 6. specific target mode never fires organically ---
 	var spec_def := EventDefinition.from_dict({
 		"id": "__test_specific", "name": "t", "description": "t",

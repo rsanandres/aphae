@@ -13,11 +13,18 @@ var _is_confession: bool = false
 var _waiting_for_response: bool = false
 var _line_timer: float = 0.0
 var _showing_line: bool = false
+var _name_a: String = ""
+var _name_b: String = ""
+var _aborted: bool = false
 
 
 func start(a: Node2D, b: Node2D, confession: bool = false) -> void:
 	agent_a = a
 	agent_b = b
+	# Held separately so the conversation can still clean up after itself
+	# once one of these nodes no longer exists.
+	_name_a = a.agent_name
+	_name_b = b.agent_name
 	_is_confession = confession
 	_max_turns = 2 if confession else Config.CONVERSATION_TURNS
 	# Both agents enter talking state
@@ -28,7 +35,33 @@ func start(a: Node2D, b: Node2D, confession: bool = false) -> void:
 	_request_next_line()
 
 
+func _participants_valid() -> bool:
+	return is_instance_valid(agent_a) and is_instance_valid(agent_b)
+
+
+func _abort() -> void:
+	## Somebody died, departed, or was removed mid-conversation. Before this
+	## existed the instance threw on its first dereference and never emitted
+	## conversation_finished — so ConversationManager kept the survivor
+	## flagged "in conversation" for the rest of the run (they could never
+	## speak again), and AudioManager's murmur refcount never came back down.
+	if _aborted:
+		return
+	_aborted = true
+	for agent in [agent_a, agent_b]:
+		if is_instance_valid(agent) and not agent.is_dead and agent.has_method("exit_talking_state"):
+			agent.exit_talking_state()
+	EventBus.conversation_ended.emit(_name_a, _name_b)
+	conversation_finished.emit(_name_a, _name_b)
+	queue_free()
+
+
 func _process(delta: float) -> void:
+	if _aborted:
+		return
+	if not _participants_valid():
+		_abort()
+		return
 	if _showing_line:
 		_line_timer -= delta
 		if _line_timer <= 0.0:
@@ -95,6 +128,9 @@ func _request_next_line() -> void:
 
 
 func _on_line_received(speaker: Node2D, _listener: Node2D, line: String) -> void:
+	if not is_instance_valid(speaker) or not _participants_valid():
+		_abort()
+		return
 	_history.append({"speaker": speaker.agent_name, "line": line})
 	speaker.show_speech(line, Config.CONVERSATION_LINE_DURATION, _tone(speaker, _listener))
 	EventBus.conversation_line.emit(speaker.agent_name, line)
@@ -119,6 +155,9 @@ func _tone(speaker: Node2D, listener: Node2D) -> String:
 
 
 func _end_conversation() -> void:
+	if not _participants_valid():
+		_abort()
+		return
 	# Capture affinity before the relationship update so the outcome can be
 	# shown at the scene as a floating delta.
 	var before_ab: float = agent_a.relationships.get_relationship(agent_b.agent_name).affinity

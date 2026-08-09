@@ -164,6 +164,22 @@ func _ready() -> void:
 	# Persistent icon bar (bottom-center quick access)
 	_setup_icon_bar()
 
+	# Producer dilemma modal (center; big events pause for your call)
+	var dilemma := DilemmaPanel.new()
+	dilemma.anchors_preset = Control.PRESET_CENTER
+	dilemma.anchor_left = 0.5
+	dilemma.anchor_right = 0.5
+	dilemma.anchor_top = 0.5
+	dilemma.anchor_bottom = 0.5
+	dilemma.offset_left = -150
+	dilemma.offset_top = -90
+	dilemma.offset_right = 150
+	dilemma.offset_bottom = 90
+	dilemma.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	dilemma.grow_vertical = Control.GROW_DIRECTION_BOTH
+	add_child(dilemma)
+	_ui.register("dilemma", dilemma, UIManager.Kind.MODAL)
+
 	# Toast stack (top-center, capped)
 	_ui.setup_toasts(self)
 

@@ -263,6 +263,10 @@ static func _run_script(script_name: String, target: Node2D, second: Node2D, aff
 		"sabotage_note":
 			_script_sabotage(target, "left an anonymous note on {victim}'s desk calling their work sloppy",
 				"someone left a nasty anonymous note on my desk", "the anonymous note")
+		"leak_secret":
+			_script_leak_secret(target)
+		"expose_saboteur":
+			_script_expose_saboteur(target)
 		"sabotage_work":
 			_script_sabotage(target, "quietly deleted part of {victim}'s project files",
 				"part of my project files just vanished — that was no accident", "the deleted files")
@@ -322,6 +326,57 @@ static func _script_exhaustion_collapse(affected: Array) -> void:
 			}, agent, agent, null)
 		EventBus.narrative_event.emit(
 			"%s collapsed from exhaustion!" % agent.agent_name, [agent.agent_name], 8.0)
+
+
+static func _script_leak_secret(holder: Node2D) -> void:
+	## Producer leaks the target's secret to the whole office. Anonymous —
+	## nobody knows where the story came from, but everybody knows the story.
+	if holder == null or not is_instance_valid(holder) or holder.memory == null:
+		return
+	var secrets: Array[MemoryEntry] = holder.memory.get_secrets()
+	if secrets.is_empty():
+		return
+	var secret: MemoryEntry = secrets[0]
+	for agent in AgentManager.agents:
+		if not is_instance_valid(agent) or agent == holder:
+			continue
+		_add_memory({
+			"text": "a story is suddenly everywhere: %s" % secret.description,
+			"importance": 6.0, "emotion": "shock", "sentiment": -0.3,
+			"thread": secret.narrative_thread,
+		}, agent, holder, null)
+	_add_memory({
+		"text": "the secret is out. Everyone knows. Someone leaked it — but who?",
+		"importance": 9.0, "emotion": "shock", "sentiment": -0.8, "protected": true,
+	}, holder, holder, null)
+	holder.needs.restore(NeedType.Type.SOCIAL, -20.0)
+	EventBus.narrative_event.emit(
+		"A secret about %s just went public. The office is buzzing." % holder.agent_name,
+		[holder.agent_name], 8.0)
+
+
+static func _script_expose_saboteur(saboteur: Node2D) -> void:
+	## The footage airs: the whole cast learns who did it.
+	if saboteur == null or not is_instance_valid(saboteur):
+		return
+	for agent in AgentManager.agents:
+		if not is_instance_valid(agent) or agent == saboteur:
+			continue
+		var rel: RelationshipEntry = agent.relationships.get_relationship(saboteur.agent_name)
+		rel.affinity = clampf(rel.affinity - 15.0, -100.0, 100.0)
+		rel.trust = clampf(rel.trust - 20.0, 0.0, 100.0)
+		_add_memory({
+			"text": "saw the proof: %s was behind the sabotage all along." % saboteur.agent_name,
+			"importance": 7.0, "emotion": "shock", "sentiment": -0.6,
+		}, agent, saboteur, null)
+		EventBus.relationship_changed.emit(agent.agent_name, saboteur.agent_name, rel)
+	_add_memory({
+		"text": "was exposed as the saboteur in front of everyone. There is no coming back from this.",
+		"importance": 9.0, "emotion": "shame", "sentiment": -0.9, "protected": true,
+	}, saboteur, saboteur, null)
+	EventBus.narrative_event.emit(
+		"%s was exposed as the office saboteur!" % saboteur.agent_name,
+		[saboteur.agent_name], 9.0)
 
 
 static func _script_sabotage(victim: Node2D, deed: String, victim_line: String, incident: String) -> void:
@@ -569,6 +624,18 @@ static func prerequisites_met_target(prereq: Dictionary, target: Node2D) -> bool
 				found_tag = true
 				break
 		if not found_tag:
+			return false
+	if prereq.get("has_secret", false):
+		if target.memory == null or target.memory.get_secrets().is_empty():
+			return false
+	if prereq.has("has_secret_thread"):
+		var found_thread := false
+		if target.memory:
+			for m in target.memory.get_secrets():
+				if m.narrative_thread == str(prereq["has_secret_thread"]):
+					found_thread = true
+					break
+		if not found_thread:
 			return false
 	if prereq.has("requires_status"):
 		var wanted: RelationshipEntry.Status = STATUS_LOOKUP.get(str(prereq["requires_status"]), RelationshipEntry.Status.NONE)

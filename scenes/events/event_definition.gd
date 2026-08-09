@@ -18,6 +18,7 @@ var prerequisites: Dictionary = {}  # gates the daily roll only; trigger_event()
 var second_actor: String = "none"  # nearby / rival / friend / crush / random / none
 var payload: Dictionary = {}  # relationship_effects, modifiers, memory, ...
 var outcomes: Array = []  # weighted payload variants, one picked per firing
+var dilemma: Dictionary = {}  # {title, situation, choices:[{label, payload}], timeout_sec, default_choice}
 
 const PAYLOAD_KEYS: Array[String] = [
 	"relationship_effects", "modifiers", "conditions_add", "conditions_remove",
@@ -51,6 +52,7 @@ static func from_dict(data: Dictionary) -> EventDefinition:
 	ed.prerequisites = data.get("prerequisites", {})
 	ed.second_actor = data.get("second_actor", "none")
 	ed.outcomes = data.get("outcomes", [])
+	ed.dilemma = data.get("dilemma", {})
 	for key in PAYLOAD_KEYS:
 		if data.has(key):
 			ed.payload[key] = data[key]

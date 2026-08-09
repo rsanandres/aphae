@@ -6,11 +6,52 @@ var _active_events: Array[Dictionary] = []  # {definition, affected_agents, star
 var _cooldowns: Dictionary = {}  # event_id -> last_triggered_day
 var _loaded: bool = false
 
+# Producer dilemmas: one pending at a time, real-time timeout while paused.
+var auto_resolve_dilemmas: bool = false  # true in headless / when no UI exists
+var _pending_dilemma: Dictionary = {}  # {definition, affected, timeout_left, was_paused}
+
 
 func _ready() -> void:
 	_load_events()
 	EventBus.day_changed.connect(_on_day_changed)
 	EventBus.time_tick.connect(_on_time_tick)
+	auto_resolve_dilemmas = DisplayServer.get_name() == "headless"
+
+
+func _process(delta: float) -> void:
+	# Dilemma timeout counts REAL seconds — game time is frozen while the
+	# producer decides, so game minutes cannot drive it.
+	if _pending_dilemma.is_empty():
+		return
+	_pending_dilemma["timeout_left"] = float(_pending_dilemma["timeout_left"]) - delta
+	if float(_pending_dilemma["timeout_left"]) <= 0.0:
+		var default_choice: int = int((_pending_dilemma["definition"] as EventDefinition).dilemma.get("default_choice", 0))
+		resolve_dilemma(default_choice, true)
+
+
+func resolve_dilemma(choice_idx: int, by_timeout: bool = false) -> void:
+	if _pending_dilemma.is_empty():
+		return
+	var definition: EventDefinition = _pending_dilemma["definition"]
+	var affected: Array = _pending_dilemma["affected"]
+	var was_paused: bool = _pending_dilemma["was_paused"]
+	_pending_dilemma = {}
+
+	var choices: Array = definition.dilemma.get("choices", [])
+	choice_idx = clampi(choice_idx, 0, maxi(choices.size() - 1, 0))
+	if not choices.is_empty():
+		var payload: Dictionary = choices[choice_idx].get("payload", {})
+		var target: Node2D = affected[0] if not affected.is_empty() and affected[0] is Node2D else null
+		ConsequenceEngine.apply(payload, target, null, {"affected": affected, "definition": definition})
+
+	# Restore the pause state the player had before the dilemma interrupted.
+	if not was_paused and TimeManager.is_paused:
+		TimeManager.toggle_pause()
+	EventBus.dilemma_resolved.emit(definition.event_id, choice_idx, by_timeout)
+
+
+func has_pending_dilemma() -> bool:
+	return not _pending_dilemma.is_empty()
 
 
 func trigger_event(event_id: String, specific_agents: Array = []) -> bool:
@@ -128,6 +169,11 @@ func _execute_event(definition: EventDefinition, specific_agents: Array = []) ->
 	if definition.duration_minutes > 0:
 		_active_events.append(event_data)
 
+	# Producer dilemmas hold their consequences until the player chooses
+	# (or the clock runs out). The choice payloads ARE the event.
+	if not definition.dilemma.is_empty():
+		return _offer_dilemma(definition, affected)
+
 	# Apply immediate effects (legacy enum-keyed need deltas)
 	_apply_effects(definition, affected)
 
@@ -149,6 +195,27 @@ func _execute_event(definition: EventDefinition, specific_agents: Array = []) ->
 		definition.description,
 		agent_names, 6.0
 	)
+	return true
+
+
+func _offer_dilemma(definition: EventDefinition, affected: Array) -> bool:
+	if not _pending_dilemma.is_empty():
+		return false  # one at a time; the roll can retry another day
+	var names: Array = []
+	for a in affected:
+		if a is Node2D and is_instance_valid(a):
+			names.append(a.agent_name)
+	_pending_dilemma = {
+		"definition": definition,
+		"affected": affected,
+		"timeout_left": float(definition.dilemma.get("timeout_sec", 25.0)),
+		"was_paused": TimeManager.is_paused,
+	}
+	if not TimeManager.is_paused:
+		TimeManager.toggle_pause()
+	EventBus.dilemma_offered.emit(definition, names)
+	if auto_resolve_dilemmas:
+		resolve_dilemma(int(definition.dilemma.get("default_choice", 0)), true)
 	return true
 
 

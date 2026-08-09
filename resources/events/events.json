@@ -365,7 +365,7 @@
   {
     "id": "poached",
     "name": "Poached",
-    "description": "A rival company made someone an offer they couldn't refuse.",
+    "description": "A rival company made {target} an offer. Your call, producer.",
     "probability": 0.03,
     "category": "work",
     "target_mode": "most_productive",
@@ -374,7 +374,69 @@
       "min_agents": 5,
       "min_day": 4
     },
-    "script": "departure_poached"
+    "dilemma": {
+      "title": "Poaching Attempt",
+      "situation": "A rival company wants {target}. Counter-offer to keep your star, or let them walk for the drama of a departure?",
+      "timeout_sec": 30,
+      "default_choice": 1,
+      "choices": [
+        {
+          "label": "Counter-offer: keep {target}",
+          "payload": {
+            "modifiers": [
+              {
+                "on": "target",
+                "type": "motivated",
+                "target": "",
+                "days": 5
+              }
+            ],
+            "memory": {
+              "affected": {
+                "text": "got a counter-offer to stay. Wanted, for once. It feels good.",
+                "importance": 7,
+                "emotion": "happiness",
+                "sentiment": 0.6
+              }
+            },
+            "bystander_reactions": [
+              {
+                "trait": "agreeableness",
+                "below": 0.4,
+                "affinity": -8,
+                "add_tags": [
+                  "jealous"
+                ],
+                "memory": {
+                  "text": "heard {target} got a raise to stay. Must be nice.",
+                  "importance": 5,
+                  "emotion": "jealousy",
+                  "sentiment": -0.4
+                }
+              },
+              {
+                "memory": {
+                  "text": "heard {target} almost left, but they're staying.",
+                  "importance": 4,
+                  "emotion": "",
+                  "sentiment": 0.2
+                }
+              }
+            ],
+            "narrative": {
+              "text": "{target} was nearly poached \u2014 a counter-offer kept them.",
+              "importance": 6
+            }
+          }
+        },
+        {
+          "label": "Let {target} go",
+          "payload": {
+            "script": "departure_poached"
+          }
+        }
+      ]
+    }
   },
   {
     "id": "returning_ex",
@@ -438,5 +500,100 @@
       "productivity": -25
     },
     "script": "sabotage_work"
+  },
+  {
+    "id": "leak_dilemma",
+    "name": "The Leak",
+    "description": "Production has dirt on {target}. Air it?",
+    "probability": 0.04,
+    "category": "social",
+    "target_mode": "random",
+    "cooldown_days": 9,
+    "prerequisites": {
+      "min_agents": 4,
+      "min_drama": 3.0,
+      "has_secret": true,
+      "min_day": 3
+    },
+    "dilemma": {
+      "title": "The Leak",
+      "situation": "Production knows {target} is hiding something. Leak it to the office and watch the fallout, or keep it in the vault?",
+      "timeout_sec": 30,
+      "default_choice": 1,
+      "choices": [
+        {
+          "label": "Leak {target}'s secret",
+          "payload": {
+            "script": "leak_secret"
+          }
+        },
+        {
+          "label": "Keep it in the vault",
+          "payload": {
+            "memory": {
+              "affected": {
+                "text": "has the strange feeling of having dodged something. The secret holds.",
+                "importance": 4,
+                "emotion": "",
+                "sentiment": 0.2
+              }
+            },
+            "narrative": {
+              "text": "A quiet day. Some stories stay untold.",
+              "importance": 2
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "sabotage_footage",
+    "name": "The Footage",
+    "description": "The cameras caught the saboteur: {target}.",
+    "probability": 0.06,
+    "category": "social",
+    "target_mode": "random",
+    "cooldown_days": 10,
+    "prerequisites": {
+      "min_agents": 4,
+      "has_secret_thread": "secret_sabotage"
+    },
+    "dilemma": {
+      "title": "The Footage",
+      "situation": "The cameras caught it: {target} is the office saboteur. Air the footage and expose them, or bury it and let the mystery fester?",
+      "timeout_sec": 30,
+      "default_choice": 1,
+      "choices": [
+        {
+          "label": "Air it: expose {target}",
+          "payload": {
+            "script": "expose_saboteur"
+          }
+        },
+        {
+          "label": "Bury the footage",
+          "payload": {
+            "memory": {
+              "affected": {
+                "text": "got away with it. Completely. The thrill is a little addictive.",
+                "importance": 7,
+                "emotion": "defiance",
+                "sentiment": 0.3,
+                "protected": true,
+                "thread": "secret_sabotage"
+              }
+            },
+            "trait_shifts": {
+              "agreeableness": -0.02
+            },
+            "narrative": {
+              "text": "The sabotage case has gone cold.",
+              "importance": 3
+            }
+          }
+        }
+      ]
+    }
   }
 ]

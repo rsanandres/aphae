@@ -305,6 +305,55 @@ func _run() -> void:
 			leaked_low = true
 	_check("low trust never hears the secret", not leaked_low)
 
+	# --- E5: producer dilemmas ---
+	EventManager.auto_resolve_dilemmas = false  # harness resolves by hand
+	var resolved_spy: Array = []
+	EventBus.dilemma_resolved.connect(func(id: String, idx: int, timeout: bool) -> void:
+		resolved_spy.append({"id": id, "idx": idx, "timeout": timeout}))
+
+	# Leak dilemma, choice 0 (leak it): the secret spreads office-wide.
+	var secret_holder: Node2D = AgentManager.agents[0]
+	secret_holder.memory.add_memory(MemoryEntry.MemoryType.OBSERVATION,
+		"%s has been secretly interviewing at a rival company." % secret_holder.agent_name, 8.0)
+	secret_holder.memory.memories[-1].narrative_thread = "secret_jobhunt"
+	secret_holder.memory.memories[-1].decay_protected = true
+	EventManager.trigger_event("leak_dilemma", [secret_holder])
+	_check("dilemma holds the event pending", EventManager.has_pending_dilemma())
+	_check("dilemma pauses the game", TimeManager.is_paused)
+	EventManager.resolve_dilemma(0)
+	await get_tree().process_frame
+	_check("dilemma resolves and clears", not EventManager.has_pending_dilemma())
+	_check("resolution signal fired with the choice", not resolved_spy.is_empty() and resolved_spy[-1]["idx"] == 0 and not resolved_spy[-1]["timeout"])
+	var word_spread := false
+	for m in AgentManager.agents[1].memory.memories:
+		if "a story is suddenly everywhere" in m.description:
+			word_spread = true
+	_check("leaked secret reaches the office", word_spread)
+
+	# Footage dilemma, choice 1 (bury it): saboteur keeps the secret, no exposure.
+	var sab: Node2D = null
+	for agent in AgentManager.agents:
+		for m in agent.memory.get_secrets():
+			if m.narrative_thread == "secret_sabotage":
+				sab = agent
+	if sab == null:
+		sab = AgentManager.agents[1]
+		sab.memory.add_memory(MemoryEntry.MemoryType.OBSERVATION, "did a bad thing in secret", 8.0)
+		sab.memory.memories[-1].narrative_thread = "secret_sabotage"
+	var affinity_toward_sab: float = a.relationships.get_relationship(sab.agent_name).affinity if a != sab else 0.0
+	EventManager.trigger_event("sabotage_footage", [sab])
+	EventManager.resolve_dilemma(1)
+	await get_tree().process_frame
+	var exposed := false
+	for agent in AgentManager.agents:
+		if agent == sab:
+			continue
+		for m in agent.memory.memories:
+			if "behind the sabotage" in m.description:
+				exposed = true
+	_check("buried footage exposes no one", not exposed)
+	_check("burying it deepens the secret", sab.memory.get_secrets().size() >= 1)
+
 	# --- 6. specific target mode never fires organically ---
 	var spec_def := EventDefinition.from_dict({
 		"id": "__test_specific", "name": "t", "description": "t",

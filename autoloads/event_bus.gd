@@ -37,6 +37,8 @@ signal time_resumed()
 # Health & Life signals
 signal agent_died(agent_name: String, cause: String)
 signal agent_departed(agent_name: String, reason: String)
+signal dilemma_offered(definition: RefCounted, target_names: Array)
+signal dilemma_resolved(event_id: String, choice_idx: int, by_timeout: bool)
 signal agent_sick(agent_name: String, condition: String)
 signal agent_life_stage_changed(agent_name: String, stage: int)
 

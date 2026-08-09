@@ -70,6 +70,7 @@ func _ready() -> void:
 	memory.add_observation("%s arrives at the office and starts their day." % agent_name, 3.0)
 	# Initialize health
 	health_state = HealthState.new()
+	health_state.owner_name = agent_name
 	health_state.randomize_lifespan()
 	# Mood indicator timer — updates every 2 seconds instead of every frame
 	_mood_timer = Timer.new()
@@ -250,10 +251,43 @@ func witness_death(dead_name: String, cause: String) -> void:
 
 func add_behavior_modifier(modifier: Dictionary) -> void:
 	_behavior_modifiers.append(modifier)
+	if modifier.get("type", "") == "motivated":
+		_refresh_decay_rates()
 
 
 func get_active_modifiers() -> Array[Dictionary]:
 	return _behavior_modifiers
+
+
+func has_modifier(mod_type: String, target: String = "") -> bool:
+	for mod in _behavior_modifiers:
+		if mod.get("type", "") == mod_type and (target == "" or mod.get("target", "") == target):
+			return true
+	return false
+
+
+func get_modifiers_data() -> Array:
+	return _behavior_modifiers.duplicate(true)
+
+
+func load_modifiers_data(data: Array) -> void:
+	_behavior_modifiers.clear()
+	for mod in data:
+		if mod is Dictionary:
+			add_behavior_modifier(mod)
+
+
+func _refresh_decay_rates() -> void:
+	## Recompute need decay from personality, then apply modifier effects:
+	## while "motivated" is active, productivity decays at half rate.
+	if personality:
+		_apply_personality_decay_rates()
+	if has_modifier("motivated"):
+		var base_rate: float = Config.NEED_DECAY_BASE.get(NeedType.Type.PRODUCTIVITY, 0.1)
+		var mult: float = 1.0
+		if personality and personality.need_decay_multipliers.has("productivity"):
+			mult = personality.need_decay_multipliers["productivity"]
+		needs.set_decay_rate(NeedType.Type.PRODUCTIVITY, base_rate * mult * 0.5)
 
 
 func _tick_behavior_modifiers() -> void:
@@ -265,6 +299,7 @@ func _tick_behavior_modifiers() -> void:
 			to_remove.append(i)
 	# Remove expired (reverse order to preserve indices)
 	to_remove.reverse()
+	var motivated_expired := false
 	for idx in to_remove:
 		var mod: Dictionary = _behavior_modifiers[idx]
 		if mod.get("type", "") == "mourning":
@@ -272,7 +307,11 @@ func _tick_behavior_modifiers() -> void:
 				"%s feels the grief lifting, though they'll never forget %s." % [agent_name, mod.get("target", "someone")],
 				3.0
 			)
+		elif mod.get("type", "") == "motivated":
+			motivated_expired = true
 		_behavior_modifiers.remove_at(idx)
+	if motivated_expired:
+		_refresh_decay_rates()
 
 
 func _make_decision() -> void:

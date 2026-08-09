@@ -13,6 +13,17 @@ var cooldown_days: int = 1
 var need_effects: Dictionary = {}  # NeedType.Type -> float delta for affected agents
 var global_effect: String = ""  # special effect name like "disable_objects"
 
+# Data-driven consequence layer (see ConsequenceEngine for the vocabulary).
+var prerequisites: Dictionary = {}  # gates the daily roll only; trigger_event() bypasses
+var second_actor: String = "none"  # nearby / rival / friend / crush / random / none
+var payload: Dictionary = {}  # relationship_effects, modifiers, memory, ...
+var outcomes: Array = []  # weighted payload variants, one picked per firing
+
+const PAYLOAD_KEYS: Array[String] = [
+	"relationship_effects", "modifiers", "conditions_add", "conditions_remove",
+	"memory", "trait_shifts", "bystander_reactions", "script", "narrative",
+]
+
 
 static func from_dict(data: Dictionary) -> EventDefinition:
 	var ed := EventDefinition.new()
@@ -37,4 +48,10 @@ static func from_dict(data: Dictionary) -> EventDefinition:
 			_: continue
 		ed.need_effects[need_type] = float(raw_effects[key])
 	ed.global_effect = data.get("global_effect", "")
+	ed.prerequisites = data.get("prerequisites", {})
+	ed.second_actor = data.get("second_actor", "none")
+	ed.outcomes = data.get("outcomes", [])
+	for key in PAYLOAD_KEYS:
+		if data.has(key):
+			ed.payload[key] = data[key]
 	return ed

@@ -2,6 +2,7 @@ class_name HealthState
 extends RefCounted
 ## Tracks an agent's age, health, life stage, and conditions.
 
+var owner_name: String = ""  # set by the owning agent; not serialized
 var age_days: int = 0
 var life_stage: LifeStage.Type = LifeStage.Type.YOUNG
 var health: float = 100.0  # 0-100
@@ -51,7 +52,9 @@ func _update_life_stage() -> void:
 	else:
 		life_stage = LifeStage.Type.YOUNG
 	if life_stage != old_stage:
-		EventBus.agent_life_stage_changed.emit("", life_stage)
+		# owner_name was "" here for the signal's entire life — every listener
+		# received an anonymous stage change.
+		EventBus.agent_life_stage_changed.emit(owner_name, life_stage)
 
 
 func _apply_aging_decay() -> void:

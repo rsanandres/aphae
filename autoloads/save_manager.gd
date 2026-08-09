@@ -5,7 +5,7 @@ extends Node
 
 const SAVE_DIR := "user://saves/"
 var AUTO_SAVE_INTERVAL_DAYS: int = 5
-const SAVE_VERSION := 4
+const SAVE_VERSION := 5
 const MAX_SLOTS := 5
 const LEGACY_PATH := "user://ayle_save.json"
 const LAST_SLOT_PATH := "user://last_slot.cfg"
@@ -179,6 +179,8 @@ func _serialize_world() -> Dictionary:
 		"storylines": [],
 		"story_feed": [],
 		"confessionals": [],
+		"event_state": EventManager.get_save_state(),
+		"drama_state": DramaDirector.get_save_state(),
 	}
 
 	for agent in AgentManager.agents:
@@ -192,8 +194,13 @@ func _serialize_world() -> Dictionary:
 			"health": null,
 		}
 
-		if agent.personality_file == "__procedural__" and agent.personality:
+		# Persist personality for every agent, not just procedural ones:
+		# events can permanently shift traits, and file-based agents would
+		# silently revert to their JSON profile on load otherwise.
+		if agent.personality:
 			agent_data["personality_data"] = agent.personality.to_dict()
+
+		agent_data["behavior_modifiers"] = agent.get_modifiers_data()
 
 		var needs_values: Dictionary = agent.needs.get_all_values()
 		for need in needs_values:
@@ -300,6 +307,20 @@ func _deserialize_world(data: Dictionary) -> void:
 		var health_data = agent_data.get("health", null)
 		if health_data is Dictionary:
 			agent.health_state = HealthState.from_dict(health_data)
+			agent.health_state.owner_name = agent.agent_name
+
+		# Personality overlay (v5+, outside the gate — absent key is a no-op).
+		# File-based agents load their JSON profile first; saved trait shifts
+		# are applied on top so lasting marks actually last.
+		var personality_data: Dictionary = agent_data.get("personality_data", {})
+		if not personality_data.is_empty() and personality_file != "__procedural__" and agent.personality:
+			var saved_profile := PersonalityProfile.from_dict(personality_data)
+			if saved_profile:
+				agent.personality = saved_profile
+				agent.smart_brain.personality = saved_profile
+				agent._refresh_decay_rates()
+
+		agent.load_modifiers_data(agent_data.get("behavior_modifiers", []))
 
 	if version >= 2:
 		var groups_data: Array = data.get("groups", [])
@@ -330,6 +351,11 @@ func _deserialize_world(data: Dictionary) -> void:
 	# Drop oldest if a save predates a lower cap.
 	while ConfessionalDirector.confessionals.size() > ConfessionalDirector.MAX_CONFESSIONALS:
 		ConfessionalDirector.confessionals.pop_front()
+
+	# Event cooldowns / in-flight timed events / drama pacing (v5+, outside
+	# the gate — absent keys restore as empty defaults).
+	EventManager.load_save_state(data.get("event_state", {}))
+	DramaDirector.load_save_state(data.get("drama_state", {}))
 
 	# Restore _last_auto_save_day from save data
 	_last_auto_save_day = int(data.get("last_auto_save_day", 0))

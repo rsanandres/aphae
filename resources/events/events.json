@@ -2,13 +2,15 @@
   {
     "id": "gossip_spreads",
     "name": "Gossip Spreads",
-    "description": "Office gossip is making the rounds — someone's been talking behind backs.",
+    "description": "Office gossip is making the rounds \u2014 someone's been talking behind backs.",
     "probability": 0.15,
     "category": "social",
     "target_mode": "random",
     "duration_minutes": 60,
     "cooldown_days": 2,
-    "need_effects": {"social": 10}
+    "need_effects": {
+      "social": 10
+    }
   },
   {
     "id": "surprise_party",
@@ -19,7 +21,10 @@
     "target_mode": "global",
     "duration_minutes": 30,
     "cooldown_days": 7,
-    "need_effects": {"social": 25, "hunger": 15}
+    "need_effects": {
+      "social": 25,
+      "hunger": 15
+    }
   },
   {
     "id": "heated_argument",
@@ -30,7 +35,68 @@
     "target_mode": "random",
     "duration_minutes": 15,
     "cooldown_days": 3,
-    "need_effects": {"social": -15, "energy": -5}
+    "need_effects": {
+      "social": -15,
+      "energy": -5
+    },
+    "second_actor": "nearby",
+    "relationship_effects": [
+      {
+        "from": "target",
+        "to": "second",
+        "affinity": -15,
+        "add_tags": [
+          "angry_at_{second}"
+        ]
+      },
+      {
+        "from": "second",
+        "to": "target",
+        "affinity": -15,
+        "add_tags": [
+          "angry_at_{target}"
+        ]
+      }
+    ],
+    "modifiers": [
+      {
+        "on": "target",
+        "type": "avoidance",
+        "target": "{second}",
+        "days": 3
+      },
+      {
+        "on": "second",
+        "type": "avoidance",
+        "target": "{target}",
+        "days": 3
+      }
+    ],
+    "memory": {
+      "affected": {
+        "text": "had a heated argument with {second}. Things got personal.",
+        "importance": 7,
+        "emotion": "anger",
+        "sentiment": -0.7
+      },
+      "second": {
+        "text": "had a heated argument with {target}. Things got personal.",
+        "importance": 7,
+        "emotion": "anger",
+        "sentiment": -0.7
+      },
+      "witness": {
+        "radius": 160,
+        "text": "watched {target} and {second} tear into each other.",
+        "importance": 4,
+        "emotion": "shock",
+        "sentiment": -0.3
+      }
+    },
+    "narrative": {
+      "text": "{target} and {second} had a bitter argument \u2014 their relationship took a hit.",
+      "importance": 7
+    }
   },
   {
     "id": "secret_shared",
@@ -41,7 +107,9 @@
     "target_mode": "random",
     "duration_minutes": 0,
     "cooldown_days": 4,
-    "need_effects": {"social": 15}
+    "need_effects": {
+      "social": 15
+    }
   },
   {
     "id": "promotion",
@@ -52,18 +120,68 @@
     "target_mode": "most_productive",
     "duration_minutes": 0,
     "cooldown_days": 10,
-    "need_effects": {"productivity": 30, "social": 10}
+    "need_effects": {
+      "productivity": 30,
+      "social": 10
+    },
+    "modifiers": [
+      {
+        "on": "target",
+        "type": "motivated",
+        "target": "",
+        "days": 5
+      }
+    ],
+    "bystander_reactions": [
+      {
+        "trait": "agreeableness",
+        "below": 0.4,
+        "affinity": -10,
+        "add_tags": [
+          "jealous"
+        ],
+        "memory": {
+          "text": "feels jealous about {target} getting promoted. Why not me?",
+          "importance": 5,
+          "emotion": "jealousy",
+          "sentiment": -0.5
+        }
+      },
+      {
+        "trait": "agreeableness",
+        "above": 0.7,
+        "affinity": 5,
+        "memory": {
+          "text": "is happy for {target} getting promoted. They deserve it!",
+          "importance": 4,
+          "emotion": "happiness",
+          "sentiment": 0.6
+        }
+      },
+      {
+        "affinity": -2,
+        "memory": {
+          "text": "noticed {target} got promoted. Interesting.",
+          "importance": 3,
+          "emotion": "",
+          "sentiment": -0.1
+        }
+      }
+    ]
   },
   {
     "id": "deadline_crunch",
     "name": "Deadline Crunch",
-    "description": "An urgent deadline is looming — everyone needs to buckle down.",
+    "description": "An urgent deadline is looming \u2014 everyone needs to buckle down.",
     "probability": 0.08,
     "category": "work",
     "target_mode": "global",
     "duration_minutes": 120,
     "cooldown_days": 5,
-    "need_effects": {"productivity": -20, "energy": -10}
+    "need_effects": {
+      "productivity": -20,
+      "energy": -10
+    }
   },
   {
     "id": "creative_breakthrough",
@@ -74,7 +192,10 @@
     "target_mode": "random",
     "duration_minutes": 0,
     "cooldown_days": 4,
-    "need_effects": {"productivity": 25, "energy": 5}
+    "need_effects": {
+      "productivity": 25,
+      "energy": 5
+    }
   },
   {
     "id": "project_failure",
@@ -85,7 +206,10 @@
     "target_mode": "global",
     "duration_minutes": 0,
     "cooldown_days": 7,
-    "need_effects": {"productivity": -20, "social": -5}
+    "need_effects": {
+      "productivity": -20,
+      "social": -5
+    }
   },
   {
     "id": "flu_outbreak",
@@ -96,7 +220,14 @@
     "target_mode": "random",
     "duration_minutes": 0,
     "cooldown_days": 7,
-    "need_effects": {"energy": -20, "health": -15}
+    "need_effects": {
+      "energy": -20,
+      "health": -15
+    },
+    "conditions_add": [
+      "flu"
+    ],
+    "script": "flu_contagion"
   },
   {
     "id": "exhaustion_collapse",
@@ -107,18 +238,31 @@
     "target_mode": "random",
     "duration_minutes": 0,
     "cooldown_days": 5,
-    "need_effects": {"energy": -40, "health": -10}
+    "need_effects": {
+      "energy": -40,
+      "health": -10
+    },
+    "conditions_add": [
+      "exhaustion"
+    ],
+    "script": "exhaustion_collapse"
   },
   {
     "id": "recovery",
     "name": "Recovery",
-    "description": "Good news — someone is feeling much better today!",
+    "description": "Good news \u2014 someone is feeling much better today!",
     "probability": 0.1,
     "category": "health",
     "target_mode": "random",
     "duration_minutes": 0,
     "cooldown_days": 3,
-    "need_effects": {"health": 20, "energy": 15}
+    "need_effects": {
+      "health": 20,
+      "energy": 15
+    },
+    "conditions_remove": [
+      "*"
+    ]
   },
   {
     "id": "power_outage",
@@ -129,7 +273,9 @@
     "target_mode": "global",
     "duration_minutes": 60,
     "cooldown_days": 10,
-    "need_effects": {"productivity": -10},
+    "need_effects": {
+      "productivity": -10
+    },
     "global_effect": "disable_objects"
   },
   {
@@ -141,7 +287,10 @@
     "target_mode": "global",
     "duration_minutes": 0,
     "cooldown_days": 3,
-    "need_effects": {"hunger": 40, "social": 5}
+    "need_effects": {
+      "hunger": 40,
+      "social": 5
+    }
   },
   {
     "id": "fire_drill",
@@ -152,7 +301,10 @@
     "target_mode": "global",
     "duration_minutes": 15,
     "cooldown_days": 14,
-    "need_effects": {"productivity": -5, "social": 5}
+    "need_effects": {
+      "productivity": -5,
+      "social": 5
+    }
   },
   {
     "id": "birthday",
@@ -163,7 +315,10 @@
     "target_mode": "random",
     "duration_minutes": 30,
     "cooldown_days": 5,
-    "need_effects": {"social": 25, "hunger": 10}
+    "need_effects": {
+      "social": 25,
+      "hunger": 10
+    }
   },
   {
     "id": "existential_crisis",
@@ -174,7 +329,10 @@
     "target_mode": "random",
     "duration_minutes": 0,
     "cooldown_days": 7,
-    "need_effects": {"productivity": -15, "social": -10}
+    "need_effects": {
+      "productivity": -15,
+      "social": -10
+    }
   },
   {
     "id": "new_hobby",
@@ -185,6 +343,9 @@
     "target_mode": "random",
     "duration_minutes": 0,
     "cooldown_days": 5,
-    "need_effects": {"social": 10, "energy": 5}
+    "need_effects": {
+      "social": 10,
+      "energy": 5
+    }
   }
 ]

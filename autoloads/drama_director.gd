@@ -225,3 +225,19 @@ func sync_with_narrator() -> void:
 	# Blend: if narrator thinks drama is very high, nudge ours up gently.
 	if narrator_drama > drama_level + 2.0:
 		drama_level = clampf(drama_level + 0.5, 0.0, 10.0)
+
+
+func get_save_state() -> Dictionary:
+	return {
+		"drama_level": drama_level,
+		"time_since_last_event": time_since_last_event,
+		"in_cooldown": _in_cooldown,
+		"cooldown_remaining": _cooldown_remaining,
+	}
+
+
+func load_save_state(data: Dictionary) -> void:
+	drama_level = float(data.get("drama_level", 0.0))
+	time_since_last_event = float(data.get("time_since_last_event", 0.0))
+	_in_cooldown = bool(data.get("in_cooldown", false))
+	_cooldown_remaining = float(data.get("cooldown_remaining", 0.0))

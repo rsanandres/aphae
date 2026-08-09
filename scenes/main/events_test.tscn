@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ceventtest1"]
+
+[ext_resource type="Script" path="res://scenes/main/events_test.gd" id="1_evt"]
+
+[node name="EventsTest" type="Node2D"]
+script = ExtResource("1_evt")

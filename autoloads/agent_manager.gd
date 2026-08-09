@@ -110,6 +110,74 @@ func spawn_procedural_agent(pos: Vector2, personality_data: Dictionary = {}) -> 
 	return null
 
 
+var departed_agents: Array[Dictionary] = []  # {personality_data, relationships, memories, day, reason}
+
+
+func depart_agent(agent: Node2D, reason: String = "a new opportunity") -> void:
+	## Archive them first — a returnee who remembers is drama; a blank
+	## respawn is a stranger with a familiar name.
+	if not is_instance_valid(agent) or agent.is_dead:
+		return
+	var archive := {
+		"name": agent.agent_name,
+		"personality_data": agent.personality.to_dict() if agent.personality else {},
+		"relationships": {},
+		"memories": [],
+		"day": TimeManager.day,
+		"reason": reason,
+	}
+	for other_name in agent.relationships.get_all_relationships():
+		archive["relationships"][other_name] = agent.relationships.get_relationship(other_name).to_dict()
+	for mem in agent.memory.get_recent(50):
+		archive["memories"].append(mem.to_dict())
+	departed_agents.append(archive)
+	# Farewell to camera before the walk-out.
+	ConfessionalDirector.request_farewell(agent, reason)
+	agent.depart(reason)
+
+
+func respawn_departed(archived_name: String = "") -> Node2D:
+	## Bring a departed agent back, memories and grudges intact.
+	if departed_agents.is_empty():
+		return null
+	var idx := -1
+	if archived_name == "":
+		idx = randi() % departed_agents.size()
+	else:
+		for i in range(departed_agents.size()):
+			if departed_agents[i].get("name", "") == archived_name:
+				idx = i
+				break
+	if idx == -1:
+		return null
+	var archive: Dictionary = departed_agents[idx]
+	departed_agents.remove_at(idx)
+	var world := _get_world()
+	if not world:
+		return null
+	var bounds: Rect2 = world.get_bounds()
+	var pos := Vector2(
+		randf_range(bounds.position.x + 20, bounds.end.x - 20),
+		randf_range(bounds.position.y + 20, bounds.end.y - 20)
+	)
+	var agent := spawn_procedural_agent(pos, archive.get("personality_data", {}))
+	if agent == null:
+		return null
+	for other_name in archive.get("relationships", {}):
+		var rel := RelationshipEntry.from_dict(archive["relationships"][other_name])
+		agent.relationships._relationships[other_name] = rel
+	for mem_dict in archive.get("memories", []):
+		agent.memory.memories.append(MemoryEntry.from_dict(mem_dict))
+	agent.memory.add_memory(
+		MemoryEntry.MemoryType.REFLECTION,
+		"%s is back in the office after leaving on day %d. Everything is the same and nothing is." % [agent.agent_name, archive.get("day", 0)],
+		8.0
+	)
+	agent.memory.memories[-1].decay_protected = true
+	agent.memory.memories[-1].emotion = "candid"
+	return agent
+
+
 func remove_agent(agent_name: String) -> void:
 	var agent := get_agent_by_name(agent_name)
 	if agent:

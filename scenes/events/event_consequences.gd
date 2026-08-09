@@ -249,6 +249,14 @@ static func _run_script(script_name: String, target: Node2D, second: Node2D, aff
 			_script_flu_contagion(affected)
 		"exhaustion_collapse":
 			_script_exhaustion_collapse(affected)
+		"new_hire":
+			_script_new_hire()
+		"departure_poached":
+			_script_departure(target, "poached by a rival company")
+		"departure_quit":
+			_script_departure(target, "quit in a blaze of glory")
+		"returning_ex":
+			_script_returning_ex()
 		_:
 			push_warning("ConsequenceEngine: unknown script '%s'" % script_name)
 
@@ -305,6 +313,58 @@ static func _script_exhaustion_collapse(affected: Array) -> void:
 			}, agent, agent, null)
 		EventBus.narrative_event.emit(
 			"%s collapsed from exhaustion!" % agent.agent_name, [agent.agent_name], 8.0)
+
+
+static func _script_new_hire() -> void:
+	var tree := Engine.get_main_loop()
+	if not tree is SceneTree:
+		return
+	var world: Node2D = (tree as SceneTree).get_first_node_in_group("world")
+	if not world:
+		return
+	var bounds: Rect2 = world.get_bounds()
+	var pos := Vector2(
+		randf_range(bounds.position.x + 20, bounds.end.x - 20),
+		randf_range(bounds.position.y + 20, bounds.end.y - 20)
+	)
+	var hire := AgentManager.spawn_procedural_agent(pos)
+	if hire == null:
+		return
+	# First impressions both ways: compatibility-seeded, so the newcomer has
+	# texture instead of a flat zero matrix.
+	for other in AgentManager.agents:
+		if not is_instance_valid(other) or other == hire:
+			continue
+		var compat := 0.0
+		if hire.personality and other.personality:
+			compat = hire.relationships._calculate_compatibility(hire.personality, other.personality)
+		var seed_affinity := compat * 12.0 - 3.0
+		var rel_a: RelationshipEntry = hire.relationships.get_relationship(other.agent_name)
+		rel_a.affinity = clampf(seed_affinity, -15.0, 15.0)
+		var rel_b: RelationshipEntry = other.relationships.get_relationship(hire.agent_name)
+		rel_b.affinity = clampf(seed_affinity, -15.0, 15.0)
+		_add_memory({
+			"text": "met the new hire, %s. First impressions were made." % hire.agent_name,
+			"importance": 4.0, "emotion": "", "sentiment": clampf(seed_affinity / 15.0, -0.5, 0.5),
+		}, other, hire, null)
+	ConfessionalDirector.request_intro(hire,
+		"You just joined this office mid-season. Introduce yourself to the audience in one line, in your own voice.")
+
+
+static func _script_departure(target: Node2D, reason: String) -> void:
+	if target and is_instance_valid(target):
+		AgentManager.depart_agent(target, reason)
+
+
+static func _script_returning_ex() -> void:
+	var returned := AgentManager.respawn_departed()
+	if returned == null:
+		return
+	EventBus.narrative_event.emit(
+		"%s just walked back into the office. Everyone remembers." % returned.agent_name,
+		[returned.agent_name], 8.0)
+	ConfessionalDirector.request_intro(returned,
+		"You left this office once and now you're back. One line to camera about your return, in your own voice.")
 
 
 static func _find_nearest_object(pos: Vector2, obj_type: String) -> Node2D:

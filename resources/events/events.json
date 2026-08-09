@@ -347,5 +347,46 @@
       "social": 10,
       "energy": 5
     }
+  },
+  {
+    "id": "new_hire",
+    "name": "New Hire",
+    "description": "A new face joins the office.",
+    "probability": 0.05,
+    "category": "personal",
+    "target_mode": "global",
+    "cooldown_days": 6,
+    "prerequisites": {
+      "max_agents": 14,
+      "min_day": 2
+    },
+    "script": "new_hire"
+  },
+  {
+    "id": "poached",
+    "name": "Poached",
+    "description": "A rival company made someone an offer they couldn't refuse.",
+    "probability": 0.03,
+    "category": "work",
+    "target_mode": "most_productive",
+    "cooldown_days": 10,
+    "prerequisites": {
+      "min_agents": 5,
+      "min_day": 4
+    },
+    "script": "departure_poached"
+  },
+  {
+    "id": "returning_ex",
+    "name": "The Return",
+    "description": "Someone who left is walking back through that door.",
+    "probability": 0.06,
+    "category": "personal",
+    "target_mode": "global",
+    "cooldown_days": 8,
+    "prerequisites": {
+      "min_day": 6
+    },
+    "script": "returning_ex"
   }
 ]

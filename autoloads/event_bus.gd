@@ -36,6 +36,7 @@ signal time_resumed()
 
 # Health & Life signals
 signal agent_died(agent_name: String, cause: String)
+signal agent_departed(agent_name: String, reason: String)
 signal agent_sick(agent_name: String, condition: String)
 signal agent_life_stage_changed(agent_name: String, stage: int)
 

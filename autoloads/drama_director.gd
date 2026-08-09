@@ -58,6 +58,9 @@ func _ready() -> void:
 	EventBus.event_triggered.connect(_on_event_triggered)
 	EventBus.confession_made.connect(_on_confession_made)
 	EventBus.agent_died.connect(_on_agent_died)
+	EventBus.agent_departed.connect(func(_n: String, _r: String) -> void:
+		_add_drama(3.0)
+	)
 	EventBus.romance_started.connect(_on_romance_started)
 	EventBus.narrative_event.connect(_on_narrative_event)
 

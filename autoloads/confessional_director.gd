@@ -42,24 +42,42 @@ func _process(delta: float) -> void:
 			_pending_time = 0.0
 
 
+func request_intro(agent: Node2D, event_text: String = "") -> void:
+	## One agent introduces themselves to camera. Used by the cold open and
+	## by new-hire arrivals. Bypasses the rate limit deliberately — an
+	## arrival IS the moment.
+	if not is_instance_valid(agent) or agent.is_dead:
+		return
+	if event_text == "":
+		event_text = "It's day one in the office. Introduce yourself to the audience in a single line, in your own voice."
+	if LLMManager.is_available and not _pending:
+		_request_llm("intro", event_text, agent)
+	else:
+		_emit("intro", _heuristic_line("intro", agent), agent)
+
+
+func request_farewell(agent: Node2D, reason: String) -> void:
+	## A departing agent's last word to camera.
+	if not is_instance_valid(agent) or agent.is_dead:
+		return
+	if LLMManager.is_available and not _pending:
+		_request_llm("farewell",
+			"You are leaving the office for good (%s). One last line to the camera before you go." % reason,
+			agent)
+	else:
+		_emit("farewell", _heuristic_line("farewell", agent), agent)
+
+
 func request_cast_intros() -> void:
 	## Cold open for a fresh sandbox: each cast member files a one-line intro
-	## to camera, staggered so the cutaways play as a sequence. Bypasses the
-	## normal rate limit deliberately — the intros ARE the feed on day one.
+	## to camera, staggered so the cutaways play as a sequence.
 	var delay := 0.0
 	for agent in AgentManager.agents:
 		if not is_instance_valid(agent) or agent.is_dead:
 			continue
 		var captured: Node2D = agent
 		get_tree().create_timer(delay).timeout.connect(func() -> void:
-			if not is_instance_valid(captured) or captured.is_dead:
-				return
-			if LLMManager.is_available and not _pending:
-				_request_llm("intro",
-					"It's day one in the office. Introduce yourself to the audience in a single line, in your own voice.",
-					captured)
-			else:
-				_emit("intro", _heuristic_line("intro", captured), captured)
+			request_intro(captured)
 		)
 		delay += 6.0
 
@@ -249,6 +267,8 @@ func _tone_for(kind: String) -> String:
 	match kind:
 		"intro":
 			return "First day, meet-the-cast energy. One punchy line, fully in character."
+		"farewell":
+			return "Last day. One parting line — wistful, salty, or triumphant, in character."
 		"tragedy":
 			return "Someone has died. Be subdued and human. No jokes, no work-speak."
 		"romance":
@@ -278,6 +298,18 @@ func _heuristic_line(kind: String, speaker: Node2D) -> String:
 
 	var options: Array[String] = []
 	match kind:
+		"farewell":
+			options = [
+				"That's a wrap on me. Try not to fall apart without me.",
+				"I came, I worked, I left. Somebody water the plant.",
+				"No regrets. Well. A few. But you don't get to hear them.",
+			]
+			if bold:
+				options.append("This office couldn't hold me. Nothing personal.")
+			if anxious:
+				options.append("I just hope leaving isn't a huge mistake. It might be. Bye.")
+			if catty:
+				options.append("Finally. You know who you are, and you know what you did.")
 		"intro":
 			var desc: String = p.description if p and p.description != "" else "hard to sum up"
 			options = [

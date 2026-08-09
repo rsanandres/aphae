@@ -63,6 +63,13 @@ func _spawn(n: int) -> void:
 
 
 func _run() -> void:
+	# Freeze the clock and zero every event's organic probability: the
+	# harness drives day_changed by hand, and organic rolls firing mid-test
+	# (a returning_ex once consumed the archive between two assertions)
+	# make the run nondeterministic. trigger_event() bypasses probability.
+	TimeManager.is_paused = true
+	for definition in EventManager.get_available_events():
+		definition.probability = 0.0
 	var agents: Array = AgentManager.agents
 	var a: Node2D = agents[0]
 	var b: Node2D = agents[1]
@@ -188,6 +195,51 @@ func _run() -> void:
 	ArcManager.load_save_state(arcs_saved)
 	_check("arc state restores", ArcManager.has_arc(b.agent_name))
 	ArcManager.load_save_state([])
+
+	# --- E3: cast churn ---
+	var died_spy: Array = []
+	EventBus.agent_died.connect(func(n: String, _c: String) -> void: died_spy.append(n))
+	var count_before: int = AgentManager.agents.size()
+	EventManager.trigger_event("new_hire", AgentManager.agents.duplicate())
+	await get_tree().process_frame
+	_check("new hire joins the cast", AgentManager.agents.size() == count_before + 1)
+	var hire: Node2D = AgentManager.agents[-1]
+	var met := false
+	for m in a.memory.memories:
+		if "new hire" in m.description and hire.agent_name in m.description:
+			met = true
+	_check("cast forms first impressions of the hire", met)
+	_check("first impressions are seeded from compatibility", absf(a.relationships.get_relationship(hire.agent_name).affinity) > 0.001 or absf(hire.relationships.get_relationship(a.agent_name).affinity) > 0.001)
+
+	# Departure: archive, tags, no death signal
+	var hire_name: String = hire.agent_name
+	var dating_rel: RelationshipEntry = a.relationships.get_relationship(hire_name)
+	dating_rel.relationship_status = RelationshipEntry.Status.DATING
+	var count_predepart: int = AgentManager.agents.size()
+	AgentManager.depart_agent(hire, "poached by a rival company")
+	await get_tree().create_timer(2.5).timeout
+	_check("departure removes the agent", AgentManager.agents.size() == count_predepart - 1)
+	_check("departure does not emit agent_died", died_spy.is_empty())
+	_check("departure archived with memories", not AgentManager.departed_agents.is_empty() and not AgentManager.departed_agents[-1]["memories"].is_empty())
+	_check("stayers tag the departed", a.relationships.get_relationship(hire_name).has_tag("departed"))
+	_check("departure breaks couples to EX", a.relationships.get_relationship(hire_name).relationship_status == RelationshipEntry.Status.EX)
+
+	# Return: memories and relationships intact
+	var returned := AgentManager.respawn_departed()
+	_check("departed agent can return", returned != null)
+	if returned:
+		_check("returnee kept their memories", returned.memory.memories.size() > 1)
+		var back_knows := false
+		for m in returned.memory.memories:
+			if "back in the office" in m.description:
+				back_knows = true
+		_check("returnee knows they returned", back_knows)
+
+	# Save round-trip for the archive
+	AgentManager.depart_agent(returned, "quit in a blaze of glory")
+	await get_tree().create_timer(2.5).timeout
+	var churn_save: Dictionary = SaveManager._serialize_world()
+	_check("save carries departed archive", not churn_save.get("departed_agents", []).is_empty())
 
 	# --- 6. specific target mode never fires organically ---
 	var spec_def := EventDefinition.from_dict({

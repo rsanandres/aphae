@@ -162,6 +162,47 @@ func die(cause: String = "natural causes") -> void:
 	)
 
 
+func depart(reason: String = "a new opportunity") -> void:
+	## A non-death exit: no grief cascade, no death spike, no achievement
+	## misfires. The cast remembers, relationships get marked, couples break.
+	if is_dead:
+		return
+	is_dead = true  # stops brains/needs; the node is leaving anyway
+	state = AgentState.Type.IDLE
+	velocity = Vector2.ZERO
+
+	for other in AgentManager.agents:
+		if not is_instance_valid(other) or other == self:
+			continue
+		var rel: RelationshipEntry = other.relationships.get_relationship(agent_name)
+		var closeness: float = clampf((rel.affinity + rel.familiarity) / 150.0, 0.0, 1.0)
+		other.memory.add_memory(
+			MemoryEntry.MemoryType.OBSERVATION,
+			"%s watched %s leave the office for good (%s)." % [other.agent_name, agent_name, reason],
+			4.0 + closeness * 4.0, PackedStringArray([agent_name])
+		)
+		other.memory.memories[-1].emotion = "wistful" if closeness > 0.3 else ""
+		other.memory.memories[-1].sentiment = -0.4 * closeness
+		rel.add_tag("departed")
+		if rel.relationship_status == RelationshipEntry.Status.DATING \
+				or rel.relationship_status == RelationshipEntry.Status.PARTNERS:
+			rel.relationship_status = RelationshipEntry.Status.EX
+			other.memory.memories[-1].decay_protected = true
+			other.memory.memories[-1].sentiment = -0.8
+			other.memory.memories[-1].emotion = "heartbreak"
+
+	EventBus.narrative_event.emit(
+		"%s has left the office (%s)." % [agent_name, reason],
+		[agent_name], 8.0
+	)
+	EventBus.agent_departed.emit(agent_name, reason)
+
+	var tween := create_tween()
+	tween.tween_property(sprite, "modulate:a", 0.0, 1.5)
+	tween.tween_property(label, "modulate:a", 0.0, 0.5)
+	tween.tween_callback(queue_free)
+
+
 func _on_confessional_recorded(confessional: RefCounted) -> void:
 	## Remember what I said to camera.
 	##

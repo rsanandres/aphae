@@ -183,6 +183,7 @@ func _serialize_world() -> Dictionary:
 		"drama_state": DramaDirector.get_save_state(),
 		"arcs": ArcManager.get_save_state(),
 		"departed_agents": AgentManager.departed_agents.duplicate(true),
+		"producer": ProducerEconomy.get_save_state(),
 	}
 
 	for agent in AgentManager.agents:
@@ -363,6 +364,7 @@ func _deserialize_world(data: Dictionary) -> void:
 	for entry in data.get("departed_agents", []):
 		if entry is Dictionary:
 			AgentManager.departed_agents.append(entry)
+	ProducerEconomy.load_save_state(data.get("producer", {}))
 
 	# Restore _last_auto_save_day from save data
 	_last_auto_save_day = int(data.get("last_auto_save_day", 0))

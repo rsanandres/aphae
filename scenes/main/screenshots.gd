@@ -19,6 +19,7 @@ var _shots: Array[String] = []
 
 
 func _ready() -> void:
+	ProducerEconomy.meta_persistence_enabled = false
 	DirAccess.make_dir_recursive_absolute(OUT_DIR)
 	EventBus.confessional_recorded.connect(func(c: RefCounted) -> void:
 		_last_confessional = c as Confessional

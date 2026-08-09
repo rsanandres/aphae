@@ -14,6 +14,7 @@ var _rumors: Array[String] = []
 
 
 func _ready() -> void:
+	ProducerEconomy.meta_persistence_enabled = false
 	EventBus.nudge_answered.connect(func(who: String, req: String, ok: bool, reason: String) -> void:
 		_nudges.append({"who": who, "req": req, "ok": ok, "reason": reason})
 		print("   NUDGE %s -> %s%s" % [who, "AGREED" if ok else "REFUSED", "" if ok else " (%s)" % reason])

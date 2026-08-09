@@ -11,6 +11,7 @@ var _results: Array[String] = []
 
 
 func _ready() -> void:
+	ProducerEconomy.meta_persistence_enabled = false
 	_build_world()
 	_spawn(4)
 	await get_tree().create_timer(1.0).timeout

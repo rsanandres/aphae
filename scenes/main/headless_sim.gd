@@ -9,6 +9,7 @@ var _tick_count: int = 0
 
 
 func _ready() -> void:
+	ProducerEconomy.meta_persistence_enabled = false
 	# Parse command line args
 	var args := OS.get_cmdline_user_args()
 	for arg in args:

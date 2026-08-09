@@ -14,6 +14,7 @@ var _results: Array[String] = []
 
 
 func _ready() -> void:
+	ProducerEconomy.meta_persistence_enabled = false
 	EventBus.confessional_recorded.connect(_on_confessional)
 	_build_world()
 	_spawn(4)

@@ -20,6 +20,7 @@ var _shots: Array[String] = []
 
 
 func _ready() -> void:
+	ProducerEconomy.meta_persistence_enabled = false
 	DirAccess.make_dir_recursive_absolute(OUT_DIR)
 	print("[GUI] output dir: %s" % ProjectSettings.globalize_path(OUT_DIR))
 

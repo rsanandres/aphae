@@ -28,6 +28,8 @@ var _save_picker: SaveSlotPicker = null
 var _ui: UIManager = null
 var _ratings_label: Label = null
 var _viewers: float = 120000.0
+var _episode_label: Label = null
+var _influence_label: Label = null
 
 
 func _ready() -> void:
@@ -64,6 +66,30 @@ func _ready() -> void:
 	_ratings_label.tooltip_text = "Viewers. Drama makes the number go up."
 	_ratings_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	status_bar.add_child(_ratings_label)
+
+	# Season/episode position + Influence balance
+	var sep5 := VSeparator.new()
+	sep5.custom_minimum_size = Vector2(12, 0)
+	status_bar.add_child(sep5)
+	_episode_label = Label.new()
+	_episode_label.add_theme_font_size_override("font_size", 10)
+	_episode_label.add_theme_color_override("font_color", UIPalette.TEXT_DIM)
+	_episode_label.tooltip_text = "Season and episode. Every %d days is an episode; drama sets its score." % ProducerEconomy.EPISODE_DAYS
+	_episode_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	status_bar.add_child(_episode_label)
+	var sep6 := VSeparator.new()
+	sep6.custom_minimum_size = Vector2(12, 0)
+	status_bar.add_child(sep6)
+	_influence_label = Label.new()
+	_influence_label.add_theme_font_size_override("font_size", 10)
+	_influence_label.add_theme_color_override("font_color", UIPalette.ACCENT_WARM)
+	_influence_label.tooltip_text = "Influence — earned from episode wraps and big moments."
+	_influence_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	status_bar.add_child(_influence_label)
+	EventBus.influence_changed.connect(func(balance: int, _d: int, _r: String) -> void:
+		_influence_label.text = "◆ %d" % balance
+	)
+	_influence_label.text = "◆ %d" % ProducerEconomy.influence
 
 	# Create god mode toolbar
 	_god_toolbar = GodToolbar.new()
@@ -164,6 +190,22 @@ func _ready() -> void:
 	# Persistent icon bar (bottom-center quick access)
 	_setup_icon_bar()
 
+	# Episode wrap card (center; auto-opens on episode end)
+	var episode_card := EpisodeCard.new()
+	episode_card.anchors_preset = Control.PRESET_CENTER
+	episode_card.anchor_left = 0.5
+	episode_card.anchor_right = 0.5
+	episode_card.anchor_top = 0.5
+	episode_card.anchor_bottom = 0.5
+	episode_card.offset_left = -140
+	episode_card.offset_top = -100
+	episode_card.offset_right = 140
+	episode_card.offset_bottom = 100
+	episode_card.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	episode_card.grow_vertical = Control.GROW_DIRECTION_BOTH
+	add_child(episode_card)
+	_ui.register("episode", episode_card, UIManager.Kind.EXCLUSIVE)
+
 	# Producer dilemma modal (center; big events pause for your call)
 	var dilemma := DilemmaPanel.new()
 	dilemma.anchors_preset = Control.PRESET_CENTER
@@ -256,6 +298,7 @@ func _on_time_tick(_gm: float) -> void:
 	_update_time()
 	_update_drama()
 	_update_ratings()
+	_update_episode_label()
 
 
 func _on_speed_changed(_i: int) -> void:
@@ -296,6 +339,11 @@ func _update_drama() -> void:
 		desc = "Calm"
 		_drama_label.add_theme_color_override("font_color", Color(0.5, 0.8, 0.5, 0.8))
 	_drama_label.text = desc
+
+
+func _update_episode_label() -> void:
+	if _episode_label:
+		_episode_label.text = "%s · d%d/%d" % [ProducerEconomy.episode_label(), ProducerEconomy.days_into_episode(), ProducerEconomy.EPISODE_DAYS]
 
 
 func _update_ratings() -> void:

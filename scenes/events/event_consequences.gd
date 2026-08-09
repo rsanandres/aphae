@@ -257,6 +257,15 @@ static func _run_script(script_name: String, target: Node2D, second: Node2D, aff
 			_script_departure(target, "quit in a blaze of glory")
 		"returning_ex":
 			_script_returning_ex()
+		"sabotage_lunch":
+			_script_sabotage(target, "stole {victim}'s lunch from the fridge",
+				"someone stole my lunch right out of the fridge", "lunch theft")
+		"sabotage_note":
+			_script_sabotage(target, "left an anonymous note on {victim}'s desk calling their work sloppy",
+				"someone left a nasty anonymous note on my desk", "the anonymous note")
+		"sabotage_work":
+			_script_sabotage(target, "quietly deleted part of {victim}'s project files",
+				"part of my project files just vanished — that was no accident", "the deleted files")
 		_:
 			push_warning("ConsequenceEngine: unknown script '%s'" % script_name)
 
@@ -313,6 +322,73 @@ static func _script_exhaustion_collapse(affected: Array) -> void:
 			}, agent, agent, null)
 		EventBus.narrative_event.emit(
 			"%s collapsed from exhaustion!" % agent.agent_name, [agent.agent_name], 8.0)
+
+
+static func _script_sabotage(victim: Node2D, deed: String, victim_line: String, incident: String) -> void:
+	## Hidden-actor mystery: the actor knows, the victim seethes at no one,
+	## nearby agents speculate. The truth can only travel via the RumorMill —
+	## or a confessional slip, since secrets score high in retrieval.
+	if victim == null or not is_instance_valid(victim):
+		return
+	var actor := _pick_saboteur(victim)
+	if actor == null:
+		return
+
+	# The actor's secret: protected, threaded, high-importance.
+	_add_memory({
+		"text": deed.replace("{victim}", victim.agent_name) + ". Nobody saw. Nobody can know.",
+		"importance": 8.0, "emotion": "defiance", "sentiment": -0.3,
+		"protected": true, "thread": "secret_sabotage",
+	}, actor, victim, null)
+
+	# The victim's anger names NO ONE.
+	_add_memory({
+		"text": victim_line + ". Someone in this office did this.",
+		"importance": 7.0, "emotion": "anger", "sentiment": -0.7, "protected": true,
+	}, victim, victim, null)
+	victim.needs.restore(NeedType.Type.SOCIAL, -10.0)
+
+	# Bystanders speculate — the actor keeps a straight face (no memory).
+	for agent in AgentManager.get_agents_near(victim.global_position, 140.0, victim):
+		if agent == actor or not is_instance_valid(agent):
+			continue
+		_add_memory({
+			"text": "heard about %s targeting %s. Who in this office would do that?" % [incident, victim.agent_name],
+			"importance": 4.0, "emotion": "curiosity", "sentiment": -0.3,
+		}, agent, victim, null)
+
+	EventBus.narrative_event.emit(
+		"Sabotage in the office: %s hit %s. The culprit is unknown." % [incident, victim.agent_name],
+		[victim.agent_name], 6.5)
+
+
+static func _pick_saboteur(victim: Node2D) -> Node2D:
+	var weights: Dictionary = {}
+	for agent in AgentManager.agents:
+		if not is_instance_valid(agent) or agent == victim or agent.is_dead:
+			continue
+		var w := 0.5
+		var rel: RelationshipEntry = agent.relationships.get_relationship(victim.agent_name)
+		if rel.affinity < -20.0 or rel.has_tag("rival"):
+			w += 3.0
+		if agent.personality and agent.personality.agreeableness < 0.4:
+			w += 2.0
+		for m in agent.memory.get_secrets():
+			if m.narrative_thread == "secret_sabotage":
+				w += 3.0  # repeat offenders stay in character
+				break
+		weights[agent] = w
+	if weights.is_empty():
+		return null
+	var total := 0.0
+	for agent in weights:
+		total += weights[agent]
+	var roll := randf() * total
+	for agent in weights:
+		roll -= weights[agent]
+		if roll <= 0.0:
+			return agent
+	return weights.keys()[-1]
 
 
 static func _script_new_hire() -> void:

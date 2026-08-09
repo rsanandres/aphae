@@ -388,5 +388,55 @@
       "min_day": 6
     },
     "script": "returning_ex"
+  },
+  {
+    "id": "stolen_lunch",
+    "name": "Stolen Lunch",
+    "description": "Someone's lunch has vanished from the office fridge.",
+    "probability": 0.07,
+    "category": "social",
+    "target_mode": "random",
+    "cooldown_days": 4,
+    "prerequisites": {
+      "min_agents": 4
+    },
+    "need_effects": {
+      "hunger": -15
+    },
+    "script": "sabotage_lunch"
+  },
+  {
+    "id": "anonymous_note",
+    "name": "Anonymous Note",
+    "description": "A nasty unsigned note appeared on someone's desk.",
+    "probability": 0.05,
+    "category": "social",
+    "target_mode": "random",
+    "cooldown_days": 5,
+    "prerequisites": {
+      "min_agents": 4,
+      "min_drama": 2.0
+    },
+    "need_effects": {
+      "social": -10
+    },
+    "script": "sabotage_note"
+  },
+  {
+    "id": "deleted_work",
+    "name": "Deleted Work",
+    "description": "Part of someone's project files mysteriously vanished.",
+    "probability": 0.04,
+    "category": "work",
+    "target_mode": "most_productive",
+    "cooldown_days": 7,
+    "prerequisites": {
+      "min_agents": 4,
+      "min_drama": 3.0
+    },
+    "need_effects": {
+      "productivity": -25
+    },
+    "script": "sabotage_work"
   }
 ]

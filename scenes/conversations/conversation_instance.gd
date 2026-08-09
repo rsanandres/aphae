@@ -143,6 +143,11 @@ func _end_conversation() -> void:
 	agent_a.relationships.update_romance(agent_b.agent_name, true)
 	agent_b.relationships.update_romance(agent_a.agent_name, true)
 
+	# Gossip travels: each side may pass on something juicy about a third
+	# party, secondhand and slightly warped (RumorMill).
+	RumorMill.maybe_pass(agent_a, agent_b)
+	RumorMill.maybe_pass(agent_b, agent_a)
+
 	# Restore social need
 	agent_a.needs.restore(NeedType.Type.SOCIAL, 20.0)
 	agent_b.needs.restore(NeedType.Type.SOCIAL, 20.0)

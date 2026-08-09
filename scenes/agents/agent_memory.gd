@@ -77,6 +77,16 @@ func retrieve(query: String, count: int = 5) -> Array[MemoryEntry]:
 	return result
 
 
+func get_secrets() -> Array[MemoryEntry]:
+	## Everything this agent knows that someone meant to keep hidden —
+	## their own secrets and leaked ones alike (thread "secret_*").
+	var out: Array[MemoryEntry] = []
+	for m in memories:
+		if m.narrative_thread.begins_with("secret_"):
+			out.append(m)
+	return out
+
+
 func get_recent(count: int = 10) -> Array[MemoryEntry]:
 	var start := maxi(0, memories.size() - count)
 	var result: Array[MemoryEntry] = []

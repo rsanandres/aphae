@@ -241,6 +241,70 @@ func _run() -> void:
 	var churn_save: Dictionary = SaveManager._serialize_world()
 	_check("save carries departed archive", not churn_save.get("departed_agents", []).is_empty())
 
+	# --- E4: sabotage — asymmetric knowledge ---
+	var victim: Node2D = AgentManager.agents[0]
+	var bystander: Node2D = AgentManager.agents[1]
+	var outsider: Node2D = AgentManager.agents[2]
+	victim.global_position = Vector2(60, 60)
+	bystander.global_position = Vector2(80, 60)
+	outsider.global_position = Vector2(290, 190)
+	EventManager.trigger_event("stolen_lunch", [victim])
+	await get_tree().process_frame
+	var saboteur: Node2D = null
+	for agent in AgentManager.agents:
+		for m in agent.memory.get_secrets():
+			if m.narrative_thread == "secret_sabotage":
+				saboteur = agent
+	_check("sabotage has a hidden actor with a secret", saboteur != null and saboteur != victim)
+	var victim_names_someone := false
+	for m in victim.memory.memories:
+		if "stole my lunch" in m.description and saboteur and saboteur.agent_name in m.description:
+			victim_names_someone = true
+	_check("victim's memory names no one", not victim_names_someone)
+	var outsider_heard := false
+	for m in outsider.memory.memories:
+		if "lunch" in m.description:
+			outsider_heard = true
+	_check("out-of-radius agent knows nothing of the sabotage", not outsider_heard or outsider == saboteur)
+
+	# --- E4: rumor mill — leaks are possible, gated by trust ---
+	var holder: Node2D = AgentManager.agents[0]
+	var confidant: Node2D = AgentManager.agents[1]
+	holder.memory.add_memory(MemoryEntry.MemoryType.OBSERVATION,
+		"%s knows something huge about %s. It stays secret." % [holder.agent_name, outsider.agent_name],
+		8.0, PackedStringArray([outsider.agent_name]))
+	holder.memory.memories[-1].narrative_thread = "secret_test"
+	holder.memory.memories[-1].decay_protected = true
+	var rel_hc: RelationshipEntry = holder.relationships.get_relationship(confidant.agent_name)
+	rel_hc.trust = 90.0
+	var leaked := false
+	for i in range(400):
+		if RumorMill.maybe_pass(holder, confidant):
+			for m in confidant.memory.memories:
+				if m.narrative_thread == "secret_test":
+					leaked = true
+		if leaked:
+			break
+	_check("a secret can leak to a trusted confidant", leaked)
+	if leaked:
+		var retold: MemoryEntry = null
+		for m in confidant.memory.memories:
+			if m.narrative_thread == "secret_test":
+				retold = m
+		_check("leak is marked secondhand", retold != null and "heard from" in retold.description)
+		_check("leak is weaker than the original", retold != null and retold.importance < 8.0)
+	# Low trust blocks secrets entirely
+	var stranger: Node2D = AgentManager.agents[-1]
+	var rel_hs: RelationshipEntry = holder.relationships.get_relationship(stranger.agent_name)
+	rel_hs.trust = 10.0
+	var leaked_low := false
+	for i in range(400):
+		RumorMill.maybe_pass(holder, stranger)
+	for m in stranger.memory.memories:
+		if m.narrative_thread == "secret_test":
+			leaked_low = true
+	_check("low trust never hears the secret", not leaked_low)
+
 	# --- 6. specific target mode never fires organically ---
 	var spec_def := EventDefinition.from_dict({
 		"id": "__test_specific", "name": "t", "description": "t",

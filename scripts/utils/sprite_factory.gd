@@ -416,6 +416,111 @@ static func create_radio_sprite() -> ImageTexture:
 	return ImageTexture.create_from_image(_outlined(img))
 
 
+static func create_karaoke_machine_sprite() -> ImageTexture:
+	## Speaker box with a screen and a mic on a stand. 16x18.
+	var img := Image.create(16, 18, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	# Cabinet
+	for x in range(2, 12):
+		for y in range(4, 17):
+			_px(img, x, y, Palette.DARK_GRAY)
+	# Screen
+	for x in range(3, 11):
+		for y in range(5, 9):
+			_px(img, x, y, Palette.BLUE)
+	_px(img, 4, 6, Palette.WHITE); _px(img, 6, 7, Palette.WHITE); _px(img, 8, 6, Palette.WHITE)
+	# Speaker grills
+	for y in range(10, 16, 2):
+		for x in range(4, 10, 2):
+			_px(img, x, y, Palette.OUTLINE)
+	# Accent stripe
+	for x in range(2, 12):
+		_px(img, x, 9, Palette.PURPLE)
+	# Mic stand
+	for y in range(6, 17):
+		_px(img, 13, y, Palette.MID_GRAY)
+	_px(img, 13, 5, Palette.LIGHT_GRAY)
+	_px(img, 13, 4, Palette.RED)
+	_px(img, 12, 16, Palette.MID_GRAY); _px(img, 14, 16, Palette.MID_GRAY)
+	return ImageTexture.create_from_image(_outlined(img))
+
+
+static func create_arcade_cabinet_sprite() -> ImageTexture:
+	## Classic upright cab with marquee and joysticks. 14x18.
+	var img := Image.create(14, 18, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	# Body
+	for x in range(2, 12):
+		for y in range(2, 17):
+			_px(img, x, y, Palette.PURPLE)
+	# Marquee
+	for x in range(2, 12):
+		_px(img, x, 2, Palette.WARM_YELLOW)
+		_px(img, x, 3, Palette.ORANGE)
+	# Screen
+	for x in range(3, 11):
+		for y in range(5, 10):
+			_px(img, x, y, Palette.OUTLINE)
+	_px(img, 5, 7, Palette.GREEN); _px(img, 8, 6, Palette.RED); _px(img, 6, 8, Palette.WHITE)
+	# Control deck
+	for x in range(3, 11):
+		_px(img, x, 11, Palette.MID_GRAY)
+	_px(img, 4, 10, Palette.RED); _px(img, 9, 10, Palette.BLUE)
+	return ImageTexture.create_from_image(_outlined(img))
+
+
+static func create_meditation_pod_sprite() -> ImageTexture:
+	## Rounded pod with a soft glow inside. 18x14.
+	var img := Image.create(18, 14, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	# Shell (rounded)
+	for x in range(3, 15):
+		for y in range(3, 12):
+			_px(img, x, y, Palette.TEAL)
+	for x in range(5, 13):
+		_px(img, x, 2, Palette.TEAL)
+	# Opening with warm light
+	for x in range(6, 13):
+		for y in range(5, 11):
+			_px(img, x, y, Palette.OUTLINE)
+	for x in range(7, 12):
+		for y in range(6, 10):
+			_px(img, x, y, Palette.WARM_YELLOW if (x + y) % 2 == 0 else Palette.CREAM)
+	# Base
+	for x in range(4, 14):
+		_px(img, x, 12, Palette.DARK_GRAY)
+	return ImageTexture.create_from_image(_outlined(img))
+
+
+static func create_aquarium_sprite() -> ImageTexture:
+	## Water tank on a stand, with fish. 20x16.
+	var img := Image.create(20, 16, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	# Tank water
+	for x in range(2, 18):
+		for y in range(3, 11):
+			_px(img, x, y, Palette.BLUE)
+	# Water surface highlight
+	for x in range(2, 18):
+		_px(img, x, 3, Palette.LIGHT_GRAY)
+	# Fish
+	_px(img, 5, 6, Palette.ORANGE); _px(img, 6, 6, Palette.ORANGE); _px(img, 4, 6, Palette.RED)
+	_px(img, 12, 8, Palette.WARM_YELLOW); _px(img, 13, 8, Palette.WARM_YELLOW); _px(img, 14, 8, Palette.ORANGE)
+	_px(img, 9, 5, Palette.GREEN)
+	# Plants
+	_px(img, 3, 9, Palette.GREEN); _px(img, 3, 10, Palette.GREEN)
+	_px(img, 16, 9, Palette.GREEN); _px(img, 16, 10, Palette.GREEN)
+	# Frame + stand
+	for x in range(1, 19):
+		_px(img, x, 2, Palette.DARK_GRAY)
+		_px(img, x, 11, Palette.DARK_GRAY)
+	for x in range(2, 18):
+		_px(img, x, 12, Palette.WOOD_MID)
+		_px(img, x, 13, Palette.WOOD_DARK)
+	_px(img, 3, 14, Palette.WOOD_DARK); _px(img, 16, 14, Palette.WOOD_DARK)
+	return ImageTexture.create_from_image(_outlined(img))
+
+
 static func create_bed_sprite() -> ImageTexture:
 	var img := Image.create(28, 14, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0, 0, 0, 0))

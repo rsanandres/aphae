@@ -190,7 +190,7 @@ func _rebuild_object_panel() -> void:
 	title.add_theme_font_size_override("font_size", 9)
 	_object_panel.add_child(title)
 
-	var types := ["desk", "couch", "coffee_machine", "water_cooler", "whiteboard", "bookshelf", "plant", "radio", "bed"]
+	var types := ["desk", "couch", "coffee_machine", "water_cooler", "whiteboard", "bookshelf", "plant", "radio", "bed", "karaoke_machine", "arcade_cabinet", "meditation_pod", "aquarium"]
 	for t in types:
 		var btn := Button.new()
 		btn.text = t.replace("_", " ").capitalize()
@@ -351,7 +351,11 @@ func _place_object_at(pos: Vector2) -> void:
 		return
 	var obj := _create_object(_placing_object_type)
 	if obj:
-		world.add_object(obj, pos)
+		# pos is a SCREEN coordinate; the world lives behind a zoom-2 camera.
+		# Passing it raw placed objects in the wrong spot whenever the view
+		# was panned or zoomed — convert through the canvas transform.
+		var world_pos: Vector2 = get_viewport().get_canvas_transform().affine_inverse() * pos
+		world.add_object(obj, world_pos)
 	_placing_object_type = ""
 
 

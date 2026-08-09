@@ -161,7 +161,13 @@ func _get_preferred_object(need: NeedType.Type, personality: PersonalityProfile)
 
 	match need:
 		NeedType.Type.ENERGY:
-			# Introverts prefer bed (quiet), extraverts prefer couch (social area)
+			# Anxious minds seek the pod, slackers the arcade, introverts the
+			# bed, extraverts the couch (catalog objects may not exist yet —
+			# _find_available_object falls back to the default type).
+			if personality.neuroticism > 0.6 and randf() < 0.4:
+				return "meditation_pod"
+			if personality.conscientiousness < 0.4 and randf() < 0.3:
+				return "arcade_cabinet"
 			if personality.extraversion < 0.4:
 				return "bed"
 			return "couch"
@@ -173,7 +179,10 @@ func _get_preferred_object(need: NeedType.Type, personality: PersonalityProfile)
 				return "whiteboard"
 			return "desk"
 		NeedType.Type.SOCIAL:
-			# High extraversion → water cooler (group chat)
+			# High extraversion → karaoke if the office has one, else the
+			# water cooler (group chat)
+			if personality.extraversion > 0.7 and randf() < 0.35:
+				return "karaoke_machine"
 			if personality.extraversion > 0.6:
 				return "water_cooler"
 			return ""

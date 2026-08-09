@@ -108,6 +108,10 @@ func _place_objects() -> void:
 		"plant",
 		"radio",
 		"bed",
+		"karaoke_machine",
+		"arcade_cabinet",
+		"meditation_pod",
+		"aquarium",
 	]
 	# Add more objects for larger populations
 	if _agent_count > 10:

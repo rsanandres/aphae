@@ -107,6 +107,18 @@ func _save_progress() -> void:
 
 
 func _connect_signals() -> void:
+	EventBus.episode_ended.connect(func(_s: int, ep: int, score: int, _p: int) -> void:
+		unlock("thats_a_wrap")
+		if score >= 60:
+			unlock("ratings_gold")
+		if ep >= ProducerEconomy.EPISODES_PER_SEASON:
+			unlock("season_finale")
+	)
+	EventBus.catalog_purchased.connect(func(item_id: String) -> void:
+		unlock("retail_therapy")
+		if FileAccess.file_exists("res://scenes/objects/%s.gd" % item_id):
+			unlock("patron_of_the_arts")
+	)
 	EventBus.game_ready.connect(func() -> void:
 		unlock("new_beginnings")
 	)

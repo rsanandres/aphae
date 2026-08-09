@@ -5,7 +5,7 @@ this file before touching anything. It records decisions, environment setup, and
 are expensive to rediscover — several entries here exist because someone already lost an hour
 to them.
 
-**Status:** M0–M4, M8, V, and E (events-that-change-people) shipped · **Branch:** `main` · **Open:** M7 (full lying-in-conversation remains; E4 shipped the M7-lite core)
+**Status:** M0–M4, M8, V, E, and P (producer meta-game) shipped · **Branch:** `main` · **Open:** M7 (full lying-in-conversation remains; E4 shipped the M7-lite core)
 **Maintainer:** this file is owned and kept current. Amend it when you learn something; do not
 let it drift. Two claims in it have already been proven false and corrected — a stale doc is
 worse than no doc, because it is trusted.
@@ -463,6 +463,35 @@ confessional 15/15 + the new events harness.
   to 0.1–0.3×; the band assertion resets pacing state per simulated day.
 - `for x in [1, 2, 3]`-style untyped iteration strikes again: `var y := array[0]` on an
   untyped Array is a parse error only at scene load. Type the variable.
+
+### ✅ P — Producer meta-game: seasons, Influence, the Catalog (done, 2026-08-09)
+
+The missing session structure plus the owner's "unlockable items that influence people,"
+built as one system: drama earns Influence, Influence buys influence tools, episodes give it
+rhythm and a score. Backlog items 6/8-adjacent delivered. Commits `63b606e` → this.
+
+| Piece | What shipped |
+|---|---|
+| **Episodes** | Every 3 game-days wraps an episode: drama sampled every 30 game-min into avg/peak/beats aggregates, score = avg·8 + peak·3 + beats (graded S–D), payout 20 + score. Five episodes per season. `S1E2 · d2/3` and `◆ 42` live in the status bar; the EpisodeCard auto-opens with grade, breakdown, top storyline, payout, and a recap-export button. |
+| **Influence** | Per-save currency. Payouts + capped trickle on big beats. Producer actions now cost: nudge ◆1, interview ◆2, rumour ◆5 — charged in ProducerPanel, **never in PlayerDirector** (the API stays free so producer_test's direct calls hold 14/14). |
+| **Catalog** (`B`) | Three tabs from `resources/catalog.json`. Unlock gates are cross-save meta (`user://producer.json`, achievements.json pattern): lifetime episodes, best score, or named achievements, OR-combined; locked rows show their condition. Consumables: anonymous gift (suspected-sender romance nudge), leaked memo, documentary crew day (2× event rolls until midnight — via ONE multiplier seam in `_roll_events`). Studio: better_cameras halves confessional cooldown via `cooldown_scale`. |
+| **Objects** | karaoke_machine (duet → conversation + narrative beat), arcade_cabinet (auto-chat), meditation_pod (clears stress, 30% dissolves a grudge on exit), aquarium (passive calm). Wired into the heuristic brain (anxious → pod, slacker → arcade, extravert → karaoke). Pay-on-placement; Esc cancels free. |
+| **ObjectFactory** | The identical object-construction body that lived in god_toolbar, save_manager, and headless_sim is one static factory with four callers. |
+
+**Gotchas from this work:**
+- **God-mode placement had passed raw SCREEN coords to `world.add_object` since forever** —
+  invisible at the old zoom-1 default, wrong-by-half at the V-overhaul's zoom 2. Both
+  placement paths now convert via `get_canvas_transform().affine_inverse()`.
+- **Meta pollution:** all five dev harnesses must set
+  `ProducerEconomy.meta_persistence_enabled = false` — confessional_test's deaths and
+  confessions banked 13◆ of "lifetime earnings" into the real producer.json before the guard
+  covered every harness. If a new harness appears, guard it.
+- **Wire panel buttons after the panel exists** — the icon-bar Shop button connected to a
+  null `_catalog_panel` because the catalog was created later in `_ready` (caught by a
+  windowed probe, invisible to headless tests).
+- `-s` SceneTree probe scripts cannot reference project `class_name`s at compile time
+  (autoloads/classes aren't registered yet) — use `load("res://...")` dynamically.
+- Harness: `scenes/main/economy_test.tscn`, 24 checks.
 
 ### 🎛️ Backlog — player agency
 

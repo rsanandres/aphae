@@ -30,11 +30,12 @@ from that character's personality and memories — nothing here is scripted.*
 - **Episode Recap** — Press **E** for a shareable Markdown writeup of your run: the top storylines, the best confessional quotes, and the full cast. Export it to a file, or read it on the game-over screen when the office finally falls silent.
 - **Events With Consequences** — 37 data-driven life events that leave lasting marks: arguments breed grudges and avoidance, sabotage plants hidden-actor mysteries, big moments permanently bend personalities a little. Multi-day personal arcs (burnout spirals, secret hobbies, goal pursuits) unfold in stages.
 - **A Cast That Breathes** — Organic romance (crushes grow out of good conversations), new hires with first impressions, poaching offers, and departed agents who sometimes walk back in — with their memories and grudges intact.
+- **Seasons & Influence** — Every three days wraps an episode with a ratings score and an Influence payout. Spend it in the Producer's Catalog (**B**): unlockable objects with social physics (karaoke duets, grudge-dissolving meditation pods), interventions (anonymous gifts, leaked memos, documentary crew days), and studio upgrades. Unlocks persist across sandboxes.
 - **Producer Dilemmas** — Occasionally the show pauses and hands YOU the call: leak a cast member's secret or bury it, counter-offer your poached star or film the walkout. The default happens if you let the clock run.
 - **Producer Controls** — Press **P** to stop being a spectator. *Nudge* an agent toward something — and watch them refuse if they're disagreeable or busy, because a nudge is a suggestion, not a command. *Interview* them and get an answer in their own voice, drawn from what they actually remember. Or *plant a rumour*, true or not, and let it colour how they treat someone.
 - **God Mode** — Place and remove objects, spawn/remove agents, and reshape the office environment.
 - **Desktop Pet Mode** — Shrink the window to a transparent, borderless, always-on-top overlay with 3 agents living on your desktop.
-- **24 Achievements** — Discovery, relationship, community, and milestone achievements to track your sandbox's progress.
+- **29 Achievements** — Discovery, relationship, community, and milestone achievements to track your sandbox's progress.
 - **Save System** — 5 save slots with automatic backups and corruption recovery. Auto-saves every 5 game-days.
 - **Procedural Everything** — Sprites, audio, and personalities are all generated at runtime. No external art or sound assets required.
 
@@ -87,6 +88,8 @@ Configure the Ollama endpoint in **Settings > LLM** from the main menu. The game
 | **C** | Confessional Cam |
 | **E** | Episode Recap |
 | **P** | Producer panel |
+| **B** | Producer's Catalog |
+| **X** | Cut to the drama |
 | **F5** | Quick Save |
 | **F9** | Quick Load |
 | **F12** | Screenshot |

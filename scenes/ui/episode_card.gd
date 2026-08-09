@@ -9,6 +9,7 @@ var _headline: Label
 var _breakdown: Label
 var _payout: Label
 var _storyline: Label
+var _export_btn: Button
 
 
 func _ready() -> void:
@@ -43,6 +44,15 @@ func _ready() -> void:
 	_payout.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	body.add_child(_payout)
 
+	_export_btn = Button.new()
+	_export_btn.text = "Export episode recap"
+	_export_btn.pressed.connect(func() -> void:
+		var path := EpisodeRecap.export_to_file()
+		_export_btn.text = "Saved to recaps folder" if path != "" else "Export failed"
+		_export_btn.disabled = path != ""
+	)
+	body.add_child(_export_btn)
+
 	EventBus.episode_ended.connect(_on_episode_ended)
 
 
@@ -58,4 +68,6 @@ func _on_episode_ended(ended_season: int, ended_episode: int, score: int, payout
 	else:
 		_storyline.text = "The story of the episode is still being written."
 	_payout.text = "+%d ◆ Influence" % payout
+	_export_btn.text = "Export episode recap"
+	_export_btn.disabled = false
 	open()

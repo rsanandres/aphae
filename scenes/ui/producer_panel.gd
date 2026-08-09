@@ -85,7 +85,7 @@ func _build_ui() -> void:
 
 	# --- Interview ---
 	var ask_lbl := Label.new()
-	ask_lbl.text = "Ask them something"
+	ask_lbl.text = "Ask them something  ◆%d" % COST_INTERVIEW
 	ask_lbl.add_theme_color_override("font_color", UIPalette.ACCENT_COOL)
 	outer.add_child(ask_lbl)
 
@@ -112,7 +112,7 @@ func _build_ui() -> void:
 
 	# --- Rumor ---
 	var rumor_lbl := Label.new()
-	rumor_lbl.text = "Plant a rumour"
+	rumor_lbl.text = "Plant a rumour  ◆%d" % COST_RUMOR
 	rumor_lbl.add_theme_color_override("font_color", UIPalette.ACCENT_NEG)
 	outer.add_child(rumor_lbl)
 
@@ -143,8 +143,19 @@ func _small_button(text: String) -> Button:
 
 # --- Actions ---------------------------------------------------------------
 
+const COST_NUDGE := 1
+const COST_INTERVIEW := 2
+const COST_RUMOR := 5
+
+
 func _do_nudge(kind: String) -> void:
 	if not _has_agent():
+		return
+	# Costs live here, not in PlayerDirector — the director API stays free
+	# for tests and internal callers; only the panel charges the producer.
+	if not ProducerEconomy.spend(COST_NUDGE, "nudge"):
+		_result.text = "Not enough Influence (◆%d needed)." % COST_NUDGE
+		_result.add_theme_color_override("font_color", UIPalette.ACCENT_NEG)
 		return
 	PlayerDirector.nudge(_agent, kind)
 
@@ -154,6 +165,9 @@ func _do_interview() -> void:
 		return
 	var q := _question.text.strip_edges()
 	if q == "":
+		return
+	if not ProducerEconomy.spend(COST_INTERVIEW, "interview"):
+		_answer.text = "Not enough Influence (◆%d needed)." % COST_INTERVIEW
 		return
 	_answer.text = "..."
 	PlayerDirector.interview(_agent, q)
@@ -169,6 +183,10 @@ func _do_rumor() -> void:
 	var subject := ""
 	if _rumor_target.item_count > 0:
 		subject = _rumor_target.get_item_text(_rumor_target.selected)
+	if not ProducerEconomy.spend(COST_RUMOR, "rumor"):
+		_result.text = "Not enough Influence (◆%d needed)." % COST_RUMOR
+		_result.add_theme_color_override("font_color", UIPalette.ACCENT_NEG)
+		return
 	PlayerDirector.plant_rumor(_agent, text, subject)
 
 

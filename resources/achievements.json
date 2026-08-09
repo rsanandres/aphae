@@ -1,28 +1,178 @@
 {
   "achievements": [
-    {"id": "new_beginnings", "name": "New Beginnings", "description": "Start a sandbox", "category": "discovery"},
-    {"id": "small_talk", "name": "Small Talk", "description": "First conversation between agents", "category": "discovery"},
-    {"id": "office_regular", "name": "Office Regular", "description": "Survive 1 game-day", "category": "discovery"},
-    {"id": "caffeine_fix", "name": "Caffeine Fix", "description": "An agent uses the coffee machine", "category": "discovery"},
-    {"id": "social_butterfly", "name": "Social Butterfly", "description": "An agent talks to 3 different agents in one day", "category": "discovery"},
-    {"id": "best_friends", "name": "Best Friends", "description": "Two agents reach 80+ affinity", "category": "relationships"},
-    {"id": "enemies", "name": "Enemies", "description": "Two agents drop below -50 affinity", "category": "relationships"},
-    {"id": "office_romance", "name": "Office Romance", "description": "A successful confession", "category": "relationships"},
-    {"id": "heartbreak", "name": "Heartbreak", "description": "A rejected confession", "category": "relationships"},
-    {"id": "love_triangle", "name": "Love Triangle", "description": "3 agents with romantic interest > 40", "category": "relationships"},
-    {"id": "inner_circle", "name": "The Inner Circle", "description": "A social group forms", "category": "community"},
-    {"id": "office_politics", "name": "Office Politics", "description": "Two groups become rivals", "category": "community"},
-    {"id": "full_house", "name": "Full House", "description": "20 agents active simultaneously", "category": "community"},
-    {"id": "metropolis", "name": "Metropolis", "description": "50 agents active simultaneously", "category": "community"},
-    {"id": "one_week", "name": "One Week", "description": "Reach 7 game-days", "category": "milestones"},
-    {"id": "long_haul", "name": "The Long Haul", "description": "Reach 50 game-days", "category": "milestones"},
-    {"id": "century", "name": "Century", "description": "Reach 100 game-days", "category": "milestones"},
-    {"id": "rest_in_peace", "name": "Rest in Peace", "description": "An agent dies of old age", "category": "milestones"},
-    {"id": "the_architect", "name": "The Architect", "description": "Place 5 objects in God Mode", "category": "milestones"},
-    {"id": "drama_queen", "name": "Drama Queen", "description": "A storyline reaches drama score 8+", "category": "milestones"},
-    {"id": "caught_on_camera", "name": "Caught on Camera", "description": "An agent gives their first confessional", "category": "discovery"},
-    {"id": "ensemble_cast", "name": "Ensemble Cast", "description": "Every living agent has faced the confessional camera", "category": "community"},
-    {"id": "press_tour", "name": "Press Tour", "description": "25 confessionals recorded", "category": "milestones"},
-    {"id": "sweeps_week", "name": "Sweeps Week", "description": "The narrator delivers a recap at peak drama", "category": "milestones"}
+    {
+      "id": "new_beginnings",
+      "name": "New Beginnings",
+      "description": "Start a sandbox",
+      "category": "discovery"
+    },
+    {
+      "id": "small_talk",
+      "name": "Small Talk",
+      "description": "First conversation between agents",
+      "category": "discovery"
+    },
+    {
+      "id": "office_regular",
+      "name": "Office Regular",
+      "description": "Survive 1 game-day",
+      "category": "discovery"
+    },
+    {
+      "id": "caffeine_fix",
+      "name": "Caffeine Fix",
+      "description": "An agent uses the coffee machine",
+      "category": "discovery"
+    },
+    {
+      "id": "social_butterfly",
+      "name": "Social Butterfly",
+      "description": "An agent talks to 3 different agents in one day",
+      "category": "discovery"
+    },
+    {
+      "id": "best_friends",
+      "name": "Best Friends",
+      "description": "Two agents reach 80+ affinity",
+      "category": "relationships"
+    },
+    {
+      "id": "enemies",
+      "name": "Enemies",
+      "description": "Two agents drop below -50 affinity",
+      "category": "relationships"
+    },
+    {
+      "id": "office_romance",
+      "name": "Office Romance",
+      "description": "A successful confession",
+      "category": "relationships"
+    },
+    {
+      "id": "heartbreak",
+      "name": "Heartbreak",
+      "description": "A rejected confession",
+      "category": "relationships"
+    },
+    {
+      "id": "love_triangle",
+      "name": "Love Triangle",
+      "description": "3 agents with romantic interest > 40",
+      "category": "relationships"
+    },
+    {
+      "id": "inner_circle",
+      "name": "The Inner Circle",
+      "description": "A social group forms",
+      "category": "community"
+    },
+    {
+      "id": "office_politics",
+      "name": "Office Politics",
+      "description": "Two groups become rivals",
+      "category": "community"
+    },
+    {
+      "id": "full_house",
+      "name": "Full House",
+      "description": "20 agents active simultaneously",
+      "category": "community"
+    },
+    {
+      "id": "metropolis",
+      "name": "Metropolis",
+      "description": "50 agents active simultaneously",
+      "category": "community"
+    },
+    {
+      "id": "one_week",
+      "name": "One Week",
+      "description": "Reach 7 game-days",
+      "category": "milestones"
+    },
+    {
+      "id": "long_haul",
+      "name": "The Long Haul",
+      "description": "Reach 50 game-days",
+      "category": "milestones"
+    },
+    {
+      "id": "century",
+      "name": "Century",
+      "description": "Reach 100 game-days",
+      "category": "milestones"
+    },
+    {
+      "id": "rest_in_peace",
+      "name": "Rest in Peace",
+      "description": "An agent dies of old age",
+      "category": "milestones"
+    },
+    {
+      "id": "the_architect",
+      "name": "The Architect",
+      "description": "Place 5 objects in God Mode",
+      "category": "milestones"
+    },
+    {
+      "id": "drama_queen",
+      "name": "Drama Queen",
+      "description": "A storyline reaches drama score 8+",
+      "category": "milestones"
+    },
+    {
+      "id": "caught_on_camera",
+      "name": "Caught on Camera",
+      "description": "An agent gives their first confessional",
+      "category": "discovery"
+    },
+    {
+      "id": "ensemble_cast",
+      "name": "Ensemble Cast",
+      "description": "Every living agent has faced the confessional camera",
+      "category": "community"
+    },
+    {
+      "id": "press_tour",
+      "name": "Press Tour",
+      "description": "25 confessionals recorded",
+      "category": "milestones"
+    },
+    {
+      "id": "sweeps_week",
+      "name": "Sweeps Week",
+      "description": "The narrator delivers a recap at peak drama",
+      "category": "milestones"
+    },
+    {
+      "id": "thats_a_wrap",
+      "name": "That's a Wrap",
+      "description": "Complete your first episode",
+      "category": "producer"
+    },
+    {
+      "id": "ratings_gold",
+      "name": "Ratings Gold",
+      "description": "Score 60 or higher in an episode",
+      "category": "producer"
+    },
+    {
+      "id": "retail_therapy",
+      "name": "Retail Therapy",
+      "description": "Buy something from the Producer's Catalog",
+      "category": "producer"
+    },
+    {
+      "id": "patron_of_the_arts",
+      "name": "Patron of the Arts",
+      "description": "Place a purchased object in the office",
+      "category": "producer"
+    },
+    {
+      "id": "season_finale",
+      "name": "Season Finale",
+      "description": "Complete a full five-episode season",
+      "category": "producer"
+    }
   ]
 }

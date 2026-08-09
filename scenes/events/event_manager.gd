@@ -124,6 +124,8 @@ func _roll_events(day: int) -> void:
 	if _events_today >= MAX_EVENTS_PER_DAY:
 		return
 	var drama_mod: float = DramaDirector.get_probability_modifier() if DramaDirector else 1.0
+	# Catalog boosts (documentary crew day): the one sanctioned multiplier seam.
+	drama_mod *= ProducerEconomy.event_probability_multiplier()
 	for definition in _event_definitions:
 		if _events_today >= MAX_EVENTS_PER_DAY:
 			return

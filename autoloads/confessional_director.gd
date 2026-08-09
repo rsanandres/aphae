@@ -11,6 +11,7 @@ var confessionals: Array[Confessional] = []  # ring buffer, oldest first
 const MAX_CONFESSIONALS := 40
 
 const COOLDOWN := 8.0            # min real seconds between confessionals (rate limit)
+var cooldown_scale: float = 1.0  # better_cameras upgrade halves this
 const HOST_RECAP_MIN_DAYS := 2   # don't recap before this day
 const PENDING_TIMEOUT := 20.0    # give up on a stalled LLM request rather than jam the feed
 const QUIRK_CHANCE := 0.3        # how often a quirk is offered to the model — see _request_llm
@@ -227,7 +228,7 @@ func _emit(kind: String, line: String, speaker: Node2D) -> void:
 	while confessionals.size() > MAX_CONFESSIONALS:
 		confessionals.pop_front()
 
-	_cooldown = COOLDOWN
+	_cooldown = COOLDOWN * cooldown_scale
 	EventBus.confessional_recorded.emit(c)
 
 

@@ -120,20 +120,9 @@ func _place_objects() -> void:
 		var script_path := "res://scenes/objects/%s.gd" % obj_type
 		if not FileAccess.file_exists(script_path):
 			continue
-		var obj := StaticBody2D.new()
-		obj.collision_layer = 4
-		obj.collision_mask = 0
-		obj.set_script(load(script_path))
-		# Add required children
-		var sprite := Sprite2D.new()
-		sprite.name = "Sprite2D"
-		obj.add_child(sprite)
-		var shape := CollisionShape2D.new()
-		shape.name = "CollisionShape2D"
-		var rect := RectangleShape2D.new()
-		rect.size = Vector2(24, 16)
-		shape.shape = rect
-		obj.add_child(shape)
+		var obj := ObjectFactory.create(obj_type)
+		if obj == null:
+			continue
 		# Position in grid
 		var col: int = i % 4
 		var row: int = i / 4

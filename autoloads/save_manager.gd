@@ -365,6 +365,7 @@ func _deserialize_world(data: Dictionary) -> void:
 		if entry is Dictionary:
 			AgentManager.departed_agents.append(entry)
 	ProducerEconomy.load_save_state(data.get("producer", {}))
+	CatalogPanel.apply_upgrades_from_save()
 
 	# Restore _last_auto_save_day from save data
 	_last_auto_save_day = int(data.get("last_auto_save_day", 0))
@@ -404,26 +405,7 @@ func _deserialize_world(data: Dictionary) -> void:
 
 
 func _create_object_from_type(obj_type: String) -> InteractableObject:
-	## Creates an InteractableObject from a type string, matching god_toolbar logic.
-	var script_path := "res://scenes/objects/%s.gd" % obj_type
-	if not FileAccess.file_exists(script_path):
-		return null
-	var obj := StaticBody2D.new()
-	obj.collision_layer = 4
-	obj.collision_mask = 0
-	var script := load(script_path)
-	obj.set_script(script)
-	var sprite := Sprite2D.new()
-	sprite.name = "Sprite2D"
-	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	obj.add_child(sprite)
-	var shape := CollisionShape2D.new()
-	shape.name = "CollisionShape2D"
-	var rect_shape := RectangleShape2D.new()
-	rect_shape.size = Vector2(24, 16)
-	shape.shape = rect_shape
-	obj.add_child(shape)
-	return obj
+	return ObjectFactory.create(obj_type)
 
 
 func get_most_recent_slot() -> int:

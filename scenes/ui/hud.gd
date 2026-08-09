@@ -30,6 +30,7 @@ var _ratings_label: Label = null
 var _viewers: float = 120000.0
 var _episode_label: Label = null
 var _influence_label: Label = null
+var _catalog_panel: CatalogPanel = null
 
 
 func _ready() -> void:
@@ -187,6 +188,15 @@ func _ready() -> void:
 	add_child(_producer_panel)
 	_ui.register("producer", _producer_panel, UIManager.Kind.EXCLUSIVE)
 
+	# Producer's Catalog (B): spend Influence on objects and interventions
+	_catalog_panel = CatalogPanel.new()
+	_catalog_panel.offset_left = 170
+	_catalog_panel.offset_top = 40
+	_catalog_panel.offset_right = 470
+	_catalog_panel.offset_bottom = 320
+	add_child(_catalog_panel)
+	_ui.register("catalog", _catalog_panel, UIManager.Kind.EXCLUSIVE)
+
 	# Persistent icon bar (bottom-center quick access)
 	_setup_icon_bar()
 
@@ -286,6 +296,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 			KEY_P:
 				_ui.toggle("producer")
+				get_viewport().set_input_as_handled()
+			KEY_B:
+				_ui.toggle("catalog")
 				get_viewport().set_input_as_handled()
 			KEY_X:
 				var director := get_tree().get_first_node_in_group("broadcast")
@@ -406,6 +419,7 @@ func _show_context_menu(pos: Vector2) -> void:
 	context_menu.add_item("Confessional Cam  [C]", 9)
 	context_menu.add_item("Episode Recap  [E]", 15)
 	context_menu.add_item("Producer  [P]", 16)
+	context_menu.add_item("Catalog  [B]", 17)
 	context_menu.add_item("Relationships  [R]", 7)
 	context_menu.add_separator()
 	var root := get_tree().current_scene
@@ -446,6 +460,7 @@ func _on_context_menu(id: int) -> void:
 		13: _toggle_achievements()
 		14: _return_to_menu()
 		16: _ui.toggle("producer")
+		17: _ui.toggle("catalog")
 		20:
 			var root := get_tree().current_scene
 			if root and root.has_method("set_expanded_mode"):
@@ -546,8 +561,8 @@ func _setup_icon_bar() -> void:
 	bar.anchor_right = 0.5
 	bar.anchor_top = 1.0
 	bar.anchor_bottom = 1.0
-	bar.offset_left = -272
-	bar.offset_right = 272
+	bar.offset_left = -292
+	bar.offset_right = 292
 	bar.offset_top = -26
 	bar.offset_bottom = -4
 	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -566,8 +581,8 @@ func _setup_icon_bar() -> void:
 	bar_bg.anchor_right = 0.5
 	bar_bg.anchor_top = 1.0
 	bar_bg.anchor_bottom = 1.0
-	bar_bg.offset_left = -278
-	bar_bg.offset_right = 278
+	bar_bg.offset_left = -298
+	bar_bg.offset_right = 298
 	bar_bg.offset_top = -28
 	bar_bg.offset_bottom = -2
 	bar_bg.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -621,6 +636,7 @@ func _setup_icon_bar() -> void:
 	sep2.custom_minimum_size = Vector2(2, 0)
 	bar.add_child(sep2)
 
+	_add_panel_btn(bar, "Shop", "Producer's Catalog [B]", "catalog", _catalog_panel)
 	_add_icon_btn(bar, "God", "God Mode [Tab]", func() -> void: _toggle_god_mode())
 	_add_icon_btn(bar, "Awards", "Achievements", func() -> void: _toggle_achievements())
 	_add_icon_btn(bar, "Set", "Settings", func() -> void: _toggle_settings())

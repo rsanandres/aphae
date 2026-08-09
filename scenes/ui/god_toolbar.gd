@@ -356,25 +356,8 @@ func _place_object_at(pos: Vector2) -> void:
 
 
 func _create_object(obj_type: String) -> InteractableObject:
-	var script_path := "res://scenes/objects/%s.gd" % obj_type
-	if not FileAccess.file_exists(script_path):
-		return null
-	var obj := StaticBody2D.new()
-	obj.collision_layer = 4
-	obj.collision_mask = 0
-	var script := load(script_path)
-	obj.set_script(script)
-	var sprite := Sprite2D.new()
-	sprite.name = "Sprite2D"
-	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	obj.add_child(sprite)
-	var shape := CollisionShape2D.new()
-	shape.name = "CollisionShape2D"
-	var rect_shape := RectangleShape2D.new()
-	rect_shape.size = Vector2(24, 16)
-	shape.shape = rect_shape
-	obj.add_child(shape)
-	return obj
+	return ObjectFactory.create(obj_type)
+
 
 
 func _on_spawn_agent(personality_file: String) -> void:

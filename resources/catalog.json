@@ -1,0 +1,68 @@
+{
+  "items": [
+    {
+      "id": "anonymous_gift",
+      "name": "Anonymous Gift",
+      "description": "A thoughtful present appears on someone's desk — and they'll suspect exactly who you want them to.",
+      "tab": "interventions",
+      "price": 15,
+      "unlock": {}
+    },
+    {
+      "id": "leaked_memo",
+      "name": "Leaked Memo",
+      "description": "A juicy memo finds its way to every desk in the office at once.",
+      "tab": "interventions",
+      "price": 20,
+      "unlock": {"best_score": 30, "achievement": "enemies"}
+    },
+    {
+      "id": "documentary_day",
+      "name": "Documentary Crew Day",
+      "description": "A film crew shadows the office until midnight. Everything that can happen, happens twice as often.",
+      "tab": "interventions",
+      "price": 40,
+      "unlock": {"best_score": 60, "achievement": "sweeps_week"}
+    },
+    {
+      "id": "better_cameras",
+      "name": "Better Cameras",
+      "description": "Twice the coverage: the confessional booth catches twice as many cutaways. Permanent.",
+      "tab": "studio",
+      "price": 100,
+      "unlock": {"episodes": 10, "achievement": "press_tour"}
+    },
+    {
+      "id": "aquarium",
+      "name": "Aquarium",
+      "description": "A calming presence. Agents near it feel a little more connected.",
+      "tab": "objects",
+      "price": 35,
+      "unlock": {}
+    },
+    {
+      "id": "arcade_cabinet",
+      "name": "Arcade Cabinet",
+      "description": "Two players, one high score, instant friendship — or trash talk.",
+      "tab": "objects",
+      "price": 50,
+      "unlock": {"episodes": 1}
+    },
+    {
+      "id": "meditation_pod",
+      "name": "Meditation Pod",
+      "description": "Ten quiet minutes. Stress melts, and sometimes grudges do too.",
+      "tab": "objects",
+      "price": 50,
+      "unlock": {"best_score": 50, "achievement": "drama_queen"}
+    },
+    {
+      "id": "karaoke_machine",
+      "name": "Karaoke Machine",
+      "description": "Nothing bonds an office like witnessing each other's rendition of a power ballad.",
+      "tab": "objects",
+      "price": 60,
+      "unlock": {"episodes": 3}
+    }
+  ]
+}

@@ -44,7 +44,11 @@ var lifetime_influence_earned: int = 0
 var lifetime_spent: int = 0
 
 
+var _catalog: Array = []  # loaded from resources/catalog.json
+
+
 func _ready() -> void:
+	_load_catalog()
 	_load_meta()
 	EventBus.day_changed.connect(_on_day_changed)
 	EventBus.time_tick.connect(_on_time_tick)
@@ -176,6 +180,72 @@ static func grade_for(score: int) -> String:
 	elif score >= 20:
 		return "C"
 	return "D"
+
+
+# --- Catalog -----------------------------------------------------------------
+
+func get_catalog() -> Array:
+	return _catalog
+
+
+func get_item(item_id: String) -> Dictionary:
+	for item in _catalog:
+		if item.get("id", "") == item_id:
+			return item
+	return {}
+
+
+func is_item_unlocked(item_id: String) -> bool:
+	## Unlock gates are OR-combined: meeting ANY listed condition unlocks.
+	## An empty unlock block means available from the start.
+	var item := get_item(item_id)
+	if item.is_empty():
+		return false
+	var unlock: Dictionary = item.get("unlock", {})
+	if unlock.is_empty():
+		return true
+	if unlock.has("episodes") and lifetime_episodes >= int(unlock["episodes"]):
+		return true
+	if unlock.has("best_score") and best_episode_score >= int(unlock["best_score"]):
+		return true
+	if unlock.has("achievement") and AchievementManager.is_unlocked(str(unlock["achievement"])):
+		return true
+	return false
+
+
+func unlock_description(item_id: String) -> String:
+	var unlock: Dictionary = get_item(item_id).get("unlock", {})
+	var parts: Array[String] = []
+	if unlock.has("episodes"):
+		parts.append("complete %d episodes" % int(unlock["episodes"]))
+	if unlock.has("best_score"):
+		parts.append("score %d in an episode" % int(unlock["best_score"]))
+	if unlock.has("achievement"):
+		var defs := AchievementManager.get_all()
+		var achievement_name: String = str(unlock["achievement"])
+		for d in defs:
+			if d.get("id", "") == unlock["achievement"]:
+				achievement_name = d.get("name", achievement_name)
+		parts.append("earn \"%s\"" % achievement_name)
+	return "Locked — " + " or ".join(parts) if not parts.is_empty() else "Locked"
+
+
+func purchase_consumable(item_id: String, cost: int) -> bool:
+	## Payment for instant items; effect application is the caller's job
+	## (CatalogPanel knows the pickers/targets). Placeables pay on placement.
+	if not spend(cost, item_id):
+		return false
+	EventBus.catalog_purchased.emit(item_id)
+	return true
+
+
+func _load_catalog() -> void:
+	var file := FileAccess.open("res://resources/catalog.json", FileAccess.READ)
+	if not file:
+		return
+	var parsed = JSON.parse_string(file.get_as_text())
+	if parsed is Dictionary and parsed.get("items") is Array:
+		_catalog = parsed["items"]
 
 
 # --- Boost/upgrade hooks (consumers arrive with the Catalog) -----------------

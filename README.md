@@ -1,6 +1,8 @@
 # Aphae
 
-**AI Agent Office Simulation** — A top-down 2D pixel art game where AI-driven agents with distinct personalities live together in an office. You observe, rearrange the environment, and watch emergent social behavior unfold: friendships, rivalries, romances, grief, and drama.
+**A tiny reality show that lives on your desktop.** AI-driven agents with distinct personalities share an office, and the cameras never stop rolling. Leave it running in the corner of your screen while you work — the office keeps living without you, and tells you what you missed when you glance back.
+
+You're the producer, not the player-character: you rearrange the set, nudge the cast, plant a rumour, and decide what airs. The drama writes itself.
 
 Built with **Godot 4.6** (GDScript). Bundled LLM for offline AI decisions.
 
@@ -30,6 +32,7 @@ from that character's personality and memories — nothing here is scripted.*
 - **Episode Recap** — Press **E** for a shareable Markdown writeup of your run: the top storylines, the best confessional quotes, and the full cast. Export it to a file, or read it on the game-over screen when the office finally falls silent.
 - **Events With Consequences** — 37 data-driven life events that leave lasting marks: arguments breed grudges and avoidance, sabotage plants hidden-actor mysteries, big moments permanently bend personalities a little. Multi-day personal arcs (burnout spirals, secret hobbies, goal pursuits) unfold in stages.
 - **A Cast That Breathes** — Organic romance (crushes grow out of good conversations), new hires with first impressions, poaching offers, and departed agents who sometimes walk back in — with their memories and grudges intact.
+- **Ambient by Design** — The office doesn't pause when you click away. It drops to a low-power posture (heuristic brains, stretched think cadence, muted audio) and keeps living; when you come back, a "While You Were Away" digest catches you up on the drama you missed. Shrink it to desktop-pet mode and it lives in a corner of your screen all day.
 - **Seasons & Influence** — Every three days wraps an episode with a ratings score and an Influence payout. Spend it in the Producer's Catalog (**B**): unlockable objects with social physics (karaoke duets, grudge-dissolving meditation pods), interventions (anonymous gifts, leaked memos, documentary crew days), and studio upgrades. Unlocks persist across sandboxes.
 - **Producer Dilemmas** — Occasionally the show pauses and hands YOU the call: leak a cast member's secret or bury it, counter-offer your poached star or film the walkout. The default happens if you let the clock run.
 - **Producer Controls** — Press **P** to stop being a spectator. *Nudge* an agent toward something — and watch them refuse if they're disagreeable or busy, because a nudge is a suggestion, not a command. *Interview* them and get an answer in their own voice, drawn from what they actually remember. Or *plant a rumour*, true or not, and let it colour how they treat someone.

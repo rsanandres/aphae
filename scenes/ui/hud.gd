@@ -188,6 +188,22 @@ func _ready() -> void:
 	add_child(_producer_panel)
 	_ui.register("producer", _producer_panel, UIManager.Kind.EXCLUSIVE)
 
+	# "While you were away" digest (ambient play's check-in moment)
+	var away := AwayDigestPanel.new()
+	away.anchors_preset = Control.PRESET_CENTER
+	away.anchor_left = 0.5
+	away.anchor_right = 0.5
+	away.anchor_top = 0.5
+	away.anchor_bottom = 0.5
+	away.offset_left = -140
+	away.offset_top = -100
+	away.offset_right = 140
+	away.offset_bottom = 100
+	away.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	away.grow_vertical = Control.GROW_DIRECTION_BOTH
+	add_child(away)
+	_ui.register("away", away, UIManager.Kind.MODAL)
+
 	# Producer's Catalog (B): spend Influence on objects and interventions
 	_catalog_panel = CatalogPanel.new()
 	_catalog_panel.offset_left = 170

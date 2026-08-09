@@ -43,6 +43,7 @@ AchievementManager="*res://autoloads/achievement_manager.gd"
 TutorialManager="*res://autoloads/tutorial_manager.gd"
 SteamManager="*res://autoloads/steam_manager.gd"
 ProducerEconomy="*res://autoloads/producer_economy.gd"
+AmbientMode="*res://autoloads/ambient_mode.gd"
 
 [display]
 

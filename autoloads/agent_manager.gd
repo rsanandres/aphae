@@ -9,6 +9,7 @@ var _spawn_index: int = 0
 
 # Tiered scheduling
 var _agent_tiers: Dictionary = {}  # Node2D -> ThinkTier
+var low_power: bool = false  # set by AmbientMode when the window is unfocused
 var _tier_timers: Dictionary = {
 	ThinkTier.ACTIVE: 0.0,
 	ThinkTier.NORMAL: 0.0,
@@ -231,17 +232,11 @@ func _process(delta: float) -> void:
 	_tier_timers[ThinkTier.NORMAL] += delta
 	_tier_timers[ThinkTier.BACKGROUND] += delta
 
-	if _tier_timers[ThinkTier.ACTIVE] >= Config.THINK_TIER_ACTIVE_INTERVAL:
-		_tier_timers[ThinkTier.ACTIVE] -= Config.THINK_TIER_ACTIVE_INTERVAL
-		_trigger_tier_think(ThinkTier.ACTIVE)
-
-	if _tier_timers[ThinkTier.NORMAL] >= Config.THINK_TIER_NORMAL_INTERVAL:
-		_tier_timers[ThinkTier.NORMAL] -= Config.THINK_TIER_NORMAL_INTERVAL
-		_trigger_tier_think(ThinkTier.NORMAL)
-
-	if _tier_timers[ThinkTier.BACKGROUND] >= Config.THINK_TIER_BACKGROUND_INTERVAL:
-		_tier_timers[ThinkTier.BACKGROUND] -= Config.THINK_TIER_BACKGROUND_INTERVAL
-		_trigger_tier_think(ThinkTier.BACKGROUND)
+	for tier in [ThinkTier.ACTIVE, ThinkTier.NORMAL, ThinkTier.BACKGROUND]:
+		var interval: float = think_interval_for(tier)
+		if _tier_timers[tier] >= interval:
+			_tier_timers[tier] -= interval
+			_trigger_tier_think(tier)
 
 
 func _trigger_next_think_simple() -> void:
@@ -306,6 +301,14 @@ func _personality_difference(a: Node2D, b: Node2D) -> float:
 	return diff / 5.0
 
 
+func think_interval_for(tier: ThinkTier) -> float:
+	var base: float = Config.THINK_TIER_NORMAL_INTERVAL
+	match tier:
+		ThinkTier.ACTIVE: base = Config.THINK_TIER_ACTIVE_INTERVAL
+		ThinkTier.BACKGROUND: base = Config.THINK_TIER_BACKGROUND_INTERVAL
+	return base * (AmbientMode.LOW_POWER_THINK_MULTIPLIER if low_power else 1.0)
+
+
 func _trigger_tier_think(tier: ThinkTier) -> void:
 	var tier_agents: Array[Node2D] = _get_agents_in_tier(tier)
 	if tier_agents.is_empty():
@@ -313,11 +316,11 @@ func _trigger_tier_think(tier: ThinkTier) -> void:
 	var idx: int = _tier_indices.get(tier, 0) % tier_agents.size()
 	var agent := tier_agents[idx]
 	if agent.has_method("request_think"):
-		# Background agents always use heuristic
-		if tier == ThinkTier.BACKGROUND and agent.has_node("AgentBrain"):
-			agent.get_node("AgentBrain").force_heuristic = true
-		elif agent.has_node("AgentBrain"):
-			agent.get_node("AgentBrain").force_heuristic = false
+		# Background agents always use heuristic — and in low-power mode
+		# (window unfocused) so does everyone, so an idling office never
+		# holds the LLM hostage while the player is doing real work.
+		if agent.has_node("AgentBrain"):
+			agent.get_node("AgentBrain").force_heuristic = low_power or tier == ThinkTier.BACKGROUND
 		agent.request_think()
 	_tier_indices[tier] = (idx + 1) % tier_agents.size()
 

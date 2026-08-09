@@ -44,6 +44,17 @@ func _ready() -> void:
 		SettingsManager.auto_pause_on_focus_loss = v
 	)
 
+	# --- Ambient play ---
+	_add_section(vbox, "Ambient Play")
+	_add_checkbox(vbox, "Low power when unfocused", SettingsManager.low_power_when_unfocused, func(v: bool) -> void:
+		SettingsManager.low_power_when_unfocused = v
+		SettingsManager.save_settings()
+	)
+	_add_checkbox(vbox, "Mute when unfocused", SettingsManager.mute_when_unfocused, func(v: bool) -> void:
+		SettingsManager.mute_when_unfocused = v
+		SettingsManager.save_settings()
+	)
+
 	# --- LLM ---
 	_add_section(vbox, "AI Backend")
 	var llm_options := ["Auto (Recommended)", "Bundled Only", "Ollama Only", "Heuristic Only"]

@@ -24,7 +24,11 @@ var ollama_model: String = "smollm2:1.7b"
 var default_speed: int = 1
 var auto_save_interval: int = 5  # game-days
 var max_agents: int = 50
-var auto_pause_on_focus_loss: bool = true
+# Ambient by default: the office keeps living while you work. Players who
+# want the old foreground behavior can turn auto-pause back on.
+var auto_pause_on_focus_loss: bool = false
+var low_power_when_unfocused: bool = true
+var mute_when_unfocused: bool = true
 
 
 func _ready() -> void:
@@ -57,7 +61,9 @@ func load_settings() -> void:
 	default_speed = cfg.get_value("game", "default_speed", 1)
 	auto_save_interval = cfg.get_value("game", "auto_save_interval", 5)
 	max_agents = cfg.get_value("game", "max_agents", 50)
-	auto_pause_on_focus_loss = cfg.get_value("game", "auto_pause_on_focus_loss", true)
+	auto_pause_on_focus_loss = cfg.get_value("game", "auto_pause_on_focus_loss", false)
+	low_power_when_unfocused = cfg.get_value("game", "low_power_when_unfocused", true)
+	mute_when_unfocused = cfg.get_value("game", "mute_when_unfocused", true)
 
 
 func save_settings() -> void:
@@ -78,6 +84,8 @@ func save_settings() -> void:
 	cfg.set_value("game", "auto_save_interval", auto_save_interval)
 	cfg.set_value("game", "max_agents", max_agents)
 	cfg.set_value("game", "auto_pause_on_focus_loss", auto_pause_on_focus_loss)
+	cfg.set_value("game", "low_power_when_unfocused", low_power_when_unfocused)
+	cfg.set_value("game", "mute_when_unfocused", mute_when_unfocused)
 
 	cfg.save(SETTINGS_PATH)
 	settings_changed.emit()

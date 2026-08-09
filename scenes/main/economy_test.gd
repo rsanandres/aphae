@@ -132,6 +132,38 @@ func _run() -> void:
 	_check("factory builds all %d object types" % all_types.size(), all_created)
 	_check("factory refuses unknown types", ObjectFactory.create("hot_tub") == null)
 
+	# --- Ambient mode: low power + digest gating ---
+	AmbientMode.low_power_enabled = true
+	AmbientMode.mute_when_unfocused = false  # keep the audio bus out of it
+	AmbientMode.enter_background()
+	_check("backgrounding sets low power on AgentManager", AgentManager.low_power)
+	_check("low power stretches think intervals",
+		AgentManager.think_interval_for(AgentManager.ThinkTier.NORMAL) > Config.THINK_TIER_NORMAL_INTERVAL)
+
+	# A quick glance away with nothing happening yields no popup.
+	var quick: Array = AmbientMode.exit_background()
+	_check("quick alt-tab produces no digest", quick.is_empty())
+	_check("returning clears low power", not AgentManager.low_power)
+
+	# A real absence with real drama yields a digest.
+	AmbientMode.enter_background()
+	AmbientMode._away_started_msec = Time.get_ticks_msec() - 120000  # pretend 2 min away
+	EventBus.narrative_event.emit("Something enormous happened.", [], 9.0)
+	EventBus.narrative_event.emit("And then something else did.", [], 8.0)
+	EventBus.narrative_event.emit("Trivial background noise.", [], 2.0)
+	var digest: Array = AmbientMode.exit_background()
+	_check("real absence produces a digest", digest.size() == 2)
+	_check("digest ignores low-importance noise",
+		digest.size() == 2 and not ("Trivial" in str(digest)))
+	_check("digest entries carry day and time", digest.size() > 0 and digest[0].has("day") and digest[0].has("time"))
+
+	# Nothing is collected while focused.
+	EventBus.narrative_event.emit("Happened while watching.", [], 9.0)
+	AmbientMode.enter_background()
+	AmbientMode._away_started_msec = Time.get_ticks_msec() - 120000
+	var focused_digest: Array = AmbientMode.exit_background()
+	_check("events while focused are not collected", focused_digest.is_empty())
+
 	# --- Meta kill-switch ---
 	var meta_path: String = ProducerEconomy.META_PATH
 	if FileAccess.file_exists(meta_path):

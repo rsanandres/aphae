@@ -45,10 +45,20 @@ func _ready() -> void:
 	# LLM loading overlay
 	_setup_loading_overlay()
 
-	# Auto-pause on focus loss
+	# Focus handling. By default the office KEEPS RUNNING while you work and
+	# drops to a low-power posture; auto-pause is opt-in for players who want
+	# the old foreground behavior.
 	get_window().focus_exited.connect(func() -> void:
-		if SettingsManager.auto_pause_on_focus_loss and not TimeManager.is_paused:
-			TimeManager.toggle_pause()
+		if SettingsManager.auto_pause_on_focus_loss:
+			if not TimeManager.is_paused:
+				TimeManager.toggle_pause()
+			return
+		AmbientMode.enter_background()
+	)
+	get_window().focus_entered.connect(func() -> void:
+		var digest := AmbientMode.exit_background()
+		if not digest.is_empty():
+			EventBus.away_digest_ready.emit(digest)
 	)
 
 	# Try loading save on startup (unless "New Sandbox" was chosen)

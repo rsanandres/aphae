@@ -493,6 +493,38 @@ rhythm and a score. Backlog items 6/8-adjacent delivered. Commits `63b606e` → 
   (autoloads/classes aren't registered yet) — use `load("res://...")` dynamically.
 - Harness: `scenes/main/economy_test.tscn`, 24 checks.
 
+### ✅ A — Ambient identity (done, 2026-08-09)
+
+**Product decision, not just a feature:** this is an ambient game you leave running, not a
+foreground sim you stare at. The pacing already demanded it (a game-day is 24 real minutes at
+1x; an episode over an hour), the catch-up machinery was already the best-built part of the
+project (log tabs, confessional feed, recaps, wrap cards), and the positioning is far stronger
+— "a reality show that lives on your desktop" competes with nothing, while "another AI office
+sim" competes with RimWorld and loses.
+
+The code had been arguing with itself: `auto_pause_on_focus_loss` **defaulted to true**, so the
+game stopped dead the instant you clicked away, while shipping a desktop-pet mode that begs to
+run in a corner. Resolved in favor of ambient.
+
+- **`AmbientMode` autoload**: on focus loss (when auto-pause is off) the office enters low
+  power — every agent forced to the heuristic brain via the existing `force_heuristic` lever,
+  think cadence ×3, audio muted (optional) — and notable events are collected. On return, a
+  digest fires *only* if the player was gone ≥60s AND ≥2 notable things happened, so a quick
+  alt-tab is never punished with a popup. **Nothing blocks on attention; attention is rewarded.**
+- `AgentManager.low_power` + `think_interval_for(tier)` centralize the cadence (the three
+  hardcoded interval checks collapsed into one loop).
+- Defaults flipped: auto-pause **off**, low-power **on**, mute-when-unfocused **on**; all three
+  exposed in Settings under "Ambient Play".
+- `AwayDigestPanel` (BasePanel modal) renders the catch-up, color-coded by kind.
+
+**Open follow-up:** two catch-up modals now exist — this one and the pre-theme hand-rolled
+"Welcome Back" save-load summary in `main.gd:_show_load_summary`. They can stack, and the older
+one predates the design system. Unify them.
+
+**The remaining ambient blocker is the LLM.** Low-power mode stops agents *queueing* LLM work
+while unfocused, which is the right first move, but a bundled model still idles in memory. A
+true background build wants the model unloaded (not just unused) when backgrounded.
+
 ### 🎛️ Backlog — player agency
 
 **The gap:** the player can reshape the *world* (god toolbar places objects, spawns/removes

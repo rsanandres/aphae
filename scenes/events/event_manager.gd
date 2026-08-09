@@ -10,6 +10,13 @@ var _loaded: bool = false
 var auto_resolve_dilemmas: bool = false  # true in headless / when no UI exists
 var _pending_dilemma: Dictionary = {}  # {definition, affected, timeout_left, was_paused}
 
+# Pacing: three roll windows per day (start / noon / late afternoon) instead
+# of one midnight burst, capped so a hot streak can't flood the office.
+const ROLL_WINDOW_HOURS: Array[float] = [12.0, 17.0]
+const MAX_EVENTS_PER_DAY := 6
+var _events_today: int = 0
+var _windows_rolled: Dictionary = {}  # hour -> day it last rolled
+
 
 func _ready() -> void:
 	_load_events()
@@ -106,15 +113,20 @@ func get_active_events() -> Array[Dictionary]:
 
 
 func _on_day_changed(day: int) -> void:
-	# Get drama-based probability modifier from the DramaDirector.
-	var drama_mod: float = 1.0
+	_events_today = 0
 	if DramaDirector:
-		drama_mod = DramaDirector.get_probability_modifier()
 		# Sync narrator drama into the director once per day.
 		DramaDirector.sync_with_narrator()
+	_roll_events(day)
 
-	# Roll for random events each day
+
+func _roll_events(day: int) -> void:
+	if _events_today >= MAX_EVENTS_PER_DAY:
+		return
+	var drama_mod: float = DramaDirector.get_probability_modifier() if DramaDirector else 1.0
 	for definition in _event_definitions:
+		if _events_today >= MAX_EVENTS_PER_DAY:
+			return
 		# Check cooldown
 		var last_triggered: int = _cooldowns.get(definition.event_id, 0)
 		if day - last_triggered < definition.cooldown_days:
@@ -131,10 +143,18 @@ func _on_day_changed(day: int) -> void:
 				continue
 			if not targets.is_empty() and not ConsequenceEngine.prerequisites_met_target(definition.prerequisites, targets[0]):
 				continue
-			_execute_event(definition, targets)
+			if _execute_event(definition, targets):
+				_events_today += 1
 
 
 func _on_time_tick(game_minutes: float) -> void:
+	# Midday roll windows: drama can start at lunch, not only at midnight.
+	var hour := fmod(game_minutes / 60.0, 24.0)
+	for window_hour in ROLL_WINDOW_HOURS:
+		if hour >= window_hour and _windows_rolled.get(window_hour, 0) != TimeManager.day:
+			_windows_rolled[window_hour] = TimeManager.day
+			_roll_events(TimeManager.day)
+
 	# Check for ending active events
 	var to_remove: Array[int] = []
 	for i in range(_active_events.size()):

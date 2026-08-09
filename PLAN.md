@@ -5,7 +5,7 @@ this file before touching anything. It records decisions, environment setup, and
 are expensive to rediscover — several entries here exist because someone already lost an hour
 to them.
 
-**Status:** M0–M4, M8, and V (visual/audio overhaul) shipped · **Branch:** `main` · **Open:** M7
+**Status:** M0–M4, M8, V, and E (events-that-change-people) shipped · **Branch:** `main` · **Open:** M7 (full lying-in-conversation remains; E4 shipped the M7-lite core)
 **Maintainer:** this file is owned and kept current. Amend it when you learn something; do not
 let it drift. Two claims in it have already been proven false and corrected — a stale doc is
 worse than no doc, because it is trusted.
@@ -434,6 +434,35 @@ confessional 15/15 + a windowed `gui_check`/`screenshots` run. Commits `34237ca`
   error at *reload* (gui_check caught it; the editor parse check did not). Type the loop var.
 - The sanitizer's schema-echo extraction must run **before** its JSON-artifact cut, or an
   echoed `{"line": ...}` object gets truncated to nothing at its own opening brace.
+
+### ✅ E — Events that change people (done, 2026-08-09)
+
+The owner's ask: "more things and events that will happen that can change and alter" the
+agents. Shipped in six stages (`a57c548` → this), each gated on parse + producer 14/14 +
+confessional 15/15 + the new events harness.
+
+| Stage | What shipped |
+|---|---|
+| **E1 ConsequenceEngine** | Events are data now. Declarative payloads (relationship deltas/tags/status, modifiers, conditions, memories with **witness radius** instead of broadcast-to-all, capped permanent **trait shifts**, trait-conditioned bystander reactions, weighted outcomes, named scripts) + prerequisites + second-actor selection + a real `specific` target mode. heated_argument/promotion migrated to JSON; `motivated` finally does something (halves productivity decay). **SAVE_VERSION 5**: modifiers, cooldowns, in-flight events, drama state, and `personality_data` for every agent (file agents' trait shifts used to silently revert — `save_manager.gd` gated on `__procedural__`). Life-stage signal no longer emits an empty name. |
+| **E2 Romance + arcs** | `romantic_interest` was **never incremented anywhere** — organic romance was provably impossible (confession gate is >40). Now positive conversations grow it (compatibility-weighted, blocked when committed elsewhere), CRUSHING gets set, `romantic_reflect.txt` is wired. ArcManager autoload: multi-day staged storylines in `arcs.json` (burnout spiral, secret hobby, promotion chase, goal-pursuit template — goals finally resolve, Phase 2 delivered). |
+| **E3 Cast churn** | `agent.depart()` — a non-death exit (no grief cascade, no `agent_died`). Departures are archived (personality + relationships + memories) so **returning_ex** brings people back with grudges intact. new_hire seeds compatibility-based first impressions + mid-season intro confessional. |
+| **E4 Secrets & sabotage** | A secret is a memory (`decay_protected`, thread `secret_*`) per the M7 agreement. Sabotage events pick a hidden actor (rivals/low-agreeableness/repeat offenders weighted); victim's memory names no one; RumorMill passes third-party memories at conversation wrap-up, trust-gated and distorting — the leak mechanism (Phase 3 down payment). |
+| **E5 Producer dilemmas** | Events can pause the show for a producer decision (DilemmaPanel modal, real-time countdown, default on timeout/dismiss/headless; prior pause state restored). Poached is now a dilemma (counter-offer vs let them walk); The Leak and The Footage gate on `has_secret`/`has_secret_thread`. |
+| **E6 Content + pacing** | 37 events total (~15 new: imposter syndrome, health scare w/ new `stress` condition, viral post, mentor moment, prank outcomes, late-night romance feeder, reconciliation via new `grudge` second-actor + `requires_tag_prefix`, headhunter w/ `secret_jobhunt` thread, secret admirer, team win, coffee crisis). **Three intra-day roll windows** (start/12:00/17:00) replace the midnight burst, capped 6/day. Measured 2.0 events/day at neutral drama over 20 simulated days (quiet-escalation lifts slow days). |
+
+**Gotchas from this work:**
+- **Test worlds must freeze the clock AND zero event probabilities** — the harness's manual
+  `day_changed` emissions roll real organic events; a `returning_ex` once consumed the
+  departure archive between two assertions. `trigger_event()` bypasses probability, so
+  zeroing is safe for force-fire tests.
+- **The event walker must re-pick a live target every iteration** — churn events depart
+  agents mid-walk, and a runtime error inside an awaited coroutine hangs the harness
+  silently (no report, no quit).
+- **Measure pacing at controlled drama.** Firing 37 events back-to-back drives
+  `drama_level` past the climax threshold and the director suppresses everything after it
+  to 0.1–0.3×; the band assertion resets pacing state per simulated day.
+- `for x in [1, 2, 3]`-style untyped iteration strikes again: `var y := array[0]` on an
+  untyped Array is a parse error only at scene load. Type the variable.
 
 ### 🎛️ Backlog — player agency
 

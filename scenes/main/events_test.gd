@@ -354,6 +354,62 @@ func _run() -> void:
 	_check("buried footage exposes no one", not exposed)
 	_check("burying it deepens the secret", sab.memory.get_secrets().size() >= 1)
 
+	# --- E6: every event id force-fires without error ---
+	# Restore probabilities were zeroed above; force-trigger ignores them.
+	var all_fired := true
+	for definition in EventManager.get_available_events():
+		# Churn events depart agents mid-walk — always fire at a live target.
+		var live: Node2D = null
+		for ag in AgentManager.agents:
+			if is_instance_valid(ag) and not ag.is_dead:
+				live = ag
+				break
+		if live == null:
+			live = AgentManager.spawn_procedural_agent(Vector2(100, 100))
+			await get_tree().process_frame
+		var got: bool = EventManager.trigger_event(definition.event_id, [live])
+		if EventManager.has_pending_dilemma():
+			EventManager.resolve_dilemma(int(definition.dilemma.get("default_choice", 0)))
+		if not got:
+			all_fired = false
+			print("      event failed to fire: %s" % definition.event_id)
+		await get_tree().process_frame
+	_check("all %d events fire by id without error" % EventManager.get_available_events().size(), all_fired)
+
+	# --- E6: pacing band — simulated 20 days of organic rolls ---
+	var defs := EventManager.get_available_events()
+	var original_probs: Array[float] = []
+	for definition in defs:
+		original_probs.append(definition.probability)
+	# reload real probabilities from disk values stored at parse time is
+	# impossible here (we zeroed them), so re-read the JSON
+	var f := FileAccess.open("res://resources/events/events.json", FileAccess.READ)
+	var raw: Array = JSON.parse_string(f.get_as_text())
+	var prob_by_id: Dictionary = {}
+	for entry in raw:
+		prob_by_id[entry["id"]] = float(entry.get("probability", 0.1))
+	for definition in defs:
+		definition.probability = prob_by_id.get(definition.event_id, 0.05)
+	# The walker just spiked drama past the climax threshold, which would
+	# suppress the whole sim to a 0.1-0.3 multiplier; measure at neutral pacing.
+	DramaDirector.load_save_state({"drama_level": 3.0, "time_since_last_event": 0.0, "in_cooldown": false, "cooldown_remaining": 0.0})
+	var tally: Array[int] = [0]
+	EventBus.event_triggered.connect(func(_id: String, _names: Array) -> void: tally[0] += 1)
+	var base_count: int = tally[0]
+	for sim_day in range(30, 50):
+		EventManager._events_today = 0
+		DramaDirector.load_save_state({"drama_level": 3.0, "time_since_last_event": 0.0, "in_cooldown": false, "cooldown_remaining": 0.0})
+		for window in range(3):
+			EventManager._roll_events(sim_day)
+			if EventManager.has_pending_dilemma():
+				EventManager.resolve_dilemma(1)
+			await get_tree().process_frame
+	var per_day: float = float(tally[0] - base_count) / 20.0
+	print("      organic pacing: %.1f events/day over 20 simulated days" % per_day)
+	_check("pacing lands in the 1.5-6 events/day band", per_day >= 1.5 and per_day <= 6.0)
+	for i in range(defs.size()):
+		defs[i].probability = 0.0  # re-zero for any later blocks
+
 	# --- 6. specific target mode never fires organically ---
 	var spec_def := EventDefinition.from_dict({
 		"id": "__test_specific", "name": "t", "description": "t",

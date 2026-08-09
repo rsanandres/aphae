@@ -68,6 +68,7 @@ func _apply_aging_decay() -> void:
 		match condition:
 			"flu": health = maxf(health - 2.0, 0.0)
 			"exhaustion": health = maxf(health - 1.0, 0.0)
+			"stress": health = maxf(health - 1.0, 0.0)
 
 
 func _process_conditions() -> void:
@@ -80,6 +81,9 @@ func _process_conditions() -> void:
 					to_remove.append(condition)
 			"exhaustion":
 				if randf() < 0.5:
+					to_remove.append(condition)
+			"stress":
+				if randf() < 0.4:
 					to_remove.append(condition)
 	for c in to_remove:
 		conditions.erase(c)

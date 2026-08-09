@@ -3,7 +3,7 @@
     "id": "gossip_spreads",
     "name": "Gossip Spreads",
     "description": "Office gossip is making the rounds \u2014 someone's been talking behind backs.",
-    "probability": 0.15,
+    "probability": 0.08,
     "category": "social",
     "target_mode": "random",
     "duration_minutes": 60,
@@ -102,7 +102,7 @@
     "id": "secret_shared",
     "name": "Secret Shared",
     "description": "Someone shared a personal secret, creating a deeper bond.",
-    "probability": 0.08,
+    "probability": 0.05,
     "category": "social",
     "target_mode": "random",
     "duration_minutes": 0,
@@ -173,7 +173,7 @@
     "id": "deadline_crunch",
     "name": "Deadline Crunch",
     "description": "An urgent deadline is looming \u2014 everyone needs to buckle down.",
-    "probability": 0.08,
+    "probability": 0.05,
     "category": "work",
     "target_mode": "global",
     "duration_minutes": 120,
@@ -187,7 +187,7 @@
     "id": "creative_breakthrough",
     "name": "Creative Breakthrough",
     "description": "A flash of inspiration strikes! Someone has a brilliant idea.",
-    "probability": 0.06,
+    "probability": 0.04,
     "category": "work",
     "target_mode": "random",
     "duration_minutes": 0,
@@ -251,7 +251,7 @@
     "id": "recovery",
     "name": "Recovery",
     "description": "Good news \u2014 someone is feeling much better today!",
-    "probability": 0.1,
+    "probability": 0.06,
     "category": "health",
     "target_mode": "random",
     "duration_minutes": 0,
@@ -282,7 +282,7 @@
     "id": "pizza_delivery",
     "name": "Pizza Delivery",
     "description": "Someone ordered pizza for the whole office!",
-    "probability": 0.1,
+    "probability": 0.06,
     "category": "environment",
     "target_mode": "global",
     "duration_minutes": 0,
@@ -310,7 +310,7 @@
     "id": "birthday",
     "name": "Birthday",
     "description": "It's someone's birthday! The office celebrates with cake.",
-    "probability": 0.08,
+    "probability": 0.05,
     "category": "personal",
     "target_mode": "random",
     "duration_minutes": 30,
@@ -338,7 +338,7 @@
     "id": "new_hobby",
     "name": "New Hobby",
     "description": "Someone discovered a new hobby and can't stop talking about it!",
-    "probability": 0.07,
+    "probability": 0.04,
     "category": "personal",
     "target_mode": "random",
     "duration_minutes": 0,
@@ -455,7 +455,7 @@
     "id": "stolen_lunch",
     "name": "Stolen Lunch",
     "description": "Someone's lunch has vanished from the office fridge.",
-    "probability": 0.07,
+    "probability": 0.05,
     "category": "social",
     "target_mode": "random",
     "cooldown_days": 4,
@@ -594,6 +594,470 @@
           }
         }
       ]
+    }
+  },
+  {
+    "id": "imposter_syndrome",
+    "name": "Imposter Syndrome",
+    "description": "The quiet dread of being found out settles over someone.",
+    "probability": 0.03,
+    "category": "personal",
+    "target_mode": "random",
+    "cooldown_days": 8,
+    "prerequisites": {
+      "needs": {
+        "productivity": {
+          "below": 50
+        }
+      }
+    },
+    "need_effects": {
+      "productivity": -10,
+      "social": -5
+    },
+    "memory": {
+      "affected": {
+        "text": "can't shake the feeling of being a fraud. Everyone else seems so sure of themselves.",
+        "importance": 6,
+        "emotion": "discomfort",
+        "sentiment": -0.6,
+        "protected": true
+      }
+    },
+    "trait_shifts": {
+      "neuroticism": 0.02
+    },
+    "narrative": {
+      "text": "{target} has been unusually quiet and self-critical lately.",
+      "importance": 4
+    }
+  },
+  {
+    "id": "health_scare",
+    "name": "Health Scare",
+    "description": "A dizzy spell scares someone into slowing down.",
+    "probability": 0.03,
+    "category": "health",
+    "target_mode": "random",
+    "cooldown_days": 10,
+    "prerequisites": {
+      "needs": {
+        "health": {
+          "below": 60
+        }
+      }
+    },
+    "need_effects": {
+      "energy": -15
+    },
+    "conditions_add": [
+      "stress"
+    ],
+    "memory": {
+      "affected": {
+        "text": "had a dizzy spell that scared them badly. Mortality suddenly feels very real.",
+        "importance": 8,
+        "emotion": "shock",
+        "sentiment": -0.7,
+        "protected": true
+      }
+    },
+    "narrative": {
+      "text": "{target} had a health scare. The office noticed.",
+      "importance": 6
+    }
+  },
+  {
+    "id": "viral_hobby_post",
+    "name": "Gone Viral",
+    "description": "Someone's side project blew up online overnight.",
+    "probability": 0.03,
+    "category": "personal",
+    "target_mode": "random",
+    "cooldown_days": 12,
+    "need_effects": {
+      "social": 20,
+      "productivity": -5
+    },
+    "memory": {
+      "affected": {
+        "text": "woke up internet-famous \u2014 the side project went viral overnight.",
+        "importance": 7,
+        "emotion": "happiness",
+        "sentiment": 0.8,
+        "protected": true
+      }
+    },
+    "trait_shifts": {
+      "openness": 0.02,
+      "extraversion": 0.02
+    },
+    "bystander_reactions": [
+      {
+        "trait": "agreeableness",
+        "below": 0.4,
+        "affinity": -5,
+        "memory": {
+          "text": "saw {target}'s post blow up. Some people get all the luck.",
+          "importance": 4,
+          "emotion": "jealousy",
+          "sentiment": -0.3
+        }
+      },
+      {
+        "memory": {
+          "text": "saw {target} go viral overnight. Wild.",
+          "importance": 4,
+          "emotion": "happiness",
+          "sentiment": 0.3
+        }
+      }
+    ],
+    "narrative": {
+      "text": "{target}'s side project went viral. The office can talk of nothing else.",
+      "importance": 6
+    }
+  },
+  {
+    "id": "mentor_moment",
+    "name": "Mentor Moment",
+    "description": "An impromptu lesson turns into a real bond.",
+    "probability": 0.05,
+    "category": "work",
+    "target_mode": "random",
+    "cooldown_days": 5,
+    "second_actor": "random",
+    "relationship_effects": [
+      {
+        "from": "target",
+        "to": "second",
+        "affinity": 8,
+        "trust": 10
+      },
+      {
+        "from": "second",
+        "to": "target",
+        "affinity": 8,
+        "trust": 6
+      }
+    ],
+    "memory": {
+      "affected": {
+        "text": "spent an hour teaching {second} something hard-won. It felt genuinely good.",
+        "importance": 5,
+        "emotion": "happiness",
+        "sentiment": 0.6
+      },
+      "second": {
+        "text": "got real mentorship from {target} today. That kind of generosity is rare.",
+        "importance": 6,
+        "emotion": "happiness",
+        "sentiment": 0.7
+      }
+    },
+    "narrative": {
+      "text": "{target} took {second} under their wing today.",
+      "importance": 4
+    }
+  },
+  {
+    "id": "prank_gone_wrong",
+    "name": "Prank Gone Wrong",
+    "description": "A harmless office prank lands very badly.",
+    "probability": 0.04,
+    "category": "social",
+    "target_mode": "random",
+    "cooldown_days": 6,
+    "second_actor": "random",
+    "outcomes": [
+      {
+        "weight": 0.55,
+        "relationship_effects": [
+          {
+            "from": "second",
+            "to": "target",
+            "affinity": 6
+          }
+        ],
+        "memory": {
+          "affected": {
+            "text": "pranked {second}, who actually laughed. Crisis averted, friendship gained.",
+            "importance": 4,
+            "emotion": "happiness",
+            "sentiment": 0.5
+          },
+          "second": {
+            "text": "got pranked by {target} and honestly? It was funny.",
+            "importance": 4,
+            "emotion": "happiness",
+            "sentiment": 0.4
+          }
+        },
+        "narrative": {
+          "text": "{target}'s prank on {second} actually landed. Laughter all around.",
+          "importance": 3
+        }
+      },
+      {
+        "weight": 0.45,
+        "relationship_effects": [
+          {
+            "from": "second",
+            "to": "target",
+            "affinity": -12,
+            "add_tags": [
+              "angry_at_{target}"
+            ]
+          }
+        ],
+        "memory": {
+          "affected": {
+            "text": "pranked {second} and it went down horribly. They are NOT laughing.",
+            "importance": 6,
+            "emotion": "shame",
+            "sentiment": -0.5
+          },
+          "second": {
+            "text": "was humiliated by {target}'s so-called prank. Not funny. At all.",
+            "importance": 6,
+            "emotion": "anger",
+            "sentiment": -0.7
+          }
+        },
+        "narrative": {
+          "text": "{target}'s prank on {second} went down in flames.",
+          "importance": 6
+        }
+      }
+    ]
+  },
+  {
+    "id": "borrowed_and_broke",
+    "name": "Borrowed and Broke",
+    "description": "Something borrowed came back broken.",
+    "probability": 0.04,
+    "category": "social",
+    "target_mode": "random",
+    "cooldown_days": 7,
+    "second_actor": "friend",
+    "relationship_effects": [
+      {
+        "from": "second",
+        "to": "target",
+        "affinity": -12,
+        "trust": -12
+      }
+    ],
+    "memory": {
+      "affected": {
+        "text": "broke something they borrowed from {second} and had to own up to it.",
+        "importance": 5,
+        "emotion": "shame",
+        "sentiment": -0.5
+      },
+      "second": {
+        "text": "lent {target} something that came back broken. Trust is earned, apparently.",
+        "importance": 6,
+        "emotion": "anger",
+        "sentiment": -0.6
+      }
+    },
+    "narrative": {
+      "text": "{target} broke something of {second}'s. It's awkward now.",
+      "importance": 5
+    }
+  },
+  {
+    "id": "late_night_working",
+    "name": "Late Night",
+    "description": "Two people, one deadline, empty office.",
+    "probability": 0.05,
+    "category": "work",
+    "target_mode": "random",
+    "cooldown_days": 5,
+    "second_actor": "random",
+    "need_effects": {
+      "energy": -10,
+      "productivity": 15
+    },
+    "relationship_effects": [
+      {
+        "from": "target",
+        "to": "second",
+        "affinity": 6,
+        "romantic_interest": 8
+      },
+      {
+        "from": "second",
+        "to": "target",
+        "affinity": 6,
+        "romantic_interest": 8
+      }
+    ],
+    "memory": {
+      "affected": {
+        "text": "worked late into the night with {second}. Something about empty offices makes conversations honest.",
+        "importance": 6,
+        "emotion": "candid",
+        "sentiment": 0.5
+      },
+      "second": {
+        "text": "stayed late with {target}. The office feels different at night \u2014 smaller, warmer.",
+        "importance": 6,
+        "emotion": "candid",
+        "sentiment": 0.5
+      }
+    },
+    "narrative": {
+      "text": "{target} and {second} closed the office down working late together.",
+      "importance": 4
+    }
+  },
+  {
+    "id": "reconciliation",
+    "name": "Reconciliation",
+    "description": "An old grudge finally cracks.",
+    "probability": 0.06,
+    "category": "social",
+    "target_mode": "random",
+    "cooldown_days": 4,
+    "prerequisites": {
+      "requires_tag_prefix": "angry_at_"
+    },
+    "second_actor": "grudge",
+    "relationship_effects": [
+      {
+        "from": "target",
+        "to": "second",
+        "affinity": 18,
+        "remove_tags": [
+          "angry_at_{second}"
+        ]
+      },
+      {
+        "from": "second",
+        "to": "target",
+        "affinity": 14,
+        "remove_tags": [
+          "angry_at_{target}"
+        ]
+      }
+    ],
+    "memory": {
+      "affected": {
+        "text": "finally cleared the air with {second}. The grudge was heavier than it looked.",
+        "importance": 7,
+        "emotion": "happiness",
+        "sentiment": 0.7,
+        "protected": true
+      },
+      "second": {
+        "text": "made peace with {target}. Neither said sorry first \u2014 it just happened.",
+        "importance": 7,
+        "emotion": "happiness",
+        "sentiment": 0.6,
+        "protected": true
+      }
+    },
+    "narrative": {
+      "text": "{target} and {second} finally buried the hatchet.",
+      "importance": 6
+    }
+  },
+  {
+    "id": "headhunter_sighting",
+    "name": "Headhunter Sighting",
+    "description": "A recruiter was spotted taking someone to coffee.",
+    "probability": 0.04,
+    "category": "work",
+    "target_mode": "random",
+    "cooldown_days": 8,
+    "prerequisites": {
+      "min_agents": 4
+    },
+    "memory": {
+      "affected": {
+        "text": "took a quiet coffee with a recruiter. Just listening. That's all. Just listening.",
+        "importance": 6,
+        "emotion": "candid",
+        "sentiment": 0.1,
+        "protected": true,
+        "thread": "secret_jobhunt"
+      },
+      "witness": {
+        "radius": 140,
+        "text": "spotted {target} having coffee with what was definitely a recruiter.",
+        "importance": 5,
+        "emotion": "curiosity",
+        "sentiment": -0.2
+      }
+    },
+    "narrative": {
+      "text": "Rumor has it a headhunter was sniffing around {target}.",
+      "importance": 5
+    }
+  },
+  {
+    "id": "secret_admirer",
+    "name": "Secret Admirer",
+    "description": "An unsigned note. Nice handwriting. Interesting.",
+    "probability": 0.04,
+    "category": "social",
+    "target_mode": "random",
+    "cooldown_days": 7,
+    "second_actor": "random",
+    "relationship_effects": [
+      {
+        "from": "target",
+        "to": "second",
+        "romantic_interest": 10
+      }
+    ],
+    "memory": {
+      "affected": {
+        "text": "found an unsigned admiring note on their desk. The handwriting looks a little like {second}'s...",
+        "importance": 6,
+        "emotion": "candid",
+        "sentiment": 0.5
+      }
+    },
+    "narrative": {
+      "text": "{target} got a note from a secret admirer.",
+      "importance": 5
+    }
+  },
+  {
+    "id": "team_win",
+    "name": "Team Win",
+    "description": "The office shipped something together, and it landed.",
+    "probability": 0.04,
+    "category": "work",
+    "target_mode": "global",
+    "cooldown_days": 8,
+    "need_effects": {
+      "productivity": 15,
+      "social": 10
+    },
+    "narrative": {
+      "text": "The office pulled off a real win today. Morale is up.",
+      "importance": 5
+    }
+  },
+  {
+    "id": "coffee_machine_broken",
+    "name": "Coffee Crisis",
+    "description": "The coffee machine died mid-morning. Civilization teeters.",
+    "probability": 0.04,
+    "category": "environment",
+    "target_mode": "global",
+    "cooldown_days": 6,
+    "need_effects": {
+      "energy": -8,
+      "social": -4
+    },
+    "narrative": {
+      "text": "The coffee machine is DOWN. The office is in mourning.",
+      "importance": 4
     }
   }
 ]

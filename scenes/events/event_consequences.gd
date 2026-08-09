@@ -540,6 +540,16 @@ static func _select_second(mode: String, target: Node2D) -> Node2D:
 				if is_instance_valid(a) and a != target and not a.is_dead:
 					others.append(a)
 			return others[randi() % others.size()] if not others.is_empty() else null
+		"grudge":
+			# Someone the target is actively angry at (argument fallout).
+			var rels: Dictionary = target.relationships.get_all_relationships()
+			for other_name in rels:
+				for tag in (rels[other_name] as RelationshipEntry).tags:
+					if str(tag).begins_with("angry_at_"):
+						var other := AgentManager.get_agent_by_name(other_name)
+						if other and is_instance_valid(other) and not other.is_dead:
+							return other
+			return null
 	return null
 
 
@@ -616,6 +626,17 @@ static func prerequisites_met_target(prereq: Dictionary, target: Node2D) -> bool
 		if bounds.has("below") and value >= float(bounds["below"]):
 			return false
 		if bounds.has("above") and value <= float(bounds["above"]):
+			return false
+	if prereq.has("requires_tag_prefix"):
+		var found_prefix := false
+		for rel in target.relationships.get_all_relationships().values():
+			for tag in (rel as RelationshipEntry).tags:
+				if str(tag).begins_with(str(prereq["requires_tag_prefix"])):
+					found_prefix = true
+					break
+			if found_prefix:
+				break
+		if not found_prefix:
 			return false
 	if prereq.has("requires_tag"):
 		var found_tag := false

@@ -56,10 +56,11 @@ func is_agent_busy(agent_name: String) -> bool:
 func _on_conversation_finished(agent_a_name: String, agent_b_name: String) -> void:
 	_agents_in_conversation.erase(agent_a_name)
 	_agents_in_conversation.erase(agent_b_name)
-	# Clean up finished instances
-	var to_remove: Array[ConversationInstance] = []
-	for inst in _active_conversations:
-		if not is_instance_valid(inst):
-			to_remove.append(inst)
-	for inst in to_remove:
-		_active_conversations.erase(inst)
+	# Prune freed instances IN PLACE. The previous version collected them into
+	# an Array[ConversationInstance] first — but a typed array validates on
+	# push_back and rejects freed objects, so the cleanup code was itself the
+	# source of "Attempted to push_back an invalid (previously freed?) object
+	# instance into a 'TypedArray'". Removing by index needs no such array.
+	for i in range(_active_conversations.size() - 1, -1, -1):
+		if not is_instance_valid(_active_conversations[i]):
+			_active_conversations.remove_at(i)

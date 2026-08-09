@@ -56,6 +56,9 @@ func _process(_delta: float) -> void:
 	var view := get_viewport().get_visible_rect().size
 	var camera := get_viewport().get_camera_2d()
 	var zoom: float = camera.zoom.x if camera else 1.0
+	# NOTE: `dead` must stay UNTYPED. It collects agents that have already
+	# been freed, and a typed array validates on push_back and rejects them —
+	# that exact mistake in conversation_manager was spamming the log.
 	var dead: Array = []
 	for agent: Node2D in _bubbles:
 		if not is_instance_valid(agent):

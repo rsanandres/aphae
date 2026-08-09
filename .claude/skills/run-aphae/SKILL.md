@@ -82,6 +82,20 @@ Run it in the background so it does not block the session, then tail the log
 for `SCRIPT ERROR` while the owner plays — a runtime error caught with its
 stack beats asking them to reproduce it.
 
+## Watching a live playtest
+
+Launch in the background, then tail the log for errors. **Capture the
+GDScript backtrace, not just the ERROR line** — Godot prints the trace on
+the following lines, and a grep matching only `SCRIPT ERROR|ERROR:` throws
+away the one piece of information that identifies the culprit:
+
+```bash
+grep -E -A6 "SCRIPT ERROR|ERROR:" playtest.log      # -A6 keeps the backtrace
+```
+
+Chasing a "previously freed object" error without its trace cost real time
+in this repo; the trace named the exact function on the first line.
+
 ## Traps that have cost real time
 
 - **Test harnesses must neutralize global state.** Set
@@ -104,6 +118,10 @@ stack beats asking them to reproduce it.
   specific to the owner's Windows box, not this machine.)
 - **Anchors before offsets.** Assigning `anchors_preset` silently discards
   offsets already set.
+- **Never collect freed objects into a typed array.** `Array[T].push_back`
+  validates and rejects them, so cleanup code written as "gather the dead
+  ones, then erase them" errors on the gather. Remove by index instead
+  (iterate backwards). This was a live bug in `conversation_manager`.
 - **`custom_minimum_size` larger than the assigned rect silently wins** and
   pushes panels off-screen. This one bug family accounted for most of the
   historical layout defects.

@@ -452,6 +452,24 @@ func _run() -> void:
 			not ConversationManager.is_agent_busy(survivor_name))
 		_check("survivor can talk again", talker_b.state != AgentState.Type.TALKING)
 
+	# --- Regression: pruning finished conversations must not push freed
+	# instances into a typed array (the error seen in the live playtest) ---
+	var ghost_inst := ConversationInstance.new()
+	ConversationManager.add_child(ghost_inst)
+	ConversationManager._active_conversations.append(ghost_inst)
+	var before_prune: int = ConversationManager._active_conversations.size()
+	ghost_inst.queue_free()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	ConversationManager._on_conversation_finished("__nobody_a", "__nobody_b")
+	_check("freed conversation instances are pruned",
+		ConversationManager._active_conversations.size() < before_prune)
+	var prune_clean := true
+	for inst in ConversationManager._active_conversations:
+		if not is_instance_valid(inst):
+			prune_clean = false
+	_check("no freed instances survive the prune", prune_clean)
+
 	# --- 6. specific target mode never fires organically ---
 	var spec_def := EventDefinition.from_dict({
 		"id": "__test_specific", "name": "t", "description": "t",

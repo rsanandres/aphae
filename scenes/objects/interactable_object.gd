@@ -65,14 +65,32 @@ func get_need_effects() -> Dictionary:
 
 
 func is_available() -> bool:
+	_prune_occupants()
 	return _occupants.size() < max_occupants
 
 
 func get_occupant_count() -> int:
+	_prune_occupants()
 	return _occupants.size()
 
 
+func _prune_occupants() -> void:
+	## Belt to the agent-side braces: an occupant that no longer exists must
+	## never keep a seat. Without this, one death at a desk retired that desk
+	## for the rest of the run.
+	var pruned := false
+	for i in range(_occupants.size() - 1, -1, -1):
+		if not is_instance_valid(_occupants[i]):
+			_occupants.remove_at(i)
+			pruned = true
+	if pruned:
+		_update_use_indicator()
+
+
 func occupy(agent: Node2D) -> void:
+	_prune_occupants()
+	if not is_instance_valid(agent):
+		return
 	if agent not in _occupants and _occupants.size() < max_occupants:
 		_occupants.append(agent)
 		_update_use_indicator()
@@ -84,10 +102,12 @@ func release(agent: Node2D) -> void:
 
 
 func get_occupant() -> Node2D:
+	_prune_occupants()
 	return _occupants[0] if not _occupants.is_empty() else null
 
 
 func get_all_occupants() -> Array[Node2D]:
+	_prune_occupants()
 	return _occupants
 
 

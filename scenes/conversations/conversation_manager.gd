@@ -6,6 +6,9 @@ var _agents_in_conversation: Dictionary = {}  # agent_name -> bool
 
 
 func start_conversation(agent_a: Node2D, agent_b: Node2D) -> bool:
+	# A two-seat object can hand us an occupant that has since been freed.
+	if not is_instance_valid(agent_a) or not is_instance_valid(agent_b) or agent_a == agent_b:
+		return false
 	if is_agent_busy(agent_a.agent_name) or is_agent_busy(agent_b.agent_name):
 		# One of them is already in a conversation
 		agent_a.needs.restore(NeedType.Type.SOCIAL, 5.0)

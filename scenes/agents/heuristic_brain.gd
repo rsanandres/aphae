@@ -193,6 +193,8 @@ func _get_preferred_object(need: NeedType.Type, personality: PersonalityProfile)
 func _find_available_object(objects: Array, object_type: String) -> Node2D:
 	var candidates: Array[Node2D] = []
 	for obj in objects:
+		if not is_instance_valid(obj):
+			continue
 		if obj.has_method("get_object_type") and obj.get_object_type() == object_type:
 			if obj.has_method("is_available") and obj.is_available():
 				candidates.append(obj)

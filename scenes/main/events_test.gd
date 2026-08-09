@@ -411,6 +411,29 @@ func _run() -> void:
 	for i in range(defs.size()):
 		defs[i].probability = 0.0  # re-zero for any later blocks
 
+	# --- Regression: dying mid-interaction must free the seat ---
+	# A death at a desk used to leave a freed node in _occupants forever:
+	# the desk read as permanently occupied, and two-seat objects would try
+	# to start a conversation with the ghost. Use a dedicated object so the
+	# harness's live agents cannot occupy it first.
+	var world_node := get_tree().get_first_node_in_group("world")
+	var seat: InteractableObject = ObjectFactory.create("desk")
+	world_node.add_object(seat, Vector2(280, 60))
+	await get_tree().process_frame
+	var sitter: Node2D = AgentManager.spawn_procedural_agent(Vector2(285, 65))
+	await get_tree().process_frame
+	seat.occupy(sitter)
+	_check("occupancy registers the intended sitter", seat.get_occupant() == sitter)
+	sitter.die("regression test")
+	await get_tree().create_timer(3.5).timeout
+	_check("death frees the seat", seat.get_occupant_count() == 0)
+	_check("seat is available again after a death", seat.is_available())
+	var ghost_free := true
+	for occ in seat.get_all_occupants():
+		if not is_instance_valid(occ):
+			ghost_free = false
+	_check("no freed occupants linger", ghost_free)
+
 	# --- 6. specific target mode never fires organically ---
 	var spec_def := EventDefinition.from_dict({
 		"id": "__test_specific", "name": "t", "description": "t",

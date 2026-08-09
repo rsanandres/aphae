@@ -138,6 +138,7 @@ func die(cause: String = "natural causes") -> void:
 	if is_dead:
 		return
 	is_dead = true
+	_release_current_object()
 	state = AgentState.Type.IDLE
 	velocity = Vector2.ZERO
 	# Death particles
@@ -168,6 +169,7 @@ func depart(reason: String = "a new opportunity") -> void:
 	if is_dead:
 		return
 	is_dead = true  # stops brains/needs; the node is leaving anyway
+	_release_current_object()
 	state = AgentState.Type.IDLE
 	velocity = Vector2.ZERO
 
@@ -201,6 +203,15 @@ func depart(reason: String = "a new opportunity") -> void:
 	tween.tween_property(sprite, "modulate:a", 0.0, 1.5)
 	tween.tween_property(label, "modulate:a", 0.0, 0.5)
 	tween.tween_callback(queue_free)
+
+
+func _release_current_object() -> void:
+	## Dying or departing mid-interaction used to leave the agent registered
+	## as an occupant forever: the desk stayed "in use" by a ghost, and
+	## two-seat objects would try to start a conversation with a freed node.
+	if current_target and is_instance_valid(current_target) and current_target.has_method("release"):
+		current_target.release(self)
+	current_target = null
 
 
 func _on_confessional_recorded(confessional: RefCounted) -> void:

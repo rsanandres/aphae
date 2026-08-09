@@ -65,7 +65,7 @@ func get_agents_near(position: Vector2, radius: float, exclude: Node2D = null) -
 		return spatial_grid.get_agents_in_radius(position, radius, exclude)
 	var result: Array[Node2D] = []
 	for agent in agents:
-		if agent == exclude:
+		if agent == exclude or not is_instance_valid(agent):
 			continue
 		if agent.global_position.distance_to(position) <= radius:
 			result.append(agent)
@@ -328,6 +328,8 @@ func _trigger_tier_think(tier: ThinkTier) -> void:
 func _get_agents_in_tier(tier: ThinkTier) -> Array[Node2D]:
 	var result: Array[Node2D] = []
 	for agent in agents:
+		if not is_instance_valid(agent):
+			continue
 		if _agent_tiers.get(agent, ThinkTier.NORMAL) == tier:
 			result.append(agent)
 	return result

@@ -44,6 +44,52 @@ func update_after_interaction(other_name: String, context: String, positive: boo
 	EventBus.relationship_changed.emit(_agent.agent_name, other_name, rel)
 
 
+func update_romance(other_name: String, positive: bool = true) -> void:
+	## Grow romantic interest after a good conversation. Until this existed,
+	## romantic_interest was never incremented anywhere in the codebase, so
+	## confessions (which require > 40) could never organically succeed.
+	if not positive:
+		return
+	var rel: RelationshipEntry = get_relationship(other_name)
+	if rel.affinity <= 10.0:
+		return
+	# No slow-burn crushes on someone already committed — affairs become
+	# deliberate content later, not an accident of the growth curve.
+	if _is_committed_elsewhere(other_name):
+		return
+	var other := AgentManager.get_agent_by_name(other_name)
+	if other == null or other.relationships == null:
+		return
+	if other.relationships._is_committed_elsewhere(_agent.agent_name):
+		return
+	var growth: float = Config.ROMANCE_GROWTH_BASE + maxf(_compatibility_bonus(other_name), 0.0) * 2.0
+	if _agent.personality:
+		growth += (_agent.personality.extraversion - 0.5) * 0.6
+		growth += (_agent.personality.openness - 0.5) * 0.4
+	if growth <= 0.0:
+		return
+	rel.romantic_interest = clampf(rel.romantic_interest + growth, 0.0, 100.0)
+	rel.last_romantic_event_day = TimeManager.day
+	if rel.romantic_interest > Config.ROMANCE_CRUSH_THRESHOLD \
+			and rel.relationship_status == RelationshipEntry.Status.NONE:
+		rel.relationship_status = RelationshipEntry.Status.CRUSHING
+		EventBus.narrative_event.emit(
+			"%s has developed a crush on %s." % [_agent.agent_name, other_name],
+			[_agent.agent_name, other_name], 5.0
+		)
+	EventBus.relationship_changed.emit(_agent.agent_name, other_name, rel)
+
+
+func _is_committed_elsewhere(exclude_name: String) -> bool:
+	for other_name in _relationships:
+		if other_name == exclude_name:
+			continue
+		var status: RelationshipEntry.Status = _relationships[other_name].relationship_status
+		if status == RelationshipEntry.Status.DATING or status == RelationshipEntry.Status.PARTNERS:
+			return true
+	return false
+
+
 func update_proximity(other_name: String, _delta: float) -> void:
 	var rel: RelationshipEntry = get_relationship(other_name)
 	# Small familiarity gain from being nearby

@@ -1,0 +1,195 @@
+[
+  {
+    "id": "burnout_spiral",
+    "name": "Burnout Spiral",
+    "target_conditions": {"needs": {"productivity": {"above": 65}, "energy": {"below": 45}}},
+    "stages": [
+      {
+        "id": "overworked",
+        "wait_days": [0, 1],
+        "payload": {
+          "need_effects": {"energy": -8},
+          "memory": {"affected": {"text": "has been pushing way too hard lately. The work never stops.", "importance": 5, "emotion": "exhaustion", "sentiment": -0.4}},
+          "narrative": {"text": "{target} has been burning the candle at both ends.", "importance": 4}
+        },
+        "next": "snappy"
+      },
+      {
+        "id": "snappy",
+        "wait_days": [1, 2],
+        "second_actor": "random",
+        "payload": {
+          "relationship_effects": [{"from": "second", "to": "target", "affinity": -8}],
+          "memory": {
+            "affected": {"text": "snapped at {second} over nothing. The exhaustion is showing.", "importance": 5, "emotion": "anger", "sentiment": -0.5},
+            "second": {"text": "got snapped at by {target}. What is going on with them?", "importance": 5, "emotion": "shock", "sentiment": -0.4}
+          },
+          "narrative": {"text": "{target} has been snapping at colleagues. Something is wrong.", "importance": 5}
+        },
+        "next": "crisis"
+      },
+      {
+        "id": "crisis",
+        "wait_days": [1, 2],
+        "branches": [
+          {
+            "conditions": {"requires_tag": "friend"},
+            "weight": 0.6,
+            "payload": {
+              "second_actor_note": "intervention by a friend",
+              "need_effects": {"energy": 30, "social": 15},
+              "memory": {"affected": {"text": "was pulled aside by a friend who saw the burnout coming. It helped more than words can say.", "importance": 8, "emotion": "vulnerable", "sentiment": 0.7, "protected": true}},
+              "narrative": {"text": "A friend stepped in before {target} burned out completely.", "importance": 6},
+              "trait_shifts": {"neuroticism": -0.02}
+            },
+            "next": "end"
+          },
+          {
+            "weight": 0.4,
+            "payload": {"trigger_event": "exhaustion_collapse"},
+            "next": "end"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "secret_hobby",
+    "name": "Secret Hobby",
+    "target_conditions": {"needs": {"social": {"above": 30}}},
+    "stages": [
+      {
+        "id": "sneaking",
+        "wait_days": [0, 1],
+        "payload": {
+          "memory": {"affected": {"text": "has been secretly working on a creative project after hours. Nobody can know yet.", "importance": 7, "emotion": "candid", "sentiment": 0.5, "protected": true, "thread": "secret_hobby"}}
+        },
+        "next": "discovered"
+      },
+      {
+        "id": "discovered",
+        "wait_days": [2, 4],
+        "probability": 0.6,
+        "second_actor": "random",
+        "payload": {
+          "memory": {"second": {"text": "caught {target} working on something secret after hours. Interesting...", "importance": 6, "emotion": "shock", "sentiment": 0.1}},
+          "narrative": {"text": "{second} discovered {target}'s secret project.", "importance": 5}
+        },
+        "branches": [
+          {
+            "weight": 0.6,
+            "payload": {
+              "relationship_effects": [
+                {"from": "target", "to": "second", "affinity": 10, "trust": 8},
+                {"from": "second", "to": "target", "affinity": 8}
+              ],
+              "memory": {"affected": {"text": "shared the secret project with {second}, who actually loved it.", "importance": 7, "emotion": "happiness", "sentiment": 0.7}},
+              "narrative": {"text": "{target} came clean about the secret project — and {second} loved it.", "importance": 5},
+              "trait_shifts": {"openness": 0.02}
+            },
+            "next": "end"
+          },
+          {
+            "weight": 0.4,
+            "payload": {
+              "relationship_effects": [{"from": "target", "to": "second", "affinity": -12}],
+              "memory": {"affected": {"text": "was mocked by {second} for the secret project. Never showing anyone again.", "importance": 7, "emotion": "shame", "sentiment": -0.7, "protected": true}},
+              "narrative": {"text": "{second} mocked {target}'s secret project. That one stung.", "importance": 6},
+              "trait_shifts": {"neuroticism": 0.02}
+            },
+            "next": "end"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "promotion_chase",
+    "name": "Promotion Chase",
+    "target_conditions": {"needs": {"productivity": {"above": 55}}},
+    "stages": [
+      {
+        "id": "gunning",
+        "wait_days": [0, 1],
+        "payload": {
+          "modifiers": [{"on": "target", "type": "motivated", "target": "", "days": 3}],
+          "memory": {"affected": {"text": "has decided to gun for the promotion. This is the moment.", "importance": 6, "emotion": "defiance", "sentiment": 0.5}},
+          "narrative": {"text": "{target} is openly gunning for a promotion.", "importance": 5}
+        },
+        "next": "verdict"
+      },
+      {
+        "id": "verdict",
+        "wait_days": [2, 3],
+        "branches": [
+          {
+            "weight": 0.5,
+            "payload": {"trigger_event": "promotion"},
+            "next": "end"
+          },
+          {
+            "weight": 0.5,
+            "payload": {
+              "need_effects": {"productivity": -20, "social": -10},
+              "memory": {"affected": {"text": "got passed over for the promotion after all that work. It hurts.", "importance": 8, "emotion": "despair", "sentiment": -0.7, "protected": true}},
+              "narrative": {"text": "{target} was passed over for the promotion.", "importance": 6},
+              "trait_shifts": {"neuroticism": 0.02}
+            },
+            "next": "end"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "goal_pursuit",
+    "name": "Goal Pursuit",
+    "goal_template": true,
+    "target_conditions": {},
+    "stages": [
+      {
+        "id": "pursue",
+        "wait_days": [0, 1],
+        "payload": {
+          "memory": {"affected": {"text": "has committed to a personal goal: {goal}.", "importance": 6, "emotion": "candid", "sentiment": 0.4}},
+          "narrative": {"text": "{target} is quietly working toward something: {goal}.", "importance": 3}
+        },
+        "next": "setback"
+      },
+      {
+        "id": "setback",
+        "wait_days": [1, 3],
+        "payload": {
+          "need_effects": {"productivity": -5},
+          "memory": {"affected": {"text": "hit a wall chasing their goal ({goal}). Doubt is creeping in.", "importance": 5, "emotion": "discomfort", "sentiment": -0.4}}
+        },
+        "next": "resolve"
+      },
+      {
+        "id": "resolve",
+        "wait_days": [1, 3],
+        "branches": [
+          {
+            "weight": 0.6,
+            "payload": {
+              "need_effects": {"social": 10, "productivity": 15},
+              "memory": {"affected": {"text": "actually did it — {goal}. All the doubt was worth pushing through.", "importance": 8, "emotion": "happiness", "sentiment": 0.8, "protected": true}},
+              "narrative": {"text": "{target} achieved a personal goal: {goal}!", "importance": 6},
+              "trait_shifts": {"conscientiousness": 0.02}
+            },
+            "next": "end"
+          },
+          {
+            "weight": 0.4,
+            "payload": {
+              "memory": {"affected": {"text": "quietly gave up on {goal}. Maybe someday. Not now.", "importance": 6, "emotion": "despair", "sentiment": -0.6, "protected": true}},
+              "narrative": {"text": "{target} let a personal dream go.", "importance": 5},
+              "trait_shifts": {"neuroticism": 0.02}
+            },
+            "next": "end"
+          }
+        ]
+      }
+    ]
+  }
+]

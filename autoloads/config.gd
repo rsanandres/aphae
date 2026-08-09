@@ -44,6 +44,10 @@ const DESKTOP_OFFICE_HEIGHT := 160
 const CONVERSATION_TURNS := 4  # exchanges per conversation
 const CONVERSATION_LINE_DURATION := 3.0  # seconds to show each speech bubble
 
+# Romance (tunable: these gate how fast organic crushes form)
+const ROMANCE_GROWTH_BASE := 1.5  # romantic_interest per positive conversation
+const ROMANCE_CRUSH_THRESHOLD := 40.0  # crossing this sets CRUSHING status
+
 # Expanded mode / scaling
 const OFFICE_AREA_PER_AGENT := 3000  # px^2 per agent for dynamic sizing
 const OFFICE_MAX_WIDTH := 960

@@ -139,6 +139,10 @@ func _end_conversation() -> void:
 	agent_a.relationships.update_after_interaction(agent_b.agent_name, convo_summary, true)
 	agent_b.relationships.update_after_interaction(agent_a.agent_name, convo_summary, true)
 
+	# Good conversations slowly kindle romance (compatibility-weighted)
+	agent_a.relationships.update_romance(agent_b.agent_name, true)
+	agent_b.relationships.update_romance(agent_a.agent_name, true)
+
 	# Restore social need
 	agent_a.needs.restore(NeedType.Type.SOCIAL, 20.0)
 	agent_b.needs.restore(NeedType.Type.SOCIAL, 20.0)
@@ -213,13 +217,22 @@ func _request_reflection(agent: Node2D, other: Node2D) -> void:
 	if not LLMManager.is_available:
 		return
 	var rel: RelationshipEntry = agent.relationships.get_relationship(other.agent_name)
-	var prompt := PromptBuilder.build("conversation_reflect", {
-		"name": agent.agent_name,
-		"other_name": other.agent_name,
-		"relationship": rel.get_summary(),
-		"conversation_summary": _summarize_conversation(),
-		"personality": agent.personality.get_personality_summary() if agent.personality else "",
-	})
+	var prompt: String
+	if rel.romantic_interest > 30.0 or rel.relationship_status != RelationshipEntry.Status.NONE:
+		# Romance is brewing: reflect through the romantic template instead.
+		prompt = PromptBuilder.build("romantic_reflect", {
+			"name": agent.agent_name,
+			"personality": agent.personality.get_personality_summary() if agent.personality else "",
+			"relationships": "%s: %s" % [other.agent_name, rel.get_summary()],
+		})
+	else:
+		prompt = PromptBuilder.build("conversation_reflect", {
+			"name": agent.agent_name,
+			"other_name": other.agent_name,
+			"relationship": rel.get_summary(),
+			"conversation_summary": _summarize_conversation(),
+			"personality": agent.personality.get_personality_summary() if agent.personality else "",
+		})
 	var format_schema := {
 		"type": "object",
 		"properties": {

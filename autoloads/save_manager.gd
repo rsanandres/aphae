@@ -181,6 +181,7 @@ func _serialize_world() -> Dictionary:
 		"confessionals": [],
 		"event_state": EventManager.get_save_state(),
 		"drama_state": DramaDirector.get_save_state(),
+		"arcs": ArcManager.get_save_state(),
 	}
 
 	for agent in AgentManager.agents:
@@ -356,6 +357,7 @@ func _deserialize_world(data: Dictionary) -> void:
 	# the gate — absent keys restore as empty defaults).
 	EventManager.load_save_state(data.get("event_state", {}))
 	DramaDirector.load_save_state(data.get("drama_state", {}))
+	ArcManager.load_save_state(data.get("arcs", []))
 
 	# Restore _last_auto_save_day from save data
 	_last_auto_save_day = int(data.get("last_auto_save_day", 0))

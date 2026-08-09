@@ -144,6 +144,51 @@ func _run() -> void:
 	_check("cooldowns restored", not EventManager._cooldowns.is_empty())
 	_check("drama restored", absf(DramaDirector.drama_level - 5.5) < 0.01)
 
+	# --- E2: romance pipeline ---
+	var rel_rom: RelationshipEntry = a.relationships.get_relationship(b.agent_name)
+	rel_rom.affinity = 30.0
+	var rel_back: RelationshipEntry = b.relationships.get_relationship(a.agent_name)
+	rel_back.affinity = 30.0
+	var interest_before: float = rel_rom.romantic_interest
+	for i in range(30):
+		a.relationships.update_romance(b.agent_name)
+	_check("romantic interest grows from positive interactions", rel_rom.romantic_interest > interest_before)
+	_check("crossing threshold sets CRUSHING", rel_rom.relationship_status == RelationshipEntry.Status.CRUSHING)
+	# committed elsewhere blocks growth
+	var rel_c: RelationshipEntry = agents[2].relationships.get_relationship(far.agent_name)
+	rel_c.relationship_status = RelationshipEntry.Status.DATING
+	var rel_block: RelationshipEntry = agents[2].relationships.get_relationship(a.agent_name)
+	rel_block.affinity = 50.0
+	var blocked_before: float = rel_block.romantic_interest
+	agents[2].relationships.update_romance(a.agent_name)
+	_check("committed agents do not grow new crushes", absf(rel_block.romantic_interest - blocked_before) < 0.001)
+
+	# --- E2: arc engine (burnout spiral, forced) ---
+	SaveManager._last_auto_save_day = 999999  # keep the day loop from autosaving over a real slot
+	_check("arc starts on demand", ArcManager.start_arc("burnout_spiral", far))
+	_check("agent is arc-locked", ArcManager.has_arc(far.agent_name) and not ArcManager.start_arc("secret_hobby", far))
+	for day in range(2, 14):
+		TimeManager.game_minutes = (day - 1) * 1440.0 + 480.0
+		EventBus.day_changed.emit(day)
+		await get_tree().process_frame
+	_check("arc ran to completion", not ArcManager.has_arc(far.agent_name))
+	var arc_touched := false
+	for m in far.memory.memories:
+		if "pushing way too hard" in m.description or "snapped at" in m.description \
+				or "pulled aside" in m.description or "collapsed" in m.description:
+			arc_touched = true
+	_check("arc left memories on its subject", arc_touched)
+
+	# --- E2: arc save round-trip ---
+	ArcManager.start_arc("goal_pursuit", b)
+	var arcs_saved: Array = ArcManager.get_save_state()
+	_check("goal arc resolved its {goal} token", not ("{goal}" in JSON.stringify(arcs_saved)))
+	ArcManager.load_save_state([])
+	_check("arc state clears", not ArcManager.has_arc(b.agent_name))
+	ArcManager.load_save_state(arcs_saved)
+	_check("arc state restores", ArcManager.has_arc(b.agent_name))
+	ArcManager.load_save_state([])
+
 	# --- 6. specific target mode never fires organically ---
 	var spec_def := EventDefinition.from_dict({
 		"id": "__test_specific", "name": "t", "description": "t",

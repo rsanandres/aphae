@@ -202,5 +202,10 @@ func _report() -> void:
 		if r.begins_with("FAIL"):
 			failed += 1
 	print("-----------------------------------------")
+	if _results.is_empty():
+		# A broken build reaches here having asserted nothing, and the line
+		# below would read "0 passed, 0 failed" — which any grep for
+		# "0 failed" treats as success. That is how a compile error ships.
+		print("  NO ASSERTIONS RAN — treat this as a FAILURE")
 	print("  %d passed, %d failed" % [_results.size() - failed, failed])
 	print("=========================================\n")

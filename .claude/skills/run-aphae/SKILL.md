@@ -1,12 +1,18 @@
 ---
 name: run-aphae
-description: Run, test, or screenshot the Aphae Godot game. Use for any request to launch the game, run its test harnesses, capture screenshots, verify a UI change, or soak-test the simulation. Covers the headless-vs-windowed split, the isolated sandbox runner, all five harnesses with their expected pass counts, and the traps that cost real time.
+description: Run, test, or screenshot the Aphae Godot game. Use for any request to launch the game, run its test harnesses, capture screenshots, verify a UI change, or soak-test the simulation. Covers the headless-vs-windowed split, the isolated sandbox runner, all six headless harnesses with their expected pass counts, and the traps that cost real time.
 ---
 
 # Running and testing Aphae
 
-Godot 4.6 project. `godot` is on PATH (`/opt/homebrew/bin/godot` via Homebrew).
-Always run from the repo root.
+Godot 4.6 project. Always run from the repo root.
+
+**Where `godot` lives depends on the machine.** On the owner's Mac it is on
+PATH (`/opt/homebrew/bin/godot`, Homebrew). On their Windows box it is a
+portable build and **not on PATH** — use
+`C:/Users/quort/Godot/Godot_v4.6-stable_win64_console.exe` (the `_console`
+variant, so stdout reaches the terminal). Check before assuming a bare
+`godot` will resolve.
 
 ## The one rule that is not a preference
 
@@ -53,11 +59,12 @@ corrupts the file if the run is killed.
 
 ```bash
 G="godot --headless --path . --audio-driver Dummy"
-$G -e --quit-after 5                                  # parse check, exit 0
+$G -e --quit-after 5 2>&1 | grep -E 'Parse Error|Compile Error'   # must print NOTHING
 $G res://scenes/main/producer_test.tscn               # 14 passed
 $G res://scenes/main/confessional_test.tscn           # 15 passed
 $G res://scenes/main/events_test.tscn                 # 66 passed
 $G res://scenes/main/economy_test.tscn                # 32 passed
+$G res://scenes/main/goals_test.tscn                  # 73 passed
 $G res://scenes/main/headless_sim.tscn -- --agents=12 --speed=3   # soak; runs forever, kill it
 ```
 
@@ -99,6 +106,9 @@ in this repo; the trace named the exact function on the first line.
 ## Traps that have cost real time
 
 - **Test harnesses must neutralize global state.** Set
+  `ArcManager.auto_start_enabled = false` if any assertion depends on which
+  agents hold arcs (the daily spontaneous roll can re-arc an agent the instant
+  a forced arc ends — this was a live flaky assertion), set
   `ProducerEconomy.meta_persistence_enabled = false` (otherwise CI runs
   inflate the owner's real lifetime progression — this happened), freeze the
   clock with `TimeManager.is_paused = true`, zero event probabilities
@@ -122,6 +132,27 @@ in this repo; the trace named the exact function on the first line.
   validates and rejects them, so cleanup code written as "gather the dead
   ones, then erase them" errors on the gather. Remove by index instead
   (iterate backwards). This was a live bug in `conversation_manager`.
+- **The parse check's exit code is not a gate — it exits 0 on a broken
+  build.** `godot -e --quit-after 5` returned `exit=0` while three scripts
+  failed to compile. Grep its output for `Parse Error|Compile Error` instead.
+- **A broken build makes every harness print `0 passed, 0 failed`,** which a
+  grep for "0 failed" reads as success. Each `_report()` now prints
+  `NO ASSERTIONS RAN` first; do not remove that guard.
+- **`add_memory()` returns the entry it created — use it, never `memories[-1]`.**
+  `add_memory` can synchronously append a reflection on top of yours (the
+  heuristic path in `_trigger_reflection`), so the last element is not
+  reliably what you just added. This silently mis-assigned `narrative_thread`,
+  `emotion`, and `decay_protected` across grief, departure, confessional,
+  rumour, and consequence code.
+- **`:=` cannot infer a type through an untyped receiver.** `var x := other.memory.add_memory(...)`
+  is a parse error when `other` is a bare `Node2D`, because `.memory` is
+  Variant. Write `var x: MemoryEntry = ...`. Same family as the untyped-loop
+  trap below.
+- **`ConsequenceEngine` memory specs are keyed by role, not by name.** The
+  only accepted keys are `affected`, `second`, and `witness`. A payload that
+  says `"memory": {"target": {...}}` is **dropped silently** — no error, no
+  warning, no memory. Cost a debugging round in `goal_manager`; only the
+  harness asserting the memory existed caught it.
 - **`custom_minimum_size` larger than the assigned rect silently wins** and
   pushes panels off-screen. This one bug family accounted for most of the
   historical layout defects.

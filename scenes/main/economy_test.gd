@@ -186,5 +186,10 @@ func _report() -> void:
 		else:
 			failed += 1
 	print("=========================================")
+	if passed + failed == 0:
+		# A broken build reaches here having asserted nothing. Without this the
+		# report reads "0 passed, 0 failed", which any grep for "0 failed"
+		# treats as success — that is how a compile error ships unnoticed.
+		print("  NO ASSERTIONS RAN — treat this as a FAILURE")
 	print("  %d passed, %d failed" % [passed, failed])
 	print("=========================================")

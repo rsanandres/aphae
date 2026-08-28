@@ -173,6 +173,9 @@ func _run() -> void:
 
 	# --- E2: arc engine (burnout spiral, forced) ---
 	SaveManager._last_auto_save_day = 999999  # keep the day loop from autosaving over a real slot
+	# Silence the daily spontaneous roll: it can re-arc `far` the instant the
+	# forced arc finishes, which made "arc ran to completion" flaky (~1 in 20).
+	ArcManager.auto_start_enabled = false
 	_check("arc starts on demand", ArcManager.start_arc("burnout_spiral", far))
 	_check("agent is arc-locked", ArcManager.has_arc(far.agent_name) and not ArcManager.start_arc("secret_hobby", far))
 	for day in range(2, 14):
@@ -180,6 +183,7 @@ func _run() -> void:
 		EventBus.day_changed.emit(day)
 		await get_tree().process_frame
 	_check("arc ran to completion", not ArcManager.has_arc(far.agent_name))
+	ArcManager.auto_start_enabled = true
 	var arc_touched := false
 	for m in far.memory.memories:
 		if "pushing way too hard" in m.description or "snapped at" in m.description \
@@ -271,11 +275,14 @@ func _run() -> void:
 	# --- E4: rumor mill — leaks are possible, gated by trust ---
 	var holder: Node2D = AgentManager.agents[0]
 	var confidant: Node2D = AgentManager.agents[1]
-	holder.memory.add_memory(MemoryEntry.MemoryType.OBSERVATION,
+	# Use the returned entry, never memories[-1]: add_memory can append a
+	# reflection on top of ours, which used to land this thread on the wrong
+	# memory and made the leak assertions below flaky.
+	var secret_mem: MemoryEntry = holder.memory.add_memory(MemoryEntry.MemoryType.OBSERVATION,
 		"%s knows something huge about %s. It stays secret." % [holder.agent_name, outsider.agent_name],
 		8.0, PackedStringArray([outsider.agent_name]))
-	holder.memory.memories[-1].narrative_thread = "secret_test"
-	holder.memory.memories[-1].decay_protected = true
+	secret_mem.narrative_thread = "secret_test"
+	secret_mem.decay_protected = true
 	var rel_hc: RelationshipEntry = holder.relationships.get_relationship(confidant.agent_name)
 	rel_hc.trust = 90.0
 	var leaked := false
@@ -314,10 +321,10 @@ func _run() -> void:
 
 	# Leak dilemma, choice 0 (leak it): the secret spreads office-wide.
 	var secret_holder: Node2D = AgentManager.agents[0]
-	secret_holder.memory.add_memory(MemoryEntry.MemoryType.OBSERVATION,
+	var jobhunt_mem: MemoryEntry = secret_holder.memory.add_memory(MemoryEntry.MemoryType.OBSERVATION,
 		"%s has been secretly interviewing at a rival company." % secret_holder.agent_name, 8.0)
-	secret_holder.memory.memories[-1].narrative_thread = "secret_jobhunt"
-	secret_holder.memory.memories[-1].decay_protected = true
+	jobhunt_mem.narrative_thread = "secret_jobhunt"
+	jobhunt_mem.decay_protected = true
 	EventManager.trigger_event("leak_dilemma", [secret_holder])
 	_check("dilemma holds the event pending", EventManager.has_pending_dilemma())
 	_check("dilemma pauses the game", TimeManager.is_paused)
@@ -339,8 +346,8 @@ func _run() -> void:
 				sab = agent
 	if sab == null:
 		sab = AgentManager.agents[1]
-		sab.memory.add_memory(MemoryEntry.MemoryType.OBSERVATION, "did a bad thing in secret", 8.0)
-		sab.memory.memories[-1].narrative_thread = "secret_sabotage"
+		var sab_mem: MemoryEntry = sab.memory.add_memory(MemoryEntry.MemoryType.OBSERVATION, "did a bad thing in secret", 8.0)
+		sab_mem.narrative_thread = "secret_sabotage"
 	var affinity_toward_sab: float = a.relationships.get_relationship(sab.agent_name).affinity if a != sab else 0.0
 	EventManager.trigger_event("sabotage_footage", [sab])
 	EventManager.resolve_dilemma(1)
@@ -492,5 +499,10 @@ func _report() -> void:
 		else:
 			failed += 1
 	print("=========================================")
+	if passed + failed == 0:
+		# A broken build reaches here having asserted nothing. Without this the
+		# report reads "0 passed, 0 failed", which any grep for "0 failed"
+		# treats as success — that is how a compile error ships unnoticed.
+		print("  NO ASSERTIONS RAN — treat this as a FAILURE")
 	print("  %d passed, %d failed" % [passed, failed])
 	print("=========================================")

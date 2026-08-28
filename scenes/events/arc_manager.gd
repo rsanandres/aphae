@@ -10,6 +10,12 @@ extends Node
 
 const START_PROBABILITY := 0.3  # daily chance that some eligible agent starts an arc
 
+## Test seam, mirroring EventManager.auto_resolve_dilemmas. A harness that
+## forces one arc and then asserts it finished must switch this off: the daily
+## spontaneous roll can hand the SAME agent a fresh arc the moment the forced
+## one ends, which reads as "the arc never completed". Cost a flaky assertion.
+var auto_start_enabled: bool = true
+
 var _arc_defs: Array[Dictionary] = []
 var _active: Array[Dictionary] = []  # {arc_id, agent, stage_id, entered_day, wait_days}
 
@@ -108,6 +114,8 @@ func _apply_payload(payload: Dictionary, agent: Node2D, second: Node2D) -> void:
 
 
 func _maybe_start(day: int) -> void:
+	if not auto_start_enabled:
+		return
 	if _arc_defs.is_empty() or randf() > START_PROBABILITY * DramaDirector.get_probability_modifier():
 		return
 	var candidates: Array = []

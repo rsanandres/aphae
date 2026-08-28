@@ -32,10 +32,26 @@ fi
 mkdir -p "$SANDBOX"
 # .git is the bulk of the repo and irrelevant here; .godot is a rebuildable
 # import cache that must NOT be shared (it embeds absolute paths).
-rsync -a --delete \
-	--exclude '.git/' \
-	--exclude '.godot/' \
-	"$REPO"/ "$SANDBOX"/
+#
+# rsync is absent on some boxes — Git Bash on Windows ships without it — so
+# fall back to wipe-and-copy. Same result, just slower.
+if command -v rsync >/dev/null 2>&1; then
+	rsync -a --delete \
+		--exclude '.git/' \
+		--exclude '.godot/' \
+		"$REPO"/ "$SANDBOX"/
+else
+	rm -rf "$SANDBOX"
+	mkdir -p "$SANDBOX"
+	shopt -s dotglob nullglob
+	for entry in "$REPO"/*; do
+		case "$(basename "$entry")" in
+			.git|.godot) continue ;;
+		esac
+		cp -a "$entry" "$SANDBOX"/
+	done
+	shopt -u dotglob nullglob
+fi
 
 # The rename is the isolation: user:// becomes .../app_userdata/AphaeSandbox,
 # so nothing here can touch the real game's saves or lifetime progression.
@@ -46,7 +62,9 @@ else
 fi
 
 echo "[sandbox] $SANDBOX (project '$SANDBOX_NAME')"
-echo "[sandbox] user data: ~/Library/Application Support/Godot/app_userdata/$SANDBOX_NAME"
+echo "[sandbox] user data: <Godot app_userdata>/$SANDBOX_NAME"
+echo "[sandbox]   macOS:   ~/Library/Application Support/Godot/app_userdata/$SANDBOX_NAME"
+echo "[sandbox]   Windows: %APPDATA%/Godot/app_userdata/$SANDBOX_NAME"
 
 # Import pass: a fresh copy has no .godot cache, and running a scene before
 # the filesystem is scanned yields missing-resource errors.

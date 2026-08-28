@@ -5,7 +5,7 @@ this file before touching anything. It records decisions, environment setup, and
 are expensive to rediscover — several entries here exist because someone already lost an hour
 to them.
 
-**Status:** M0–M4, M8, V, E, and P (producer meta-game) shipped · **Branch:** `main` · **Open:** M7 (full lying-in-conversation remains; E4 shipped the M7-lite core)
+**Status:** M0–M4, M8, V, E, P (producer meta-game), A, and G (goals that resolve) shipped · **Branch:** `main` · **Open:** Phase 3 (rumour *propagation*), then M7 (full lying-in-conversation; E4 shipped the M7-lite core)
 **Maintainer:** this file is owned and kept current. Amend it when you learn something; do not
 let it drift. Two claims in it have already been proven false and corrected — a stale doc is
 worse than no doc, because it is trusted.
@@ -54,17 +54,16 @@ key events, and saves PNGs of every overlay at both window sizes to `user://gui_
 
 `M1.3` and `M1.4` are complete (`d050858`, `b5e8a7f`). Those files are no longer claimed.
 
-### 🟢 Phase 2 — Make agents *want* things
+### ✅ Phase 2 — Make agents *want* things
 
 | Item | Effort | Needs |
 |---|---|---|
 | **Goals that resolve** | medium | Phase 0 |
 
-`PersonalityProfile.goals` is decoration today: interpolated into prompts
-(`agent_brain.gd:88`, `conversation_instance.gd:269`) and never pursued, achieved, or failed.
-Give goals real progress and resolution, emitting a `narrative_event` when one lands.
+✅ **Done.** See **G — Goals that resolve** below. Goals now carry progress, deadlines, and
+resolution; `narrative_event` fires when one lands or dies.
 
-**Why here:** agents currently drift. Goals give them intent, which every later feature reads
+**Why it was here:** agents drifted. Goals give them intent, which every later feature reads
 from — and **a secret is just a goal an agent is hiding**, so this is the structural precursor
 to Phase 4. Cheapest change on this list with the largest downstream effect.
 
@@ -525,6 +524,34 @@ one predates the design system. Unify them.
 while unfocused, which is the right first move, but a bundled model still idles in memory. A
 true background build wants the model unloaded (not just unused) when backgrounded.
 
+### ✅ G — Goals that resolve (done, 2026-08-28)
+
+Phase 2. `PersonalityProfile.goals` was prose read in three places and pursued in none.
+Now every goal becomes a `GoalState` (`scripts/data/goal_state.gd`) owned by the `GoalManager`
+autoload, with a kind, live progress, and a deadline.
+
+| Piece | What it does |
+|---|---|
+| **Kind inference** | The goal's own text picks its kind once, at assignment — ROMANCE / BALANCE / CREATIVE / SOCIAL, else WORK. Keyword table lives in `GoalState._KIND_KEYWORDS`, most specific first. **Adding a goal string needs no code change.** |
+| **Progress** | Only real events move a goal: finishing at a matching object (WORK/CREATIVE), a new conversation partner (SOCIAL/CREATIVE), an accepted confession or a started romance (ROMANCE), ending the day with every need above 55 (BALANCE). A goal cannot advance on narration. |
+| **Resolution** | Landing or losing one runs a `ConsequenceEngine` payload — protected memory, trait shift, `narrative_event` at 7.5 (achieved) or 6.5 (failed). Both clear the confessional's importance-6 bar, so a resolved goal earns a booth cutaway for free. Achieving also pays 6 Influence. |
+| **Deadline** | 10 days, then failure — unless progress ≥ 75, which buys exactly one 3-day extension. The near-miss beat is the point. |
+| **Pursuit** | `HeuristicBrain._goal_decision` runs *before* personality drift when needs are calm: goals outrank idling. It yields ~45% of the time (`GOAL_PURSUIT_CHANCE`) so agents read as people, not quest markers. SOCIAL goals prefer a partner they have not met yet. |
+| **Surfaced** | Agent inspector grows a Goals section with an ASCII meter (a real ProgressBar per goal does not read at 9px in a 170px panel). The LLM decision prompt gets standing, not bare text: `"…(40% there, 6 days left)"`. |
+| **Persisted** | Save v6. The restore sits outside the version gate, like confessionals — a pre-v6 save has no goal block and agents re-derive from personality on spawn. |
+| **Achievements** | Four new: Goal Getter, Driven, Unfinished Business, Self-Actualized. 29 → 33. |
+
+**Harness:** `scenes/main/goals_test.tscn` — **73 passed**.
+
+**Gotcha this cost:** `ConsequenceEngine._apply_memories` keys memory specs by *role* —
+`affected`, `second`, `witness`. There is no `target` role, and a payload using one is
+**dropped silently**: no error, no warning, just no memory. Caught only because the harness
+asserted the memory existed.
+
+**Death is deliberately quiet.** An agent who dies mid-goal has it marked FAILED with no
+narrative and no confessional — death is drama enough — but the `GoalState` is *kept*, so a
+recap can still say what they were three days short of.
+
 ### 🎛️ Backlog — player agency
 
 **The gap:** the player can reshape the *world* (god toolbar places objects, spawns/removes
@@ -555,6 +582,54 @@ Start with **1**; it is the smallest change that turns a spectator into a partic
 
 ## Gotchas discovered
 
+- **`add_memory()` returns the entry it created — use that, never `memories[-1]`.**
+  `add_memory` can *synchronously* append a reflection on top of yours: the
+  heuristic path in `_trigger_reflection` calls `add_reflection` inline when no
+  LLM is configured, which is the normal state for every test run. So the last
+  element is not reliably the memory you just added, and `narrative_thread` /
+  `emotion` / `decay_protected` land on a reflection instead. This was live in
+  **grief, departure, mental-break, homecoming, confessional-recall, rumour,
+  and the whole `ConsequenceEngine` memory path** — 30 call sites. A previous
+  agent hit it in `confessional_test` and worked around it locally
+  (*"add_memory can trigger a reflection that appends after ours"*) without
+  fixing the root. Now fixed at the source; the return value is the contract.
+- **`:=` cannot infer a type through an untyped receiver.**
+  `var m := other.memory.add_memory(...)` is a parse error when `other` is a
+  bare `Node2D`, because `.memory` is Variant. Write
+  `var m: MemoryEntry = ...`. Same family as the untyped-loop trap below, and
+  it cost a broken build here.
+- **The parse check's exit code is not a gate.** `godot -e --quit-after 5`
+  returned **`exit=0` while three scripts failed to compile.** Grep its output
+  for `Parse Error|Compile Error` instead of trusting `$?`.
+- **A broken build makes every harness print `0 passed, 0 failed`** — which a
+  grep for "0 failed" reads as success. Every `_report()` now prints
+  `NO ASSERTIONS RAN — treat this as a FAILURE` when nothing was asserted.
+  Do not remove that guard; it is the only thing standing between a compile
+  error and a green-looking suite.
+- **`events_test` was flaky at ~25%; two separate causes, both now fixed.**
+  Measured: 2 of 8 runs failed originally. Affected assertions:
+  `leak is marked secondhand`, `leak is weaker than the original`, and
+  `arc ran to completion`.
+  **Cause 1 (the leak pair):** the `memories[-1]` defect above — the
+  `secret_test` thread was landing on a reflection instead of the planted
+  secret. Fixed by `add_memory()` returning its entry.
+  **Cause 2 (`arc ran to completion`):** `ArcManager._on_day_changed` runs
+  `_tick_active` and then `_maybe_start`. The instant the forced arc finished,
+  the agent became eligible again for the same tick's 0.3 spontaneous roll, so
+  over 12 day-ticks it sometimes picked up a *fresh* arc and `has_arc()` was
+  true at the assertion. The arc HAD completed; a second one had begun. Fixed
+  with `ArcManager.auto_start_enabled`, a seam mirroring
+  `EventManager.auto_resolve_dilemmas`; `events_test` disables it around that
+  block.
+  **Evidence:** 0 failures in 30 consecutive runs afterwards. Good evidence,
+  not proof — at the old rate, 30 clean runs would happen by luck a few
+  percent of the time. If it resurfaces, capture the `FAIL` line first; all
+  three assertions are bounded loops over probabilistic systems and the cause
+  is never guessable from the summary count alone.
+- **Harnesses must neutralize `ArcManager` too.** The trap list below names
+  `EventManager` probabilities, the clock, and autosave — `ArcManager` had no
+  off switch until this flake forced one. Set `auto_start_enabled = false` in
+  any harness whose assertions depend on which agents hold arcs.
 - **`Config.MAX_AGENTS_DESKTOP := 3` is not about desktop-vs-mobile.** It's the *desktop pet*
   overlay (480×320). There is no mobile awareness in the codebase.
 - **`set_v_scroll` is correct on Godot 4** — `ScrollContainer.scroll_vertical` binds to

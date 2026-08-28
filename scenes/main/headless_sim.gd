@@ -48,6 +48,8 @@ func _ready() -> void:
 	EventBus.group_rivalry_detected.connect(_on_rivalry)
 	EventBus.storyline_updated.connect(_on_storyline)
 	EventBus.confessional_recorded.connect(_on_confessional)
+	EventBus.goal_achieved.connect(_on_goal_achieved)
+	EventBus.goal_failed.connect(_on_goal_failed)
 
 	EventBus.game_ready.emit()
 	print("[SIM] Simulation started. Ctrl+C to stop.\n")
@@ -259,7 +261,35 @@ func _on_day(day: int) -> void:
 		for sl in top:
 			var summary := sl.summary if sl.summary != "" else "(developing...)"
 			print("  [%.0f] %s - %s" % [sl.drama_score, sl.title, summary])
+	_print_goals()
 	print("")
+
+
+func _on_goal_achieved(agent_name: String, text: String, _kind: int) -> void:
+	print("** [Day %d %s] GOAL LANDED: %s — %s" % [TimeManager.day, TimeManager.time_string, agent_name, text])
+
+
+func _on_goal_failed(agent_name: String, text: String, _kind: int) -> void:
+	print("** [Day %d %s] GOAL LOST: %s — %s" % [TimeManager.day, TimeManager.time_string, agent_name, text])
+
+
+func _print_goals() -> void:
+	## Standing for every agent still chasing something. A soak that never moves
+	## a goal off 0% is the signal that pursuit is not reaching the sim.
+	var rows: Array[String] = []
+	for agent in AgentManager.agents:
+		if not is_instance_valid(agent) or agent.is_dead:
+			continue
+		for goal: GoalState in GoalManager.get_active_goals(agent.agent_name):
+			rows.append("  %-8s %3d%% %-9s %s" % [
+				agent.agent_name, int(goal.progress),
+				"(" + GoalState.kind_name(goal.kind) + ")", goal.text])
+	if rows.is_empty():
+		return
+	rows.sort()
+	print("Goals:")
+	for row in rows:
+		print(row)
 
 
 func _on_group_formed(group: RefCounted) -> void:
@@ -296,9 +326,25 @@ func _print_status() -> void:
 			talking += 1
 		elif agent.state == AgentState.Type.INTERACTING:
 			interacting += 1
-	print("--- [Day %d %s] Alive: %d | Talking: %d | Busy: %d | LLM queue: %d | Groups: %d ---" % [
+	# Goal standing rides along on the status line: a soak whose goals never
+	# leave 0% is the signal that pursuit is not reaching the simulation, and
+	# waiting for a day rollover to find that out is too slow.
+	var active := 0
+	var best_pct := 0
+	var best_who := "-"
+	for agent in AgentManager.agents:
+		if not is_instance_valid(agent) or agent.is_dead:
+			continue
+		for goal: GoalState in GoalManager.get_active_goals(agent.agent_name):
+			active += 1
+			if int(goal.progress) > best_pct:
+				best_pct = int(goal.progress)
+				best_who = agent.agent_name
+	print("--- [Day %d %s] Alive: %d | Talking: %d | Busy: %d | LLM queue: %d | Groups: %d | Goals: %d active, best %d%% (%s), landed %d, lost %d ---" % [
 		TimeManager.day, TimeManager.time_string,
 		alive, talking, interacting,
 		LLMManager.get_queue_size(),
 		GroupManager.groups.size(),
+		active, best_pct, best_who,
+		GoalManager.achieved_total, GoalManager.failed_total,
 	])

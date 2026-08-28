@@ -39,8 +39,12 @@ static func load_from_json(path: String) -> PersonalityProfile:
 	profile.backstory = data.get("backstory", "")
 	profile.speech_style = data.get("speech_style", "")
 
-	var c: Array = data.get("color", [0.5, 0.5, 0.5])
-	profile.color = Color(c[0], c[1], c[2])
+	# Saves and JSON are untrusted here: a truncated or hand-edited file with
+	# a short or non-numeric color array must not abort the whole agent load.
+	profile.color = Color(0.5, 0.5, 0.5)
+	var c: Variant = data.get("color")
+	if c is Array and c.size() >= 3 and c[0] is float and c[1] is float and c[2] is float:
+		profile.color = Color(c[0], c[1], c[2])
 
 	var big5: Dictionary = data.get("big_five", {})
 	profile.openness = big5.get("openness", 0.5)
@@ -89,8 +93,12 @@ static func from_dict(data: Dictionary) -> PersonalityProfile:
 	profile.backstory = data.get("backstory", "")
 	profile.speech_style = data.get("speech_style", "")
 
-	var c: Array = data.get("color", [0.5, 0.5, 0.5])
-	profile.color = Color(c[0], c[1], c[2])
+	# Saves and JSON are untrusted here: a truncated or hand-edited file with
+	# a short or non-numeric color array must not abort the whole agent load.
+	profile.color = Color(0.5, 0.5, 0.5)
+	var c: Variant = data.get("color")
+	if c is Array and c.size() >= 3 and c[0] is float and c[1] is float and c[2] is float:
+		profile.color = Color(c[0], c[1], c[2])
 
 	var big5: Dictionary = data.get("big_five", {})
 	profile.openness = big5.get("openness", 0.5)

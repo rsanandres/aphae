@@ -131,6 +131,18 @@ func _run() -> void:
 			obj.free()
 	_check("factory builds all %d object types" % all_types.size(), all_created)
 	_check("factory refuses unknown types", ObjectFactory.create("hot_tub") == null)
+	# obj_type comes from save files: a traversal must not reach load().
+	_check("factory refuses path traversal",
+		ObjectFactory.create("../../autoloads/config") == null)
+	_check("factory refuses empty type", ObjectFactory.create("") == null)
+
+	# --- Malformed save data must degrade, not abort ---
+	var bad_color := PersonalityProfile.from_dict({"name": "Mallory", "color": [1.0]})
+	_check("short color array falls back to default",
+		bad_color != null and bad_color.color.is_equal_approx(Color(0.5, 0.5, 0.5)))
+	var wrong_type := PersonalityProfile.from_dict({"name": "Mallory", "color": "red"})
+	_check("non-array color falls back to default",
+		wrong_type != null and wrong_type.color.is_equal_approx(Color(0.5, 0.5, 0.5)))
 
 	# --- Ambient mode: low power + digest gating ---
 	AmbientMode.low_power_enabled = true

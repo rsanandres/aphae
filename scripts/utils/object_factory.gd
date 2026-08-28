@@ -5,6 +5,13 @@ class_name ObjectFactory
 
 
 static func create(obj_type: String) -> InteractableObject:
+	# obj_type reaches this from save files, so it is untrusted input into a
+	# load() path. Without this check, "../../autoloads/whatever" in a crafted
+	# or corrupted save would set an arbitrary project script on the object.
+	# Every real type is a plain identifier (desk, coffee_machine, ...).
+	if not obj_type.is_valid_identifier():
+		push_warning("ObjectFactory: rejected object type '%s'" % obj_type)
+		return null
 	var script_path := "res://scenes/objects/%s.gd" % obj_type
 	if not FileAccess.file_exists(script_path):
 		push_warning("ObjectFactory: unknown object type '%s'" % obj_type)

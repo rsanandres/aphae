@@ -127,23 +127,33 @@ func _on_pool_request_completed(result: int, response_code: int, _headers: Packe
 		_process_next()
 		return
 
+	# Whatever answered on this port is untrusted: it may not be Ollama at all
+	# (this machine has a svchost squatting on 11434 — see PLAN.md), and even a
+	# real model emits top-level arrays. Every callback takes a typed
+	# Dictionary, so anything else must fail here, not error inside the caller.
+	if not json.data is Dictionary:
+		callback.call(false, {}, "non-object response")
+		_process_next()
+		return
 	var data: Dictionary = json.data
-	var message: Dictionary = data.get("message", {})
-	var content_str: String = message.get("content", "")
+	var message: Variant = data.get("message", {})
+	if not message is Dictionary:
+		message = {}
+	var content_str := str(message.get("content", ""))
 
 	var content_json := JSON.new()
-	if content_json.parse(content_str) == OK:
+	if content_json.parse(content_str) == OK and content_json.data is Dictionary:
 		callback.call(true, content_json.data, "")
 	else:
 		# Try to salvage it before giving up — see _repair_json.
 		var repaired := _repair_json(content_str)
-		if repaired != content_str and content_json.parse(repaired) == OK:
+		if repaired != content_str and content_json.parse(repaired) == OK 				and content_json.data is Dictionary:
 			callback.call(true, content_json.data, "")
 		else:
 			# Models sometimes append junk after a valid object
 			# ({"line":"..."} [{...}]) — recover the object alone.
 			var first_obj := _extract_first_object(content_str)
-			if first_obj != "" and content_json.parse(first_obj) == OK:
+			if first_obj != "" and content_json.parse(first_obj) == OK 					and content_json.data is Dictionary:
 				callback.call(true, content_json.data, "")
 			else:
 				# Reporting success with {"raw": ...} here let unparsed

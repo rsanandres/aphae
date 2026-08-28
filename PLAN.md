@@ -580,6 +580,32 @@ Start with **1**; it is the smallest change that turns a spectator into a partic
 
 ---
 
+## Security review (2026-08-28)
+
+Threat model for a local Godot game: the untrusted inputs are **save files**
+(hand-edited, corrupted, or shared between players), **LLM output**, and
+**whatever answers on the Ollama port** — not network listeners. Findings:
+
+| Hole | Fix |
+|---|---|
+| `ObjectFactory.create` built `res://scenes/objects/%s.gd` from a save-file string — `"../../autoloads/x"` reached `load()` | rejects non-identifier names |
+| `personality_file` from a save built a `res://` path the same way | same identifier check in `agent._load_personality` |
+| `Color(c[0], c[1], c[2])` on a save-provided array — short or non-array value aborted the whole agent load, in both `PersonalityProfile` loaders | falls back to grey |
+| Non-Dictionary entries in a save's `agents`/`objects` arrays errored mid-load, leaving a half-restored world | skipped per entry |
+| Ollama handler typed `json.data` as Dictionary and passed `content_json.data` to typed-Dictionary callbacks — a 200 carrying a top-level array or scalar (models emit `[{...}]`; the port squatter on 11434 answers with who-knows-what) script-errored in the callback | every parse now requires `is Dictionary` before a success callback; anything else routes to the heuristic fallback |
+| `sandbox_run.sh` does `rm -rf "$SANDBOX"` with `SANDBOX_DIR` env-controlled — empty, `/`, or `$HOME` would be catastrophic | denylist guard at the top |
+
+Checked and already defended (do not re-fix): `_to_bbcode` escapes `[` → `[lb]`
+so LLM text cannot inject BBCode into the recap RichTextLabels;
+`_try_load_file` rejects non-Dictionary save roots; `load_modifiers_data`
+guards per entry; no `OS.execute`/`Expression` anywhere; recap export
+filenames derive from the timestamp only. Regression assertions live in
+`economy_test` (factory traversal/empty, malformed color).
+
+Known and accepted: prompt injection via agent memories is inherent to the
+design (memories are meant to reach prompts); `ollama_url` is the user's own
+config and may point anywhere they like.
+
 ## Gotchas discovered
 
 - **`add_memory()` returns the entry it created — use that, never `memories[-1]`.**

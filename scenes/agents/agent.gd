@@ -511,6 +511,11 @@ func _load_personality() -> void:
 	if personality_file == "__procedural__" and not procedural_personality_data.is_empty():
 		personality = PersonalityProfile.from_dict(procedural_personality_data)
 	elif personality_file != "" and personality_file != "__procedural__":
+		# personality_file round-trips through save files, so it is untrusted
+		# input into a res:// path. Real values are plain names (alice, bob).
+		if not personality_file.is_valid_identifier():
+			push_warning("Agent: rejected personality file '%s'" % personality_file)
+			return
 		var path := "res://resources/personalities/%s.json" % personality_file
 		personality = PersonalityProfile.load_from_json(path)
 	else:

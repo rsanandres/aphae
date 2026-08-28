@@ -265,6 +265,8 @@ func _deserialize_world(data: Dictionary) -> void:
 	var restored_names: Array[String] = []
 
 	for agent_data in agent_datas:
+		if not agent_data is Dictionary:
+			continue  # corrupt entry; skip rather than abort the whole load
 		var agent_name: String = agent_data.get("name", "")
 		var personality_file: String = agent_data.get("personality_file", "")
 		var agent := AgentManager.get_agent_by_name(agent_name)
@@ -385,6 +387,8 @@ func _deserialize_world(data: Dictionary) -> void:
 
 		# Recreate objects from save data
 		for obj_data in objects_data:
+			if not obj_data is Dictionary:
+				continue  # corrupt entry; skip rather than abort the whole load
 			var obj_type: String = obj_data.get("type", "")
 			if obj_type == "":
 				continue

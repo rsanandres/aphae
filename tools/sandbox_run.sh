@@ -21,6 +21,15 @@ set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SANDBOX="${SANDBOX_DIR:-/tmp/aphae-sandbox}"
+
+# The fallback copy path below does `rm -rf "$SANDBOX"`. Refuse locations
+# where a mistyped SANDBOX_DIR would be catastrophic.
+case "$SANDBOX" in
+	""|"/"|"$HOME"|"$HOME/"|/c|/c/|/d|/d/|/tmp|/tmp/)
+		echo "refusing to use '$SANDBOX' as the sandbox dir" >&2
+		exit 2
+		;;
+esac
 SANDBOX_NAME="AphaeSandbox"
 GODOT="${GODOT:-godot}"
 

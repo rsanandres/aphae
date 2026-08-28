@@ -169,13 +169,13 @@ func respawn_departed(archived_name: String = "") -> Node2D:
 		agent.relationships._relationships[other_name] = rel
 	for mem_dict in archive.get("memories", []):
 		agent.memory.memories.append(MemoryEntry.from_dict(mem_dict))
-	agent.memory.add_memory(
+	var homecoming: MemoryEntry = agent.memory.add_memory(
 		MemoryEntry.MemoryType.REFLECTION,
 		"%s is back in the office after leaving on day %d. Everything is the same and nothing is." % [agent.agent_name, archive.get("day", 0)],
 		8.0
 	)
-	agent.memory.memories[-1].decay_protected = true
-	agent.memory.memories[-1].emotion = "candid"
+	homecoming.decay_protected = true
+	homecoming.emotion = "candid"
 	return agent
 
 

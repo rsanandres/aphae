@@ -180,11 +180,10 @@ static func _add_memory(spec: Dictionary, agent: Node2D, target: Node2D, second:
 		related.append(target.agent_name)
 	if second and is_instance_valid(second) and second != agent:
 		related.append(second.agent_name)
-	agent.memory.add_memory(
+	var mem: MemoryEntry = agent.memory.add_memory(
 		MemoryEntry.MemoryType.OBSERVATION,
 		"%s: %s" % [agent.agent_name, _sub(str(spec.get("text", "")), target, second)],
 		float(spec.get("importance", 5.0)), related)
-	var mem: MemoryEntry = agent.memory.memories[-1]
 	mem.emotion = str(spec.get("emotion", ""))
 	mem.sentiment = float(spec.get("sentiment", 0.0))
 	mem.decay_protected = bool(spec.get("protected", false))

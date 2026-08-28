@@ -35,10 +35,9 @@ static func maybe_pass(speaker: Node2D, listener: Node2D) -> bool:
 		listener.agent_name, speaker.agent_name, text,
 		" ...at least that's the story going around." if warped else "",
 	]
-	listener.memory.add_memory(
+	var mem: MemoryEntry = listener.memory.add_memory(
 		MemoryEntry.MemoryType.OBSERVATION, retold,
 		maxf(candidate.importance - 1.0, 1.0), candidate.related_agents)
-	var mem: MemoryEntry = listener.memory.memories[-1]
 	mem.emotion = "curiosity"
 	mem.sentiment = candidate.sentiment * (0.6 if warped else 0.8)
 	mem.narrative_thread = candidate.narrative_thread

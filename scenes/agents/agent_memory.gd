@@ -21,7 +21,11 @@ func setup(agent_name: String) -> void:
 	_agent_name = agent_name
 
 
-func add_memory(type: MemoryEntry.MemoryType, description: String, importance: float = 3.0, related_agents: PackedStringArray = []) -> void:
+## Returns the entry it created. Use that return value rather than
+## `memories[-1]` — this call can synchronously append a reflection on top of
+## yours (the heuristic path in _trigger_reflection does exactly that), so the
+## last element is not reliably the memory you just added.
+func add_memory(type: MemoryEntry.MemoryType, description: String, importance: float = 3.0, related_agents: PackedStringArray = []) -> MemoryEntry:
 	var entry := MemoryEntry.new(type, description, TimeManager.game_minutes, importance)
 	entry.related_agents = related_agents
 	memories.append(entry)
@@ -40,21 +44,23 @@ func add_memory(type: MemoryEntry.MemoryType, description: String, importance: f
 	if memories.size() > memory_budget:
 		_compact()
 
-
-func add_observation(description: String, importance: float = 2.0) -> void:
-	add_memory(MemoryEntry.MemoryType.OBSERVATION, description, importance)
+	return entry
 
 
-func add_action(description: String, importance: float = 3.0) -> void:
-	add_memory(MemoryEntry.MemoryType.ACTION, description, importance)
+func add_observation(description: String, importance: float = 2.0) -> MemoryEntry:
+	return add_memory(MemoryEntry.MemoryType.OBSERVATION, description, importance)
 
 
-func add_conversation(description: String, related_agent: String, importance: float = 5.0) -> void:
-	add_memory(MemoryEntry.MemoryType.CONVERSATION, description, importance, PackedStringArray([related_agent]))
+func add_action(description: String, importance: float = 3.0) -> MemoryEntry:
+	return add_memory(MemoryEntry.MemoryType.ACTION, description, importance)
 
 
-func add_reflection(description: String) -> void:
-	add_memory(MemoryEntry.MemoryType.REFLECTION, description, 8.0)
+func add_conversation(description: String, related_agent: String, importance: float = 5.0) -> MemoryEntry:
+	return add_memory(MemoryEntry.MemoryType.CONVERSATION, description, importance, PackedStringArray([related_agent]))
+
+
+func add_reflection(description: String) -> MemoryEntry:
+	return add_memory(MemoryEntry.MemoryType.REFLECTION, description, 8.0)
 
 
 func retrieve(query: String, count: int = 5) -> Array[MemoryEntry]:
@@ -220,12 +226,12 @@ func _trigger_reflection() -> void:
 			_is_reflecting = false
 			if success and data.has("reflection"):
 				var reflection_text: String = str(data["reflection"])
-				add_reflection(reflection_text)
+				var reflection: MemoryEntry = add_reflection(reflection_text)
 				# Apply emotional metadata to the reflection
 				if data.has("emotion"):
-					memories[-1].emotion = str(data["emotion"])
+					reflection.emotion = str(data["emotion"])
 				if data.has("narrative_thread"):
-					memories[-1].narrative_thread = str(data["narrative_thread"])
+					reflection.narrative_thread = str(data["narrative_thread"])
 			else:
 				add_reflection("%s takes a moment to think about recent events." % _agent_name),
 		LLMManager.Priority.LOW,

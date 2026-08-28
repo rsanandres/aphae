@@ -182,9 +182,9 @@ func _sweep_special_windows() -> void:
 		if was_paused:
 			TimeManager.toggle_pause()
 		var holder: Node2D = AgentManager.agents[0]
-		holder.memory.add_memory(MemoryEntry.MemoryType.OBSERVATION,
+		var probe_mem: MemoryEntry = holder.memory.add_memory(MemoryEntry.MemoryType.OBSERVATION,
 			"%s is hiding something big." % holder.agent_name, 8.0)
-		holder.memory.memories[-1].narrative_thread = "secret_probe"
+		probe_mem.narrative_thread = "secret_probe"
 		EventManager.auto_resolve_dilemmas = false
 		EventManager.trigger_event("leak_dilemma", [holder])
 		await get_tree().create_timer(0.5).timeout

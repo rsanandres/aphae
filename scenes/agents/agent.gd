@@ -178,20 +178,20 @@ func depart(reason: String = "a new opportunity") -> void:
 			continue
 		var rel: RelationshipEntry = other.relationships.get_relationship(agent_name)
 		var closeness: float = clampf((rel.affinity + rel.familiarity) / 150.0, 0.0, 1.0)
-		other.memory.add_memory(
+		var farewell: MemoryEntry = other.memory.add_memory(
 			MemoryEntry.MemoryType.OBSERVATION,
 			"%s watched %s leave the office for good (%s)." % [other.agent_name, agent_name, reason],
 			4.0 + closeness * 4.0, PackedStringArray([agent_name])
 		)
-		other.memory.memories[-1].emotion = "wistful" if closeness > 0.3 else ""
-		other.memory.memories[-1].sentiment = -0.4 * closeness
+		farewell.emotion = "wistful" if closeness > 0.3 else ""
+		farewell.sentiment = -0.4 * closeness
 		rel.add_tag("departed")
 		if rel.relationship_status == RelationshipEntry.Status.DATING \
 				or rel.relationship_status == RelationshipEntry.Status.PARTNERS:
 			rel.relationship_status = RelationshipEntry.Status.EX
-			other.memory.memories[-1].decay_protected = true
-			other.memory.memories[-1].sentiment = -0.8
-			other.memory.memories[-1].emotion = "heartbreak"
+			farewell.decay_protected = true
+			farewell.sentiment = -0.8
+			farewell.emotion = "heartbreak"
 
 	EventBus.narrative_event.emit(
 		"%s has left the office (%s)." % [agent_name, reason],
@@ -244,12 +244,11 @@ func _on_confessional_recorded(confessional: RefCounted) -> void:
 			emotion = "defiance"
 			sentiment = -0.5
 
-	memory.add_memory(
+	var last: MemoryEntry = memory.add_memory(
 		MemoryEntry.MemoryType.REFLECTION,
 		"%s said this to the confessional camera: \"%s\"" % [agent_name, c.line],
 		importance
 	)
-	var last: MemoryEntry = memory.memories[-1]
 	last.emotion = emotion
 	last.sentiment = sentiment
 	last.decay_protected = protect
@@ -262,14 +261,14 @@ func witness_death(dead_name: String, cause: String) -> void:
 	var closeness: float = clampf((rel.affinity + rel.familiarity) / 150.0, 0.0, 1.0)
 
 	# Core grief memory (protected from decay)
-	memory.add_memory(
+	var grief: MemoryEntry = memory.add_memory(
 		MemoryEntry.MemoryType.OBSERVATION,
 		"%s witnessed %s passing away from %s. This is deeply sad." % [agent_name, dead_name, cause],
 		10.0, PackedStringArray([dead_name])
 	)
-	memory.memories[-1].emotion = "grief"
-	memory.memories[-1].sentiment = -0.9
-	memory.memories[-1].decay_protected = true
+	grief.emotion = "grief"
+	grief.sentiment = -0.9
+	grief.decay_protected = true
 
 	# Scale grief impact by relationship closeness
 	var social_penalty: float = -15.0 - closeness * 35.0  # -15 to -50
@@ -289,14 +288,14 @@ func witness_death(dead_name: String, cause: String) -> void:
 
 		# Partners get extra memories
 		if rel.relationship_status == RelationshipEntry.Status.DATING or rel.relationship_status == RelationshipEntry.Status.PARTNERS:
-			memory.add_memory(
+			var bereavement: MemoryEntry = memory.add_memory(
 				MemoryEntry.MemoryType.OBSERVATION,
 				"%s lost their partner %s. The grief is overwhelming." % [agent_name, dead_name],
 				10.0, PackedStringArray([dead_name])
 			)
-			memory.memories[-1].emotion = "devastation"
-			memory.memories[-1].sentiment = -1.0
-			memory.memories[-1].decay_protected = true
+			bereavement.emotion = "devastation"
+			bereavement.sentiment = -1.0
+			bereavement.decay_protected = true
 			rel.relationship_status = RelationshipEntry.Status.EX
 			rel.add_tag("deceased")
 
@@ -855,26 +854,26 @@ func _check_mental_break() -> bool:
 		outburst_desc = "%s had a mental breakdown and lashed out at %s." % [agent_name, least_liked_name]
 	else:
 		outburst_desc = "%s had a mental breakdown and lashed out at everyone nearby." % agent_name
-	memory.add_memory(
+	var outburst: MemoryEntry = memory.add_memory(
 		MemoryEntry.MemoryType.OBSERVATION,
 		outburst_desc,
 		8.0, PackedStringArray([least_liked_name]) if least_liked_name != "" else PackedStringArray()
 	)
-	memory.memories[-1].emotion = "rage"
-	memory.memories[-1].sentiment = -0.9
-	memory.memories[-1].decay_protected = true
+	outburst.emotion = "rage"
+	outburst.sentiment = -0.9
+	outburst.decay_protected = true
 
 	# Nearby agents also remember this
 	for other in nearby_agents:
 		if not is_instance_valid(other):
 			continue
-		other.memory.add_memory(
+		var witnessed: MemoryEntry = other.memory.add_memory(
 			MemoryEntry.MemoryType.OBSERVATION,
 			"%s witnessed %s having a mental breakdown." % [other.agent_name, agent_name],
 			6.0, PackedStringArray([agent_name])
 		)
-		other.memory.memories[-1].emotion = "shock"
-		other.memory.memories[-1].sentiment = -0.4
+		witnessed.emotion = "shock"
+		witnessed.sentiment = -0.4
 
 	# Emit narrative event
 	var narrative_agents: Array = [agent_name]

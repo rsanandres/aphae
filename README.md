@@ -53,6 +53,8 @@ from that character's personality and memories — nothing here is scripted.*
 
 ### Play it
 
+**[▶ Play in your browser](https://rsanandres.github.io/aphae/)** — no download, no install. The web build runs the full simulation on the heuristic brain.
+
 **[Download the latest release](https://github.com/rsanandres/aphae/releases/latest)** — Windows and Linux, no install: unzip and run. Everything works offline; if you have [Ollama](https://ollama.ai) running, the cast gets an LLM brain and distinct voices, and without it a rich heuristic brain takes over.
 
 ### Requirements

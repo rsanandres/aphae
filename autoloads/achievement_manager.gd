@@ -123,6 +123,27 @@ func _connect_signals() -> void:
 		unlock("new_beginnings")
 	)
 
+	EventBus.goal_achieved.connect(func(agent_name: String, _text: String, _kind: int) -> void:
+		unlock("goal_getter")
+		if GoalManager.achieved_total >= 3:
+			unlock("driven")
+		# Every goal they arrived with, landed. Checked here rather than on a
+		# counter because agents differ in how many goals they carry.
+		var goals: Array[GoalState] = GoalManager.get_goals(agent_name)
+		if not goals.is_empty():
+			var all_done := true
+			for goal: GoalState in goals:
+				if goal.status != GoalState.Status.ACHIEVED:
+					all_done = false
+					break
+			if all_done:
+				unlock("self_actualized")
+	)
+
+	EventBus.goal_failed.connect(func(_agent_name: String, _text: String, _kind: int) -> void:
+		unlock("unfinished_business")
+	)
+
 	EventBus.conversation_started.connect(func(a: String, b: String) -> void:
 		unlock("small_talk")
 		# Track conversations per agent per day

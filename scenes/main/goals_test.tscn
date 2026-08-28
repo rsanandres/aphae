@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cgoaltest01"]
+
+[ext_resource type="Script" path="res://scenes/main/goals_test.gd" id="1_goal"]
+
+[node name="GoalsTest" type="Node2D"]
+script = ExtResource("1_goal")

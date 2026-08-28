@@ -173,6 +173,30 @@
       "name": "Season Finale",
       "description": "Complete a full five-episode season",
       "category": "producer"
+    },
+    {
+      "id": "goal_getter",
+      "name": "Goal Getter",
+      "description": "An agent achieves a personal goal",
+      "category": "goals"
+    },
+    {
+      "id": "driven",
+      "name": "Driven",
+      "description": "Three goals achieved in one run",
+      "category": "goals"
+    },
+    {
+      "id": "unfinished_business",
+      "name": "Unfinished Business",
+      "description": "An agent gives up on a goal",
+      "category": "goals"
+    },
+    {
+      "id": "self_actualized",
+      "name": "Self-Actualized",
+      "description": "One agent achieves every goal they set out with",
+      "category": "goals"
     }
   ]
 }

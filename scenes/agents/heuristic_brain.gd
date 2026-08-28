@@ -11,6 +11,9 @@ var NEED_TO_OBJECT_TYPE := {
 	NeedType.Type.PRODUCTIVITY: "desk",
 }
 
+# How often a calm agent acts on its focus goal instead of drifting on traits.
+const GOAL_PURSUIT_CHANCE := 0.55
+
 var _agent: Node2D
 
 
@@ -68,6 +71,12 @@ func decide(needs: AgentNeeds, nearby_objects: Array, nearby_agents: Array) -> D
 
 func _personality_idle_decision(personality: PersonalityProfile, nearby_objects: Array, nearby_agents: Array) -> Dictionary:
 	## When needs are satisfied, personality determines what the agent does for fun.
+	# ...but wanting something outranks drifting. Calm needs are exactly when an
+	# agent gets to chase a goal, so that check comes before personality.
+	var goal_decision := _goal_decision(nearby_objects, nearby_agents)
+	if not goal_decision.is_empty():
+		return goal_decision
+
 	if not personality:
 		if randf() < 0.3:
 			return {"action": ActionType.Type.WANDER}
@@ -109,6 +118,35 @@ func _personality_idle_decision(personality: PersonalityProfile, nearby_objects:
 	if randf() < 0.3:
 		return {"action": ActionType.Type.WANDER}
 	return {"action": ActionType.Type.IDLE}
+
+
+func _goal_decision(nearby_objects: Array, nearby_agents: Array) -> Dictionary:
+	## Pursue the focus goal — but not every tick. An agent who chases a goal
+	## relentlessly reads as a quest marker rather than a person, so this yields
+	## to personality roughly half the time.
+	var goal: GoalState = GoalManager.get_focus_goal(_agent.agent_name)
+	if goal == null or randf() > GOAL_PURSUIT_CHANCE:
+		return {}
+
+	# Social and romantic goals are pursued through people.
+	if goal.kind == GoalState.Kind.SOCIAL or goal.kind == GoalState.Kind.ROMANCE:
+		var living: Array = nearby_agents.filter(func(a: Node2D) -> bool: return not a.is_dead)
+		if living.is_empty():
+			return {}
+		if goal.kind == GoalState.Kind.SOCIAL:
+			# Prefer someone they have not connected with yet — a new face is
+			# what the goal actually scores.
+			for candidate: Node2D in living:
+				if candidate.agent_name not in goal.partners:
+					return {"action": ActionType.Type.TALK_TO_AGENT, "target": candidate}
+		return {"action": ActionType.Type.TALK_TO_AGENT, "target": _pick_preferred_social_target(living)}
+
+	# Everything else is pursued through objects.
+	for object_type: String in GoalManager.preferred_object_types(goal.kind):
+		var obj: Node2D = _find_available_object(nearby_objects, object_type)
+		if obj:
+			return {"action": ActionType.Type.GO_TO_OBJECT, "target": obj}
+	return {}
 
 
 func _social_decision(personality: PersonalityProfile, nearby_agents: Array) -> Dictionary:

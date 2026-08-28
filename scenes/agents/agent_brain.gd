@@ -85,7 +85,9 @@ func _request_llm_decision(needs: AgentNeeds, nearby_objects: Array, nearby_agen
 		"description": personality.description if personality else "",
 		"personality": personality.get_personality_summary() if personality else "",
 		"mood": personality.get_mood(needs_values) if personality else "neutral",
-		"goals": "\n".join(personality.goals) if personality else "none",
+		# Goals carry their live standing (progress, days left) so the model can
+		# write someone who knows they are close, or out of time.
+		"goals": GoalManager.format_for_prompt(_agent.agent_name),
 		"time": TimeManager.time_string,
 		"energy": "%.0f" % needs_values.get(NeedType.Type.ENERGY, 50.0),
 		"hunger": "%.0f" % needs_values.get(NeedType.Type.HUNGER, 50.0),

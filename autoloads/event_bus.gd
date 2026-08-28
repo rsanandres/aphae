@@ -68,6 +68,11 @@ signal storyline_updated(storyline: RefCounted)
 # Confessional signals
 signal confessional_recorded(confessional: RefCounted)
 
+# Goal signals
+signal goal_progressed(agent_name: String, text: String, progress: float)
+signal goal_achieved(agent_name: String, text: String, kind: int)
+signal goal_failed(agent_name: String, text: String, kind: int)
+
 # Player director signals ("producer" controls)
 signal nudge_answered(agent_name: String, request: String, complied: bool, reason: String)
 signal interview_answered(agent_name: String, question: String, answer: String)

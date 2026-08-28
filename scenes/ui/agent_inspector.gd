@@ -12,6 +12,7 @@ var _needs_container: VBoxContainer
 var _relationships_container: VBoxContainer
 var _groups_label: Label
 var _storylines_label: Label
+var _goals_label: Label
 var _memory_label: Label
 var _need_bars: Dictionary = {}
 
@@ -111,6 +112,18 @@ func _build_ui() -> void:
 
 	_vbox.add_child(HSeparator.new())
 
+	var goal_title := Label.new()
+	goal_title.text = "Goals"
+	goal_title.add_theme_font_size_override("font_size", 9)
+	_vbox.add_child(goal_title)
+
+	_goals_label = Label.new()
+	_goals_label.add_theme_font_size_override("font_size", 9)
+	_goals_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_vbox.add_child(_goals_label)
+
+	_vbox.add_child(HSeparator.new())
+
 	var mem_title := Label.new()
 	mem_title.text = "Recent Memories"
 	mem_title.add_theme_font_size_override("font_size", 9)
@@ -188,9 +201,33 @@ func _update_dynamic() -> void:
 		if _agent.agent_name in sl.involved_agents and sl.is_active:
 			agent_stories.append(sl.title)
 	_storylines_label.text = "\n".join(agent_stories) if not agent_stories.is_empty() else "(none)"
+	# Goals — the bar is the readable part; the number is for the curious.
+	_goals_label.text = _format_goals()
 	# Memory
 	var recent: Array[MemoryEntry] = _agent.memory.get_recent(5)
 	_memory_label.text = _agent.memory.format_memories_for_prompt(recent)
+
+
+func _format_goals() -> String:
+	## An ASCII meter reads at 9px where a real ProgressBar per goal would not,
+	## and it survives the 170px panel width without clipping.
+	var goals: Array[GoalState] = GoalManager.get_goals(_agent.agent_name)
+	if goals.is_empty():
+		return "(none)"
+	var today: int = TimeManager.day
+	var lines: PackedStringArray = []
+	for goal: GoalState in goals:
+		match goal.status:
+			GoalState.Status.ACHIEVED:
+				lines.append("[done] %s" % goal.text)
+			GoalState.Status.FAILED:
+				lines.append("[gave up] %s" % goal.text)
+			_:
+				var filled: int = int(round(goal.progress / 10.0))
+				var meter := "=".repeat(filled) + ".".repeat(10 - filled)
+				var days: int = maxi(0, goal.days_left(today))
+				lines.append("%s %d%% (%dd)\n%s" % [meter, int(goal.progress), days, goal.text])
+	return "\n".join(lines)
 
 
 func _rebuild_need_bars() -> void:

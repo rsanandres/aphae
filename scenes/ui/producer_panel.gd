@@ -134,6 +134,11 @@ func _build_ui() -> void:
 	plant.pressed.connect(_do_rumor)
 	outer.add_child(plant)
 
+	var star := _small_button("Make the star  ◆%d" % COST_STAR)
+	star.tooltip_text = "The camera follows them and their brain never leaves the ACTIVE tier. Click again to clear."
+	star.pressed.connect(_do_star)
+	outer.add_child(star)
+
 	outer.add_child(HSeparator.new())
 
 	# --- The Mole (M5): the one show-wide action on this panel ---
@@ -176,6 +181,23 @@ func _do_house_meeting() -> void:
 	_refresh_meeting()
 
 
+func _do_star() -> void:
+	if _agent == null or not is_instance_valid(_agent):
+		_result.text = "Select someone first."
+		return
+	if PlayerDirector.star_name == _agent.agent_name:
+		PlayerDirector.clear_star()
+		_result.text = "The spotlight moves on."
+		return
+	if not ProducerEconomy.spend(COST_STAR, "star of the episode"):
+		_result.text = "Not enough Influence."
+		_result.add_theme_color_override("font_color", UIPalette.ACCENT_NEG)
+		return
+	PlayerDirector.set_star(_agent)
+	_result.text = "%s is the star now. The camera agrees." % _agent.agent_name
+	_result.add_theme_color_override("font_color", UIPalette.ACCENT_WARM)
+
+
 func _small_button(text: String) -> Button:
 	var btn := Button.new()
 	btn.text = text
@@ -186,6 +208,7 @@ func _small_button(text: String) -> Button:
 
 # --- Actions ---------------------------------------------------------------
 
+const COST_STAR := 3
 const COST_NUDGE := 1
 const COST_INTERVIEW := 2
 const COST_RUMOR := 5

@@ -9,6 +9,9 @@ on:
   push:
     tags: ["v*"]
 
+permissions:
+  contents: write   # lets the job publish a GitHub Release on v* tags
+
 jobs:
   export:
     runs-on: ubuntu-latest
@@ -81,3 +84,18 @@ jobs:
           name: Ayle-linux
           path: build/linux/
           retention-days: 7
+
+      - name: Zip builds for the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          cd build/windows && zip -qr ../../Ayle-windows.zip . && cd ../..
+          cd build/linux && zip -qr ../../Ayle-linux.zip . && cd ../..
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        # A tag becomes a public, downloadable release - the repo's storefront.
+        # Uses the built-in token; no external service involved.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}"             Ayle-windows.zip Ayle-linux.zip             --repo "${GITHUB_REPOSITORY}"             --title "Ayle ${GITHUB_REF_NAME}"             --generate-notes

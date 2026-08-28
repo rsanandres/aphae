@@ -10,6 +10,7 @@ var _tab_bar: HBoxContainer
 var _events_btn: Button
 var _stories_btn: Button
 var _talk_btn: Button
+var _you_btn: Button
 var _content_vbox: VBoxContainer
 var _active_tab: String = "events"
 const MAX_ENTRIES := 100
@@ -69,6 +70,13 @@ func _build_ui() -> void:
 	_talk_btn.pressed.connect(_show_talk_tab)
 	_tab_bar.add_child(_talk_btn)
 
+	_you_btn = Button.new()
+	_you_btn.text = "You"
+	_you_btn.tooltip_text = "Because of you: your interventions and what rippled from them"
+	_you_btn.add_theme_font_size_override("font_size", 9)
+	_you_btn.pressed.connect(_show_you_tab)
+	_tab_bar.add_child(_you_btn)
+
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_tab_bar.add_child(spacer)
@@ -106,6 +114,11 @@ func _show_talk_tab() -> void:
 	_rebuild_display()
 
 
+func _show_you_tab() -> void:
+	_active_tab = "you"
+	_rebuild_display()
+
+
 func _on_narrative_event(text: String, agents: Array, importance: float) -> void:
 	var entry := {
 		"text": text,
@@ -126,12 +139,15 @@ func _rebuild_display() -> void:
 	for child in _content_vbox.get_children():
 		child.queue_free()
 
-	for btn in [_events_btn, _stories_btn, _talk_btn]:
+	for btn in [_events_btn, _stories_btn, _talk_btn, _you_btn]:
 		btn.remove_theme_color_override("font_color")
 	if _active_tab == "events":
 		_events_btn.add_theme_color_override("font_color", UIPalette.ACCENT_WARM)
 		for entry in _entries:
 			_add_event_label(entry)
+	elif _active_tab == "you":
+		_you_btn.add_theme_color_override("font_color", UIPalette.ACCENT_WARM)
+		_build_you_view()
 	elif _active_tab == "talk":
 		_talk_btn.add_theme_color_override("font_color", UIPalette.ACCENT_WARM)
 		for entry in _talk_entries:
@@ -155,6 +171,33 @@ func _add_event_label(entry: Dictionary) -> void:
 	else:
 		lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 	_content_vbox.add_child(lbl)
+
+
+func _build_you_view() -> void:
+	## Because-of-you: interventions with the ripples attributed to them.
+	var entries: Array[Dictionary] = ImpactLog.get_entries()
+	if entries.is_empty():
+		var empty := Label.new()
+		empty.text = "You haven't touched anything yet. Nudge someone, plant something, call a meeting — it shows up here, with what happened next."
+		empty.add_theme_font_size_override("font_size", 9)
+		empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		empty.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+		_content_vbox.add_child(empty)
+		return
+	for entry in entries:
+		var lbl := Label.new()
+		lbl.text = "[Day %d %s] %s" % [entry["day"], entry["time"], entry["text"]]
+		lbl.add_theme_font_size_override("font_size", 9)
+		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		lbl.add_theme_color_override("font_color", Color(0.85, 0.75, 0.55))
+		_content_vbox.add_child(lbl)
+		for ripple in entry["ripples"]:
+			var rl := Label.new()
+			rl.text = "    " + str(ripple)
+			rl.add_theme_font_size_override("font_size", 9)
+			rl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			rl.add_theme_color_override("font_color", Color(0.65, 0.7, 0.65))
+			_content_vbox.add_child(rl)
 
 
 func _build_stories_view() -> void:

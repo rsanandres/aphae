@@ -198,6 +198,58 @@ func _run() -> void:
 	PlayerDirector.plant_rumor(victim, "something juicy", subject)
 	await get_tree().create_timer(0.5).timeout
 	_pass(_nudges.size() == n3 and victim.memory.memories.size() == m3, "dead agents are inert")
+	victim.is_dead = false
+
+	print("[TEST] 8. star of the episode")
+	ProducerEconomy.influence = 50
+	_pass(PlayerDirector.set_star(a), "an agent can be made the star")
+	_pass(PlayerDirector.star_name == a.agent_name, "the star is recorded")
+	AgentManager._reclassify_tiers()
+	_pass(AgentManager.get_tier(a) == AgentManager.ThinkTier.ACTIVE,
+		"the star is forced into the ACTIVE tier")
+	var star_state: Dictionary = PlayerDirector.get_star_save()
+	PlayerDirector.clear_star()
+	_pass(PlayerDirector.star_name == "", "the spotlight clears")
+	PlayerDirector.load_star_save(star_state)
+	_pass(PlayerDirector.star_name == a.agent_name, "the star survives a save round-trip")
+	PlayerDirector.set_star(a)  # toggling the current star clears it
+	_pass(PlayerDirector.star_name == "", "choosing the star again clears them")
+	_pass(not PlayerDirector.set_star(victim) if victim.is_dead else true, "sanity")
+
+	print("[TEST] 9. because-of-you log")
+	ImpactLog.auto_enabled = true
+	ImpactLog._entries.clear()
+	EventBus.nudge_answered.emit(a.agent_name, "get coffee", true, "")
+	var log_entries: Array[Dictionary] = ImpactLog.get_entries()
+	_pass(log_entries.size() == 1 and "nudged" in str(log_entries[0]["text"]),
+		"a complied nudge opens an intervention")
+	# A notable event touching the subject inside the window becomes a ripple.
+	EventBus.narrative_event.emit("%s spilled coffee dramatically." % a.agent_name, [a.agent_name], 5.0)
+	log_entries = ImpactLog.get_entries()
+	_pass((log_entries[0]["ripples"] as Array).size() == 1,
+		"a ripple attaches to the intervention")
+	# Unrelated people do not ripple.
+	EventBus.narrative_event.emit("Someone else did something.", ["Nobody Real"], 5.0)
+	_pass((ImpactLog.get_entries()[0]["ripples"] as Array).size() == 1,
+		"unrelated events do not attach")
+	# Outside the window, nothing attaches.
+	TimeManager.game_minutes += ImpactLog.WINDOW_MINUTES + 10.0
+	EventBus.narrative_event.emit("%s did a thing much later." % a.agent_name, [a.agent_name], 5.0)
+	_pass((ImpactLog.get_entries()[0]["ripples"] as Array).size() == 1,
+		"the attribution window closes")
+	# Ripple cap holds.
+	EventBus.rumor_planted.emit(a.agent_name, "a planted line")
+	for i in range(5):
+		EventBus.narrative_event.emit("%s ripple %d." % [a.agent_name, i], [a.agent_name], 5.0)
+	_pass((ImpactLog.get_entries()[0]["ripples"] as Array).size() == ImpactLog.MAX_RIPPLES,
+		"the ripple cap holds")
+	# Save round-trip.
+	var impact_state: Dictionary = ImpactLog.get_save_state()
+	ImpactLog.load_save_state({})
+	_pass(ImpactLog.get_entries().is_empty(), "an empty block clears the log")
+	ImpactLog.load_save_state(impact_state)
+	_pass(ImpactLog.get_entries().size() == 2, "the log survives a save round-trip")
+	ImpactLog.auto_enabled = false
 
 
 func _report() -> void:

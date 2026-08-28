@@ -1,5 +1,9 @@
 # Aphae
 
+[![tests](https://github.com/rsanandres/aphae/actions/workflows/ci.yml/badge.svg)](https://github.com/rsanandres/aphae/actions/workflows/ci.yml)
+[![release](https://img.shields.io/github/v/release/rsanandres/aphae?include_prereleases&label=download)](https://github.com/rsanandres/aphae/releases/latest)
+[![godot](https://img.shields.io/badge/godot-4.6-478cbf?logo=godotengine&logoColor=white)](https://godotengine.org)
+
 **A tiny reality show that lives on your desktop.** AI-driven agents with distinct personalities share an office, and the cameras never stop rolling. Leave it running in the corner of your screen while you work — the office keeps living without you, and tells you what you missed when you glance back.
 
 You're the producer, not the player-character: you rearrange the set, nudge the cast, plant a rumour, and decide what airs. The drama writes itself.
@@ -38,7 +42,7 @@ from that character's personality and memories — nothing here is scripted.*
 - **Ambient by Design** — The office doesn't pause when you click away. It drops to a low-power posture (heuristic brains, stretched think cadence, muted audio) and keeps living; when you come back, a "While You Were Away" digest catches you up on the drama you missed. Shrink it to desktop-pet mode and it lives in a corner of your screen all day.
 - **Seasons & Influence** — Every three days wraps an episode with a ratings score and an Influence payout. Spend it in the Producer's Catalog (**B**): unlockable objects with social physics (karaoke duets, grudge-dissolving meditation pods), interventions (anonymous gifts, leaked memos, documentary crew days), and studio upgrades. Unlocks persist across sandboxes.
 - **Producer Dilemmas** — Occasionally the show pauses and hands YOU the call: leak a cast member's secret or bury it, counter-offer your poached star or film the walkout. The default happens if you let the clock run.
-- **Producer Controls** — Press **P** to stop being a spectator. *Nudge* an agent toward something — and watch them refuse if they're disagreeable or busy, because a nudge is a suggestion, not a command. *Interview* them and get an answer in their own voice, drawn from what they actually remember. Or *plant a rumour*, true or not, and let it colour how they treat someone.
+- **Producer Controls** — Press **P** to stop being a spectator. *Nudge* an agent toward something — and watch them refuse if they're disagreeable or busy, because a nudge is a suggestion, not a command. *Interview* them and get an answer in their own voice, drawn from what they actually remember. Or *plant a rumour*, true or not, and let it colour how they treat someone. Crown a *star of the episode* — the camera follows them, and the spotlight literally buys them the better brain. And everything you do lands in the **You** tab of the log, with what rippled from it: control you can't see the effect of doesn't feel like control.
 - **God Mode** — Place and remove objects, spawn/remove agents, and reshape the office environment.
 - **Desktop Pet Mode** — Shrink the window to a transparent, borderless, always-on-top overlay with 3 agents living on your desktop.
 - **39 Achievements** — Discovery, relationship, community, goal, secret, whodunit, and milestone achievements to track your sandbox's progress.
@@ -46,6 +50,10 @@ from that character's personality and memories — nothing here is scripted.*
 - **Procedural Everything** — Sprites, audio, and personalities are all generated at runtime. No external art or sound assets required.
 
 ## Getting Started
+
+### Play it
+
+**[Download the latest release](https://github.com/rsanandres/aphae/releases/latest)** — Windows and Linux, no install: unzip and run. Everything works offline; if you have [Ollama](https://ollama.ai) running, the cast gets an LLM brain and distinct voices, and without it a rich heuristic brain takes over.
 
 ### Requirements
 

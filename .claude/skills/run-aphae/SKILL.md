@@ -70,7 +70,7 @@ Individually:
 ```bash
 G="godot --headless --path . --audio-driver Dummy"
 $G -e --quit-after 5 2>&1 | grep -E 'Parse Error|Compile Error'   # must print NOTHING
-$G res://scenes/main/producer_test.tscn               # 14 passed
+$G res://scenes/main/producer_test.tscn               # 28 passed
 $G res://scenes/main/confessional_test.tscn           # 15 passed
 $G res://scenes/main/events_test.tscn                 # 66 passed
 $G res://scenes/main/economy_test.tscn                # 36 passed

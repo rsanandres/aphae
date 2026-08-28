@@ -595,6 +595,22 @@ asserted the memory existed.
 narrative and no confessional — death is drama enough — but the `GoalState` is *kept*, so a
 recap can still say what they were three days short of.
 
+### ✅ Backlog items #6 and #10 — the star, and "Because of you" (done, 2026-08-28)
+
+**#6 Pick the episode's star** — `PlayerDirector.set_star`: the producer panel
+pins one agent for ◆3. The camera follows them and `_reclassify_tiers` never
+lets them leave ACTIVE — attention literally buys them the LLM brain. Toggling
+the current star clears the spotlight. Persisted (save v9).
+
+**#10 "Because of you"** — `ImpactLog` autoload + a **You** tab in the
+narrative log. Every intervention (nudge, rumour, meeting, purchase, dilemma,
+star) opens a 180-game-minute attribution window; notable things that happen
+to the people you touched attach as ripples (cap 3, newest plausible cause
+wins). Deliberately a heuristic and honest about it — the sim does not track
+true causality, and neither does a TV producer. Writes nothing back into the
+simulation, so it cannot collide with a harness; carries the standard seam
+anyway. Covered in `producer_test` (14 → 28 assertions).
+
 ### 🎛️ Backlog — player agency
 
 **The gap:** the player can reshape the *world* (god toolbar places objects, spawns/removes

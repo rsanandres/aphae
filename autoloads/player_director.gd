@@ -42,6 +42,42 @@ const NUDGES := {
 }
 
 
+## Player-agency backlog #6: pin one agent as the star of the episode.
+## Attention literally buys them the LLM brain — AgentManager forces their
+## think tier to ACTIVE — and the camera follows them.
+var star_name: String = ""
+
+
+func set_star(agent: Node2D) -> bool:
+	if agent == null or not is_instance_valid(agent) or agent.is_dead:
+		return false
+	if agent.agent_name == star_name:
+		clear_star()
+		return true
+	star_name = agent.agent_name
+	var camera := get_viewport().get_camera_2d()
+	if camera and camera.has_method("follow"):
+		camera.follow(agent)
+	EventBus.star_chosen.emit(star_name)
+	EventBus.narrative_event.emit(
+		"The cameras have a favorite now: %s is this episode's star." % star_name,
+		[star_name], 4.0)
+	return true
+
+
+func clear_star() -> void:
+	star_name = ""
+	EventBus.star_chosen.emit("")
+
+
+func get_star_save() -> Dictionary:
+	return {"star": star_name}
+
+
+func load_star_save(data: Dictionary) -> void:
+	star_name = str(data.get("star", ""))
+
+
 func get_nudge_kinds() -> Array:
 	return NUDGES.keys()
 

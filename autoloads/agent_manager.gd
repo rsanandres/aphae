@@ -356,6 +356,11 @@ func _reclassify_tiers() -> void:
 		if not is_instance_valid(agent):
 			continue
 		var dist := agent.global_position.distance_to(view_center)
+		# The star of the episode never drops out of the ACTIVE tier: the
+		# spotlight buys them the LLM brain wherever they wander.
+		if agent.agent_name == PlayerDirector.star_name:
+			_agent_tiers[agent] = ThinkTier.ACTIVE
+			continue
 		if agent == selected or dist < 100.0:
 			_agent_tiers[agent] = ThinkTier.ACTIVE
 		elif dist < view_radius:

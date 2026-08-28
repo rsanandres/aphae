@@ -90,6 +90,7 @@ signal case_resolved(caught: bool, mole_name: String)
 signal nudge_answered(agent_name: String, request: String, complied: bool, reason: String)
 signal interview_answered(agent_name: String, question: String, answer: String)
 signal rumor_planted(agent_name: String, text: String)
+signal star_chosen(agent_name: String)  # "" when the spotlight is cleared
 
 # Achievement signals
 signal achievement_unlocked(id: String, name: String)

@@ -5,7 +5,7 @@ extends Node
 
 const SAVE_DIR := "user://saves/"
 var AUTO_SAVE_INTERVAL_DAYS: int = 5
-const SAVE_VERSION := 8
+const SAVE_VERSION := 9
 const MAX_SLOTS := 5
 const LEGACY_PATH := "user://ayle_save.json"
 const LAST_SLOT_PATH := "user://last_slot.cfg"
@@ -185,6 +185,8 @@ func _serialize_world() -> Dictionary:
 		"goals": GoalManager.get_save_state(),
 		"secrets": SecretManager.get_save_state(),
 		"whodunit": WhodunitDirector.get_save_state(),
+		"impact": ImpactLog.get_save_state(),
+		"producer_star": PlayerDirector.get_star_save(),
 		"departed_agents": AgentManager.departed_agents.duplicate(true),
 		"producer": ProducerEconomy.get_save_state(),
 	}
@@ -372,6 +374,8 @@ func _deserialize_world(data: Dictionary) -> void:
 	# spawn, and the loaded state below simply replaces it.
 	SecretManager.load_save_state(data.get("secrets", {}))
 	WhodunitDirector.load_save_state(data.get("whodunit", {}))
+	ImpactLog.load_save_state(data.get("impact", {}))
+	PlayerDirector.load_star_save(data.get("producer_star", {}))
 	AgentManager.departed_agents.clear()
 	for entry in data.get("departed_agents", []):
 		if entry is Dictionary:

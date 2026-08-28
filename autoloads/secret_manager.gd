@@ -118,6 +118,29 @@ func assign_secret(agent: Node2D, secret_id: String = "") -> SecretState:
 	return secret
 
 
+func assign_custom(agent: Node2D, secret_id: String, text: String) -> SecretState:
+	## Bespoke secrets from other systems (the mole case, future events) —
+	## same machinery as the pool: backing memory, confide/probe/expose,
+	## booth admission. One secret per agent still holds.
+	if not is_instance_valid(agent) or _secrets.has(agent.agent_name):
+		return null
+	if secret_id.strip_edges() == "" or text.strip_edges() == "":
+		return null
+	var secret := SecretState.new()
+	secret.agent_name = agent.agent_name
+	secret.id = secret_id
+	secret.text = text
+	secret.created_day = TimeManager.day
+	_secrets[agent.agent_name] = secret
+	var mem: MemoryEntry = agent.memory.add_memory(MemoryEntry.MemoryType.OBSERVATION,
+		"%s %s. Nobody here can find out." % [agent.agent_name, secret.text], 8.0)
+	mem.narrative_thread = secret.thread()
+	mem.decay_protected = true
+	mem.emotion = "guarded"
+	mem.sentiment = -0.3
+	return secret
+
+
 func _on_agent_spawned(agent: Node2D) -> void:
 	if auto_assign_enabled and randf() < SECRET_CHANCE:
 		assign_secret(agent)

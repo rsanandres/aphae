@@ -20,6 +20,7 @@ func _ready() -> void:
 		definition.probability = 0.0
 	ArcManager.auto_start_enabled = false
 	GoalManager.auto_enabled = false
+	WhodunitDirector.auto_enabled = false
 	SecretManager.auto_assign_enabled = false
 	SecretManager.auto_admit_enabled = false
 	_build_world()

@@ -16,6 +16,7 @@ func _ready() -> void:
 	ProducerEconomy.meta_persistence_enabled = false
 	# M7 seams off: the spawn-roll must not plant secret memories under the
 	# assertions, and the day-roll must not inject booth admissions mid-test.
+	WhodunitDirector.auto_enabled = false
 	SecretManager.auto_assign_enabled = false
 	SecretManager.auto_admit_enabled = false
 	TimeManager.is_paused = true

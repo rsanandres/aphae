@@ -15,6 +15,8 @@ var _question: LineEdit
 var _rumor_target: OptionButton
 var _rumor_text: OptionButton
 var _action_rows: VBoxContainer
+var _meeting_btn: Button
+var _meeting_result: Label
 
 
 func _ready() -> void:
@@ -131,6 +133,47 @@ func _build_ui() -> void:
 	var plant := _small_button("Plant it")
 	plant.pressed.connect(_do_rumor)
 	outer.add_child(plant)
+
+	outer.add_child(HSeparator.new())
+
+	# --- The Mole (M5): the one show-wide action on this panel ---
+	var meeting_lbl := Label.new()
+	meeting_lbl.text = "The house  ◆%d" % WhodunitDirector.MEETING_COST
+	meeting_lbl.theme_type_variation = "DimLabel"
+	outer.add_child(meeting_lbl)
+
+	_meeting_btn = _small_button("Call a house meeting")
+	_meeting_btn.tooltip_text = "Everyone votes on who the mole is, from what they each believe. Sway them first."
+	_meeting_btn.pressed.connect(_do_house_meeting)
+	outer.add_child(_meeting_btn)
+
+	_meeting_result = Label.new()
+	_meeting_result.add_theme_font_size_override("font_size", 9)
+	_meeting_result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	outer.add_child(_meeting_result)
+	_refresh_meeting()
+	EventBus.case_opened.connect(_refresh_meeting)
+	EventBus.case_resolved.connect(func(_caught: bool, _mole: String) -> void: _refresh_meeting())
+
+
+func _refresh_meeting(_ignored: Variant = null) -> void:
+	var open := WhodunitDirector.has_open_case()
+	_meeting_btn.disabled = not WhodunitDirector.meeting_available()
+	if not open:
+		_meeting_result.text = "No open case. When the host says someone isn't who they claim, come back."
+
+
+func _do_house_meeting() -> void:
+	var outcome: Dictionary = WhodunitDirector.call_house_meeting()
+	if outcome.is_empty():
+		_meeting_result.text = "The house won't gather (need Influence and a live case)."
+		return
+	var accused: String = outcome["accused"]
+	if outcome["was_mole"]:
+		_meeting_result.text = "The house voted out %s — the actual mole. Ratings gold." % accused
+	else:
+		_meeting_result.text = "The house turned on %s. Wrong. The real one is still out there — and bolder." % accused
+	_refresh_meeting()
 
 
 func _small_button(text: String) -> Button:

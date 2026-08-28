@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cwhodunit01"]
+
+[ext_resource type="Script" path="res://scenes/main/whodunit_test.gd" id="1_who"]
+
+[node name="WhodunitTest" type="Node2D"]
+script = ExtResource("1_who")

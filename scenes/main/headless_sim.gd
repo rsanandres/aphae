@@ -56,6 +56,12 @@ func _ready() -> void:
 		print("** [Day %d %s] BOOTH ADMISSION: %s — %s" % [TimeManager.day, TimeManager.time_string, holder, text]))
 	EventBus.secret_exposed.connect(func(holder: String, text: String) -> void:
 		print("** [Day %d %s] EXPOSED: %s — %s" % [TimeManager.day, TimeManager.time_string, holder, text]))
+	EventBus.case_opened.connect(func() -> void:
+		print("## [Day %d %s] CASE OPENED: there is a mole" % [TimeManager.day, TimeManager.time_string]))
+	EventBus.case_incident.connect(func(victim: String) -> void:
+		print("## [Day %d %s] SABOTAGE: %s was hit" % [TimeManager.day, TimeManager.time_string, victim]))
+	EventBus.case_resolved.connect(func(caught: bool, mole: String) -> void:
+		print("## [Day %d %s] CASE CLOSED: mole was %s (%s)" % [TimeManager.day, TimeManager.time_string, mole, "CAUGHT" if caught else "GOT AWAY"]))
 
 	EventBus.game_ready.emit()
 	print("[SIM] Simulation started. Ctrl+C to stop.\n")

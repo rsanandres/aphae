@@ -5,7 +5,7 @@ this file before touching anything. It records decisions, environment setup, and
 are expensive to rediscover — several entries here exist because someone already lost an hour
 to them.
 
-**Status:** M0–M4, M7 (secrets & lies), M8, V, E, P (producer meta-game), A, and G (goals that resolve) shipped · **Branch:** `feat/goals-that-resolve` (main parked at `be4192c` for the crew-bundle fast-forward) · **Open:** M5 (social deduction) is next per the phase order
+**Status:** M0–M5, M7, M8, V, E, P, A, and G shipped — every phase of the build order is done · **Branch:** `main` (CI on every push; releases by `v*` tag) · **Open:** backlog items and M6 (mobile) only
 **Maintainer:** this file is owned and kept current. Amend it when you learn something; do not
 let it drift. Two claims in it have already been proven false and corrected — a stale doc is
 worse than no doc, because it is trusted.
@@ -91,14 +91,33 @@ The player knows more than the cast: dramatic irony, not just drama.
 **Not purely additive** — the lying lives inside `ConversationInstance`, so it changes what
 agents say. Validate at runtime, not by static review.
 
-### ⚫ Phase 5 — A game on top of the simulation
+### ✅ Phase 5 — A game on top of the simulation (done, 2026-08-28)
 
 | Item | Effort | Needs |
 |---|---|---|
-| **M5 — Social deduction** | large | Phase 4 |
+| **M5 — Social deduction ("The Mole")** | large | Phase 4 ✅ |
 
-Hidden roles, accusations, voting. This is Phase 4 plus a win condition — attempting it before
-secrets exist means building the same machinery twice.
+Shipped as `WhodunitDirector` + `CaseState`. One cast member quietly sabotages
+the office (the existing sabotage script, actor forced, memories threaded per
+case). Evidence accrues only the ways evidence already can: a witness-glimpse
+memory that the RumorMill can carry, M7 confides, and booth admissions the
+player alone sees — knowing is not proving. The win condition is a **house
+meeting** (producer panel, costs Influence): every agent votes from evidence
+they personally hold; plurality is accused. Catch the mole → payout, they are
+voted off. Accuse an innocent → the office gets meaner, the mole gets bolder
+(1-day incident interval). Five incidents uncaught → the mole wins and walks.
+The player's levers are the producer tools that already existed — interviews,
+planted rumours (negative hearsay naming a suspect sways votes), nudges.
+
+**Harness:** `scenes/main/whodunit_test.tscn` — **34 passed**. It caught a
+real design bug before any player saw it: sabotage memories name the VICTIM,
+so the first vote model counted victimhood as guilt and the house reliably
+voted out whoever had been sabotaged. Votes now count only sightings —
+case-thread memories with the suspicion/curiosity emotions (the glimpse and
+its rumour-mill copies). Being a target is not being a suspect.
+
+Three achievements (39 total: Gotcha, Kangaroo Court, The Perfect Crime).
+Save v8. Seam: `WhodunitDirector.auto_enabled`, off in every harness.
 
 ### Unscheduled
 

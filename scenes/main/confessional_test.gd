@@ -18,6 +18,7 @@ func _ready() -> void:
 	# M7 seams off: the spawn-roll must not plant secret memories under the
 	# assertions, and the day-roll must not inject booth admissions mid-test.
 	GoalManager.auto_enabled = false
+	WhodunitDirector.auto_enabled = false
 	SecretManager.auto_assign_enabled = false
 	SecretManager.auto_admit_enabled = false
 	EventBus.confessional_recorded.connect(_on_confessional)

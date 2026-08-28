@@ -16,7 +16,7 @@ Ayle — AI Agent Office Simulation. A top-down 2D pixel art game where AI agent
 
 ## Architecture
 
-### Autoloads (24 singletons, load order matters)
+### Autoloads (25 singletons, load order matters)
 - `EventBus` — Global signal bus (~40 signals)
 - `TimeManager` — Game clock (1 real sec = 1 game minute at 1x), pause/1x/2x/3x
 - `Config` — Constants (need decay rates, speeds, thresholds)
@@ -30,13 +30,14 @@ Ayle — AI Agent Office Simulation. A top-down 2D pixel art game where AI agent
 - `ArcManager` — Multi-day personal storylines; a small state machine per agent from `resources/events/arcs.json`
 - `GoalManager` — Turns `PersonalityProfile.goals` into pursued `GoalState`s with progress, deadlines, and resolution
 - `SecretManager` — M7 secrets & lies: private truths denied on the floor, confided under trust, spread by the RumorMill, admitted to the camera
+- `WhodunitDirector` — M5 mole cases: a hidden saboteur, evidence in memories, and the house-meeting vote that ends it
 - `SaveManager` — Multi-slot (5) save system with `.bak` backup and corruption recovery
 - `GroupManager` — Social group formation and rivalry tracking
 - `Narrator` — Storyline tracking and narrative arc management
 - `ConfessionalDirector` — Reality-TV confessional cam: first-person "talking head" quips reacting to drama (LLM + heuristic fallback), plus host day recaps
 - `PlayerDirector` — Producer controls: nudge (refusable), interview, plant rumour
 - `AudioManager` — 3 audio buses (Music/SFX/Ambient), crossfade, procedural fallback sounds
-- `AchievementManager` — 36 achievements, persists to `user://achievements.json`, Steam sync
+- `AchievementManager` — 39 achievements, persists to `user://achievements.json`, Steam sync
 - `TutorialManager` — Contextual hints for new players
 - `SteamManager` — GodotSteam wrapper (graceful no-op without Steam)
 - `ProducerEconomy` — Seasons, episodes, the Influence balance, and the Catalog
@@ -75,7 +76,7 @@ desk, couch, coffee_machine, water_cooler (2 occupants), whiteboard (3 occupants
 Space=pause, 1/2/3=speed, Tab=god mode, F5=save, F9=load, F12=screenshot, L=narrative log, R=relationships, C=confessional cam, E=episode recap, Esc=close overlays
 
 ### Save/Load
-5 save slots at `user://saves/slot_N.json` with `.bak` backup. Auto-save every 5 game-days. Legacy migration from single-file save. Save v4 adds confessionals, v6 goals, v7 secrets; these restores sit outside the version gate, so older saves still load — a pre-v6 save simply has no goal block and agents re-derive theirs from personality on spawn.
+5 save slots at `user://saves/slot_N.json` with `.bak` backup. Auto-save every 5 game-days. Legacy migration from single-file save. Save v4 adds confessionals, v6 goals, v7 secrets, v8 the mole case; these restores sit outside the version gate, so older saves still load — a pre-v6 save simply has no goal block and agents re-derive theirs from personality on spawn.
 
 ### Episode Recap
 `EpisodeRecap` (`scripts/utils/`) assembles a shareable Markdown recap from Narrator storylines + ConfessionalDirector quips. Pure synchronous read — storylines already carry LLM summaries, so it needs no LLM call. Viewable with **E**, exports to `user://recaps/`, and shown on the game-over overlay.

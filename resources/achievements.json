@@ -215,6 +215,24 @@
       "name": "Cover Blown",
       "description": "A secret reaches enough ears to become office news",
       "category": "secrets"
+    },
+    {
+      "id": "gotcha",
+      "name": "Gotcha",
+      "description": "The house votes out the real mole",
+      "category": "whodunit"
+    },
+    {
+      "id": "kangaroo_court",
+      "name": "Kangaroo Court",
+      "description": "The house votes out an innocent",
+      "category": "whodunit"
+    },
+    {
+      "id": "the_perfect_crime",
+      "name": "The Perfect Crime",
+      "description": "A mole finishes their season uncaught",
+      "category": "whodunit"
     }
   ]
 }

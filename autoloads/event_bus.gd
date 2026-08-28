@@ -80,6 +80,12 @@ signal secret_confronted(holder_name: String, knower_name: String)
 signal secret_admitted(holder_name: String, text: String)
 signal secret_exposed(holder_name: String, text: String)
 
+# Mole case signals (M5)
+signal case_opened()
+signal case_incident(victim_name: String)
+signal house_meeting_held(accused_name: String, was_mole: bool, votes: Dictionary)
+signal case_resolved(caught: bool, mole_name: String)
+
 # Player director signals ("producer" controls)
 signal nudge_answered(agent_name: String, request: String, complied: bool, reason: String)
 signal interview_answered(agent_name: String, question: String, answer: String)

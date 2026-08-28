@@ -155,6 +155,17 @@ func _connect_signals() -> void:
 		unlock("cover_blown")
 	)
 
+	EventBus.house_meeting_held.connect(func(_accused: String, was_mole: bool, _votes: Dictionary) -> void:
+		if not was_mole:
+			unlock("kangaroo_court")
+	)
+	EventBus.case_resolved.connect(func(caught: bool, _mole: String) -> void:
+		if caught:
+			unlock("gotcha")
+		else:
+			unlock("the_perfect_crime")
+	)
+
 	EventBus.conversation_started.connect(func(a: String, b: String) -> void:
 		unlock("small_talk")
 		# Track conversations per agent per day

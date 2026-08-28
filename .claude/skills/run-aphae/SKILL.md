@@ -1,6 +1,6 @@
 ---
 name: run-aphae
-description: Run, test, or screenshot the Aphae Godot game. Use for any request to launch the game, run its test harnesses, capture screenshots, verify a UI change, or soak-test the simulation. Covers the headless-vs-windowed split, the isolated sandbox runner, all seven headless harnesses with their expected pass counts, and the traps that cost real time.
+description: Run, test, or screenshot the Aphae Godot game. Use for any request to launch the game, run its test harnesses, capture screenshots, verify a UI change, or soak-test the simulation. Covers the headless-vs-windowed split, the isolated sandbox runner, all eight headless harnesses with their expected pass counts, and the traps that cost real time.
 ---
 
 # Running and testing Aphae
@@ -76,6 +76,7 @@ $G res://scenes/main/events_test.tscn                 # 66 passed
 $G res://scenes/main/economy_test.tscn                # 36 passed
 $G res://scenes/main/goals_test.tscn                  # 73 passed
 $G res://scenes/main/secrets_test.tscn                # 41 passed
+$G res://scenes/main/whodunit_test.tscn               # 34 passed
 $G res://scenes/main/headless_sim.tscn -- --agents=12 --speed=3   # soak; runs forever, kill it
 ```
 
@@ -116,19 +117,25 @@ in this repo; the trace named the exact function on the first line.
 
 ## Traps that have cost real time
 
-- **Test harnesses must neutralize global state.** Set
-  `ArcManager.auto_start_enabled = false` and
-  `SecretManager.auto_assign_enabled/auto_admit_enabled = false` in EVERY
-  harness — not only ones asserting on arcs or secrets. The spawn-roll plants
-  memories under unrelated assertions and the day-roll injects confessionals
-  into counted feeds (this broke confessional_test twice, from two different
-  autoloads' background rolls) (the daily spontaneous roll can re-arc an agent the instant
-  a forced arc ends — this was a live flaky assertion), set
-  `ProducerEconomy.meta_persistence_enabled = false` (otherwise CI runs
-  inflate the owner's real lifetime progression — this happened), freeze the
-  clock with `TimeManager.is_paused = true`, zero event probabilities
-  (`trigger_event()` bypasses them), and set
-  `SaveManager._last_auto_save_day = 999999`.
+- **Test harnesses must neutralize global state — ALL of it, in EVERY
+  harness, not only the systems under test.** The full block every harness
+  needs in `_ready()`:
+  `ProducerEconomy.meta_persistence_enabled = false` (CI runs inflated the
+  owner's real lifetime progression — this happened),
+  `TimeManager.is_paused = true`, zero event probabilities
+  (`trigger_event()` bypasses them),
+  `SaveManager._last_auto_save_day = 999999`,
+  `ArcManager.auto_start_enabled = false` (the daily roll re-arced an agent
+  the instant its forced arc ended — a live flaky assertion),
+  `GoalManager.auto_enabled = false` (a procedural agent's "find love" goal
+  resolved on a harness's own romance emission, and the resulting quip's 8s
+  cooldown swallowed the quip under test),
+  `SecretManager.auto_assign_enabled/auto_admit_enabled = false`, and
+  `WhodunitDirector.auto_enabled = false`.
+  The rule behind the list: **any autoload acting on spawn/day/social
+  signals collides with a harness eventually — through the confessional
+  cooldown if nothing else. A new autoload with a background roll ships
+  with an `auto_*` seam, off in all harnesses, same commit.**
 - **`-s` probe scripts cannot reference project `class_name`s.** Autoloads
   and script classes are not registered when a SceneTree script compiles.
   Use `load("res://...")` and `root.get_node_or_null("/root/Autoload")`.

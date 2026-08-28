@@ -381,13 +381,16 @@ static func _script_expose_saboteur(saboteur: Node2D) -> void:
 		[saboteur.agent_name], 9.0)
 
 
-static func _script_sabotage(victim: Node2D, deed: String, victim_line: String, incident: String) -> void:
+static func _script_sabotage(victim: Node2D, deed: String, victim_line: String, incident: String,
+		forced_actor: Node2D = null, thread: String = "secret_sabotage") -> void:
 	## Hidden-actor mystery: the actor knows, the victim seethes at no one,
 	## nearby agents speculate. The truth can only travel via the RumorMill —
 	## or a confessional slip, since secrets score high in retrieval.
+	## The mole case forces the SAME actor across incidents (forced_actor) and
+	## threads them to the case, so evidence accumulates against one person.
 	if victim == null or not is_instance_valid(victim):
 		return
-	var actor := _pick_saboteur(victim)
+	var actor := forced_actor if forced_actor != null else _pick_saboteur(victim)
 	if actor == null:
 		return
 
@@ -395,7 +398,7 @@ static func _script_sabotage(victim: Node2D, deed: String, victim_line: String, 
 	_add_memory({
 		"text": deed.replace("{victim}", victim.agent_name) + ". Nobody saw. Nobody can know.",
 		"importance": 8.0, "emotion": "defiance", "sentiment": -0.3,
-		"protected": true, "thread": "secret_sabotage",
+		"protected": true, "thread": thread,
 	}, actor, victim, null)
 
 	# The victim's anger names NO ONE.

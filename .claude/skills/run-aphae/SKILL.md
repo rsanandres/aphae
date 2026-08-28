@@ -76,7 +76,7 @@ $G res://scenes/main/events_test.tscn                 # 66 passed
 $G res://scenes/main/economy_test.tscn                # 36 passed
 $G res://scenes/main/goals_test.tscn                  # 73 passed
 $G res://scenes/main/secrets_test.tscn                # 41 passed
-$G res://scenes/main/whodunit_test.tscn               # 34 passed
+$G res://scenes/main/whodunit_test.tscn               # 39 passed
 $G res://scenes/main/headless_sim.tscn -- --agents=12 --speed=3   # soak; runs forever, kill it
 ```
 

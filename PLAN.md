@@ -109,12 +109,21 @@ voted off. Accuse an innocent → the office gets meaner, the mole gets bolder
 The player's levers are the producer tools that already existed — interviews,
 planted rumours (negative hearsay naming a suspect sways votes), nudges.
 
-**Harness:** `scenes/main/whodunit_test.tscn` — **34 passed**. It caught a
+**Harness:** `scenes/main/whodunit_test.tscn` — **39 passed**. It caught a
 real design bug before any player saw it: sabotage memories name the VICTIM,
 so the first vote model counted victimhood as guilt and the house reliably
 voted out whoever had been sabotaged. Votes now count only sightings —
 case-thread memories with the suspicion/curiosity emotions (the glimpse and
 its rumour-mill copies). Being a target is not being a suspect.
+
+It then caught a second one, via CI: a freed-node race (comparing
+`mole2.agent_name` after the winner departed and was freed) that every
+assertion SURVIVED — only the suite runner's "SCRIPT ERROR fails a passing
+run" rule flagged it, on the first run where harness discovery actually
+executed this harness. The fixed sleeps that raced `depart()` were also
+masking a cast-size bug (two departures put the roster under MIN_CAST).
+Departures are now awaited by polling the roster, never by guessing a
+duration — copy `_wait_cast_size` for any test that departs an agent.
 
 Three achievements (39 total: Gotcha, Kangaroo Court, The Perfect Crime).
 Save v8. Seam: `WhodunitDirector.auto_enabled`, off in every harness.

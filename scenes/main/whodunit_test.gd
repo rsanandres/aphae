@@ -174,13 +174,20 @@ func _run() -> void:
 		not resolutions.is_empty() and resolutions[-1]["caught"])
 	_check("catching pays out",
 		ProducerEconomy.influence > 50 - WhodunitDirector.MEETING_COST)
-	# depart() animates the walk-out before freeing; give it time.
-	await get_tree().create_timer(2.5).timeout
+	# depart() animates the walk-out on its own clock before freeing; poll
+	# instead of sleeping a guessed duration — the guess lost the race on CI.
+	await _wait_cast_size(cast_before - 1)
 	_check("the mole leaves the show", AgentManager.agents.size() == cast_before - 1)
 	_check("no meeting without a case", WhodunitDirector.call_house_meeting().is_empty())
 
 	# --- The mole wins at max incidents --------------------------------------
+	# Freed-node discipline: the winner departs and is freed mid-block, so
+	# capture the NAME now and never touch the node after resolution. The
+	# original compared mole2.agent_name after the free — a script error that
+	# every assertion survived, which is exactly what CI's SCRIPT ERROR sweep
+	# exists to catch (and did, on its first run with this harness).
 	var mole2: Node2D = AgentManager.agents[0]
+	var mole2_name: String = mole2.agent_name
 	var case2: CaseState = _fresh_case(mole2)
 	_check("a second case opens after the first closes", case2 != null and case2.case_number == 2)
 	var cast_before2: int = AgentManager.agents.size()
@@ -188,10 +195,17 @@ func _run() -> void:
 		WhodunitDirector.commit_incident()
 	_check("max incidents ends the case the mole's way",
 		case2.status == CaseState.Status.MOLE_WON)
-	await get_tree().create_timer(2.5).timeout
+	await _wait_cast_size(cast_before2 - 1)
 	_check("the winner walks", AgentManager.agents.size() == cast_before2 - 1)
 	_check("resolution says they got away",
-		resolutions[-1]["caught"] == false and resolutions[-1]["mole"] == mole2.agent_name)
+		resolutions[-1]["caught"] == false and resolutions[-1]["mole"] == mole2_name)
+
+	# Two departures put the cast below MIN_CAST; refill it. (The old fixed
+	# sleeps masked this: the departs had not finished, so the roster still
+	# looked full when the next case opened.)
+	while AgentManager.agents.size() < WhodunitDirector.MIN_CAST + 1:
+		AgentManager.spawn_procedural_agent(Vector2(60 + AgentManager.agents.size() * 25, 90))
+	await get_tree().process_frame
 
 	# --- A mole dying dissolves the case -------------------------------------
 	var mole3: Node2D = AgentManager.agents[0]
@@ -220,6 +234,15 @@ func _run() -> void:
 	for i in range(50):
 		WhodunitDirector._on_day_changed(10 + i)
 	_check("the seam keeps the day-roll quiet", WhodunitDirector.case == null)
+
+
+func _wait_cast_size(expected: int) -> void:
+	## Departures free their node on an animation clock; wait for the roster,
+	## not the wall clock. Caps at 10s so a hang still reports, not stalls.
+	var waited := 0.0
+	while AgentManager.agents.size() != expected and waited < 10.0:
+		await get_tree().create_timer(0.25).timeout
+		waited += 0.25
 
 
 func _check(test_name: String, ok: bool) -> void:

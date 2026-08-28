@@ -57,6 +57,16 @@ Pass the scene path directly. **Never use `run_headless.sh`** — it `sed`s
 `run/main_scene` in `project.godot` and restores it via an EXIT trap, which
 corrupts the file if the run is killed.
 
+One command runs everything the way CI does — parse check (grep-gated),
+all six harnesses, timeouts, and the no-assertions guard:
+
+```bash
+GODOT=/path/to/godot tools/run_tests.sh          # or one harness by name
+```
+
+CI (`.github/workflows/ci.yml`) runs the same script on every push and PR.
+Individually:
+
 ```bash
 G="godot --headless --path . --audio-driver Dummy"
 $G -e --quit-after 5 2>&1 | grep -E 'Parse Error|Compile Error'   # must print NOTHING

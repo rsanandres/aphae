@@ -1,0 +1,79 @@
+name: release-builds
+
+# Produces the Windows and Linux builds Steam's depots will take.
+# Manual trigger, or push a v* tag. macOS is deliberately absent: it needs
+# signing/notarization secrets and is not worth blocking the other two on.
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GODOT_VERSION: "4.6"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot + export templates
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/godot-bin
+            ~/.local/share/godot/export_templates
+          key: godot-export-${{ env.GODOT_VERSION }}-stable
+
+      - name: Download Godot and templates
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot-bin
+          curl -sSL -o /tmp/godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d ~/godot-bin
+          mv ~/godot-bin/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot-bin/godot
+          chmod +x ~/godot-bin/godot
+          curl -sSL -o /tmp/templates.tpz \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          unzip -q /tmp/templates.tpz -d /tmp/templates
+          mv /tmp/templates/templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+
+      - name: Import
+        run: ~/godot-bin/godot --headless --path . --audio-driver Dummy --import || true
+
+      - name: Export Windows
+        run: |
+          mkdir -p build/windows
+          ~/godot-bin/godot --headless --path . --audio-driver Dummy \
+            --export-release "Windows Desktop" build/windows/Ayle.exe
+
+      - name: Export Linux
+        run: |
+          mkdir -p build/linux
+          ~/godot-bin/godot --headless --path . --audio-driver Dummy \
+            --export-release "Linux" build/linux/Ayle.x86_64
+
+      - name: Smoke-test the Linux build
+        # The exported binary must at least boot its autoload stack and reach
+        # the main scene. A broken pack dies here, not on a player's machine.
+        run: |
+          timeout 60 ./build/linux/Ayle.x86_64 --headless --audio-driver Dummy --quit-after 300 2>&1 | tee /tmp/smoke.log || true
+          if grep -qE "SCRIPT ERROR|Failed to load script" /tmp/smoke.log; then
+            echo "smoke test found script errors:"; grep -A4 -E "SCRIPT ERROR|Failed to load" /tmp/smoke.log; exit 1
+          fi
+
+      - name: Upload Windows build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ayle-windows
+          path: build/windows/
+
+      - name: Upload Linux build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ayle-linux
+          path: build/linux/

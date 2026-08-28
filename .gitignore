@@ -11,3 +11,10 @@ Thumbs.db
 dist/builds/
 *.pck
 *.zip
+
+# Exported builds
+build/
+
+# Steam dev-only: tells the Steam API which app this is while testing outside
+# a Steam launch. Must NEVER ship in a depot or a commit.
+steam_appid.txt

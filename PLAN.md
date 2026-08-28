@@ -134,6 +134,7 @@ the cost. See its section for the blocker list.
 | **Ollama** | ✅ works, but **only on port 11500** — 11434 is unusable on this machine (see gotchas) | start with `OLLAMA_HOST=127.0.0.1:11500 ollama serve` |
 | **Ollama model** | ✅ `gemma3:latest` (4.3B Q4_K_M). `smollm2:1.7b` — the project default — is **not** installed | point `ollama_model` at `gemma3:latest`, or pull smollm2 |
 | **`addons/gdllama`** | ❌ empty dir, not committed | bundled LLM backend won't load |
+| **Export templates 4.6** | ✅ installed (`%APPDATA%\Godot\export_templates.6.stable`) | `--export-release` works; first Windows+Linux builds produced 2026-08-28, exe smoke-tested clean |
 | **`addons/godotsteam`** | ❌ empty dir, not committed | SteamManager no-ops (by design) |
 | **`models/*.gguf`** | ❌ gitignored ("ship with builds") | no bundled model |
 
@@ -593,6 +594,61 @@ participant.
 Start with **1**; it is the smallest change that turns a spectator into a participant.
 
 ---
+
+## Steam readiness (assessed 2026-08-28)
+
+What exists already: `SteamManager` (GodotSteam wrapper, safe no-op without
+Steam), achievements routed through it on unlock, `include_filter="*.gguf"`
+in every export preset, and — as of today — filled `export_path`s, a
+`release-builds` workflow producing Windows+Linux artifacts with a boot
+smoke-test, and `build/` + `steam_appid.txt` gitignored.
+
+### Code side, in order
+
+1. ✅ **A build exists.** Export presets wired, release workflow exports
+   Windows + Linux on tag or manual dispatch, smoke-tests the Linux binary
+   for script errors before uploading.
+2. **GodotSteam addon** — `addons/godotsteam/` is an empty dir. Decision to
+   make: the GDExtension (drop-in, ships .dll/.so in the addon) vs the
+   precompiled module editor+templates (heavier pipeline). GDExtension is
+   the sane default. When it lands, TEST the init path: `SteamManager`
+   checks `Engine.has_singleton("Steam")`, which is the MODULE-flavored
+   check — the GDExtension may need `ClassDB.class_exists("Steam")` and the
+   `steamInit()` signature has changed across GodotSteam majors
+   (`steamInitEx(app_id)` on current ones). The wrapper no-ops either way,
+   so nothing breaks before then.
+3. **Achievement API names** — `SteamManager.set_achievement()` sends the
+   internal ids (`goal_getter`, `cover_blown`, ...). Define the Steamworks
+   achievement API names to be EXACTLY these ids and nothing needs mapping.
+   36 achievements → 36 Steamworks entries + icons (achievement icons are a
+   store-side asset job, 64x64 gray+color pairs).
+4. **The gguf decision** — presets already include `*.gguf`, but `models/`
+   is gitignored and empty, and `addons/gdllama` is empty too. Either ship
+   heuristic-only for launch (the game fully works; PLAN documents the
+   fallback chain as verified) and patch bundled-LLM in later, or commit to
+   gdllama + a ~1GB depot. Heuristic-first is the smaller risk: an LLM that
+   writes dialogue on a player's machine is also a content-rating and
+   support question.
+5. **Steam Cloud** — saves/settings live in `user://`; enable Steam Auto-Cloud
+   on that path in Steamworks, no code needed. But note `user://producer.json`
+   (lifetime meta) syncing across machines is a FEATURE here, not a risk.
+6. **Steam Deck (later)** — 640x360 viewport scales cleanly to 1280x800, but
+   the interaction model is mouse-first. Playable-with-touch is realistic;
+   Verified needs controller work. Park with M6.
+
+### Steamworks side (owner's checklist, no code)
+
+- Steamworks partner account + $100 app credit → App ID.
+- Store page: capsule art set, 5+ screenshots (the `screenshots.tscn`
+  harness already produces clean 1280x720 shots), short trailer — this is
+  M4's demo GIF grown up, still the single most valuable missing asset.
+- Depots: upload `build/windows` + `build/linux` artifacts via SteamPipe;
+  wire launch options (Windows exe / Linux binary).
+- Achievements defined with API names = internal ids (see 3).
+- Auto-Cloud config (see 5). Controller config stub for Deck.
+- Content survey: procedural/LLM text means checking the "user-generated /
+  AI content" disclosure box honestly — with the heuristic-only build this
+  is canned-lines-only and simpler to answer.
 
 ## Security review (2026-08-28)
 

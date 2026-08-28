@@ -46,6 +46,14 @@ const KIND_TRAIT_REWARD := {
 
 const ACHIEVED_INFLUENCE := 6
 
+# Test seam, same convention as ArcManager.auto_start_enabled and the
+# SecretManager seams. Off, this autoload goes deaf to simulation signals —
+# necessary because a goal resolving mid-harness narrates at >= 6.5, which
+# consumes the ConfessionalDirector cooldown and silently swallows the quip
+# a harness was actually testing for (this broke confessional_test at ~20%).
+# Explicit calls (assign_for, advance, the sweeps) still work.
+var auto_enabled: bool = true
+
 var _goals: Dictionary = {}  # agent_name -> Array[GoalState]
 var achieved_total: int = 0
 var failed_total: int = 0
@@ -135,6 +143,8 @@ func assign_for(agent: Node2D) -> void:
 
 
 func _on_agent_spawned(agent: Node2D) -> void:
+	if not auto_enabled:
+		return
 	assign_for(agent)
 
 
@@ -164,6 +174,8 @@ func advance(goal: GoalState, amount: float, _reason: String = "") -> void:
 
 
 func _on_action_completed(agent: Node2D, _action: ActionType.Type, target: Node2D) -> void:
+	if not auto_enabled:
+		return
 	if not is_instance_valid(agent) or not is_instance_valid(target):
 		return
 	if not target.has_method("get_object_type"):
@@ -182,6 +194,8 @@ func _on_action_completed(agent: Node2D, _action: ActionType.Type, target: Node2
 
 
 func _on_conversation_ended(agent_a: String, agent_b: String) -> void:
+	if not auto_enabled:
+		return
 	_credit_conversation(agent_a, agent_b)
 	_credit_conversation(agent_b, agent_a)
 
@@ -218,6 +232,8 @@ func _is_romantic_toward(agent_name: String, partner: String) -> bool:
 
 
 func _on_confession_made(confessor: String, target: String, accepted: bool) -> void:
+	if not auto_enabled:
+		return
 	if not accepted:
 		return
 	for goal: GoalState in get_active_goals(confessor):
@@ -226,6 +242,8 @@ func _on_confession_made(confessor: String, target: String, accepted: bool) -> v
 
 
 func _on_romance_started(agent_a: String, agent_b: String) -> void:
+	if not auto_enabled:
+		return
 	for agent_name: String in [agent_a, agent_b]:
 		for goal: GoalState in get_active_goals(agent_name):
 			if goal.kind == GoalState.Kind.ROMANCE:
@@ -233,6 +251,8 @@ func _on_romance_started(agent_a: String, agent_b: String) -> void:
 
 
 func _on_day_changed(day: int) -> void:
+	if not auto_enabled:
+		return
 	_score_balance_goals()
 	_sweep_deadlines(day)
 

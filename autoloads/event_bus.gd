@@ -73,6 +73,13 @@ signal goal_progressed(agent_name: String, text: String, progress: float)
 signal goal_achieved(agent_name: String, text: String, kind: int)
 signal goal_failed(agent_name: String, text: String, kind: int)
 
+# Secret signals (M7)
+signal rumor_passed(listener_name: String, speaker_name: String, mem_thread: String)
+signal secret_confided(holder_name: String, confidant_name: String)
+signal secret_confronted(holder_name: String, knower_name: String)
+signal secret_admitted(holder_name: String, text: String)
+signal secret_exposed(holder_name: String, text: String)
+
 # Player director signals ("producer" controls)
 signal nudge_answered(agent_name: String, request: String, complied: bool, reason: String)
 signal interview_answered(agent_name: String, question: String, answer: String)

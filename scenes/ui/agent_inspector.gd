@@ -203,6 +203,17 @@ func _update_dynamic() -> void:
 	_storylines_label.text = "\n".join(agent_stories) if not agent_stories.is_empty() else "(none)"
 	# Goals — the bar is the readable part; the number is for the curious.
 	_goals_label.text = _format_goals()
+	# Secrets tease, they do not tell: the truth belongs to the booth. The
+	# inspector only confirms there IS one — until the camera or the office
+	# hears it, at which point the player has legitimately learned it.
+	var secret: SecretState = SecretManager.get_secret(_agent.agent_name)
+	if secret != null:
+		if secret.exposed:
+			_goals_label.text += "\n(exposed: %s)" % secret.text
+		elif secret.admitted_on_camera:
+			_goals_label.text += "\n(admitted on camera: %s)" % secret.text
+		else:
+			_goals_label.text += "\n...is hiding something."
 	# Memory
 	var recent: Array[MemoryEntry] = _agent.memory.get_recent(5)
 	_memory_label.text = _agent.memory.format_memories_for_prompt(recent)

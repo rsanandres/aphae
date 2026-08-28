@@ -21,6 +21,11 @@ var _shots: Array[String] = []
 
 func _ready() -> void:
 	ProducerEconomy.meta_persistence_enabled = false
+	# M7 seams off: the spawn-roll must not plant secret memories under the
+	# assertions, and the day-roll must not inject booth admissions mid-test.
+	GoalManager.auto_enabled = false
+	SecretManager.auto_assign_enabled = false
+	SecretManager.auto_admit_enabled = false
 	DirAccess.make_dir_recursive_absolute(OUT_DIR)
 	print("[GUI] output dir: %s" % ProjectSettings.globalize_path(OUT_DIR))
 

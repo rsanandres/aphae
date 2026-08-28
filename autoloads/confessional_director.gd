@@ -69,6 +69,19 @@ func request_farewell(agent: Node2D, reason: String) -> void:
 		_emit("farewell", _heuristic_line("farewell", agent), agent)
 
 
+func request_secret_admission(agent: Node2D, secret_text: String) -> void:
+	## M7's dramatic-irony beat: the booth hears what the floor never will.
+	## Bypasses the rate limit like intros do — an admission IS the moment,
+	## and SecretManager already paces it to at most one a day.
+	if not is_instance_valid(agent) or agent.is_dead:
+		return
+	var event_text := "Here, and only here, you can say it: you %s. Nobody on the floor knows. Admit it to the camera in one line, in your own voice." % secret_text
+	if LLMManager.is_available and not _pending:
+		_request_llm("secret", event_text, agent)
+	else:
+		_emit("secret", _heuristic_line("secret", agent, secret_text), agent)
+
+
 func request_cast_intros() -> void:
 	## Cold open for a fresh sandbox: each cast member files a one-line intro
 	## to camera, staggered so the cutaways play as a sequence.
@@ -276,6 +289,8 @@ func _tone_for(kind: String) -> String:
 			return "Be candid and a little exposed."
 		"rivalry":
 			return "Be combative, or smug about your side."
+		"secret":
+			return "You are finally admitting something you hide from everyone. Relief, guilt, or defiance — but honest, for once."
 		_:
 			return "Be candid and a little dramatic."
 
@@ -291,7 +306,7 @@ func _clean(raw: String) -> String:
 # --- Heuristic fallback ----------------------------------------------------
 ## Personality-flavored canned lines so the feature is fun with the LLM off.
 
-func _heuristic_line(kind: String, speaker: Node2D) -> String:
+func _heuristic_line(kind: String, speaker: Node2D, detail: String = "") -> String:
 	var p: PersonalityProfile = speaker.personality
 	var catty := p != null and p.agreeableness < 0.4
 	var anxious := p != null and p.neuroticism > 0.6
@@ -299,6 +314,20 @@ func _heuristic_line(kind: String, speaker: Node2D) -> String:
 
 	var options: Array[String] = []
 	match kind:
+		"secret":
+			# The one kind that must carry its specifics: the admission is the
+			# player's only organic way to learn the truth without an LLM.
+			options = [
+				"Camera only? Fine. I %s. There. I said it." % detail,
+				"Okay. Deep breath. The truth is... I %s. Cut that. Actually, keep it." % detail,
+				"Nobody out there knows this, but I %s. And honestly? Relief." % detail,
+			]
+			if anxious:
+				options.append("If this ever airs I'm finished, but — I %s. Oh no." % detail)
+			if catty:
+				options.append("Yes, I %s. And I'd do it again. Next question." % detail)
+			if bold:
+				options.append("Since we're being honest: I %s. Stay tuned." % detail)
 		"farewell":
 			options = [
 				"That's a wrap on me. Try not to fall apart without me.",

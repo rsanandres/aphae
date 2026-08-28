@@ -50,6 +50,12 @@ func _ready() -> void:
 	EventBus.confessional_recorded.connect(_on_confessional)
 	EventBus.goal_achieved.connect(_on_goal_achieved)
 	EventBus.goal_failed.connect(_on_goal_failed)
+	EventBus.secret_confided.connect(func(holder: String, confidant: String) -> void:
+		print("** [Day %d %s] CONFIDED: %s told %s their secret" % [TimeManager.day, TimeManager.time_string, holder, confidant]))
+	EventBus.secret_admitted.connect(func(holder: String, text: String) -> void:
+		print("** [Day %d %s] BOOTH ADMISSION: %s — %s" % [TimeManager.day, TimeManager.time_string, holder, text]))
+	EventBus.secret_exposed.connect(func(holder: String, text: String) -> void:
+		print("** [Day %d %s] EXPOSED: %s — %s" % [TimeManager.day, TimeManager.time_string, holder, text]))
 
 	EventBus.game_ready.emit()
 	print("[SIM] Simulation started. Ctrl+C to stop.\n")

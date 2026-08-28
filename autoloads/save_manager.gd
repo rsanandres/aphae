@@ -5,7 +5,7 @@ extends Node
 
 const SAVE_DIR := "user://saves/"
 var AUTO_SAVE_INTERVAL_DAYS: int = 5
-const SAVE_VERSION := 6
+const SAVE_VERSION := 7
 const MAX_SLOTS := 5
 const LEGACY_PATH := "user://ayle_save.json"
 const LAST_SLOT_PATH := "user://last_slot.cfg"
@@ -183,6 +183,7 @@ func _serialize_world() -> Dictionary:
 		"drama_state": DramaDirector.get_save_state(),
 		"arcs": ArcManager.get_save_state(),
 		"goals": GoalManager.get_save_state(),
+		"secrets": SecretManager.get_save_state(),
 		"departed_agents": AgentManager.departed_agents.duplicate(true),
 		"producer": ProducerEconomy.get_save_state(),
 	}
@@ -366,6 +367,9 @@ func _deserialize_world(data: Dictionary) -> void:
 	# Outside the version gate, like confessionals: a pre-v6 save simply has no
 	# goal block, and the agents re-derive theirs from personality on spawn.
 	GoalManager.load_save_state(data.get("goals", {}))
+	# Same deal for v7 secrets: absent block means the roll already happened at
+	# spawn, and the loaded state below simply replaces it.
+	SecretManager.load_save_state(data.get("secrets", {}))
 	AgentManager.departed_agents.clear()
 	for entry in data.get("departed_agents", []):
 		if entry is Dictionary:

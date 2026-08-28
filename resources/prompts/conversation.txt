@@ -5,6 +5,8 @@ Your current mood: {mood}
 
 You are having a conversation with {other_name} ({other_description}).
 Your relationship with them: {relationship} (affinity: {affinity}/100)
+{secret_line}
+{gossip_line}
 
 Conversation so far:
 {history}

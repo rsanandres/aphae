@@ -144,6 +144,17 @@ func _connect_signals() -> void:
 		unlock("unfinished_business")
 	)
 
+	EventBus.secret_admitted.connect(func(_holder: String, _text: String) -> void:
+		unlock("true_confessions")
+	)
+	EventBus.rumor_passed.connect(func(_listener: String, _speaker: String, mem_thread: String) -> void:
+		if mem_thread.begins_with("secret_"):
+			unlock("loose_lips")
+	)
+	EventBus.secret_exposed.connect(func(_holder: String, _text: String) -> void:
+		unlock("cover_blown")
+	)
+
 	EventBus.conversation_started.connect(func(a: String, b: String) -> void:
 		unlock("small_talk")
 		# Track conversations per agent per day

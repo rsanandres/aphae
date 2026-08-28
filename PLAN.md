@@ -5,7 +5,7 @@ this file before touching anything. It records decisions, environment setup, and
 are expensive to rediscover — several entries here exist because someone already lost an hour
 to them.
 
-**Status:** M0–M4, M8, V, E, P (producer meta-game), A, and G (goals that resolve) shipped · **Branch:** `main` · **Open:** Phase 3 (rumour *propagation*), then M7 (full lying-in-conversation; E4 shipped the M7-lite core)
+**Status:** M0–M4, M7 (secrets & lies), M8, V, E, P (producer meta-game), A, and G (goals that resolve) shipped · **Branch:** `feat/goals-that-resolve` (main parked at `be4192c` for the crew-bundle fast-forward) · **Open:** M5 (social deduction) is next per the phase order
 **Maintainer:** this file is owned and kept current. Amend it when you learn something; do not
 let it drift. Two claims in it have already been proven false and corrected — a stale doc is
 worse than no doc, because it is trusted.
@@ -365,9 +365,23 @@ small screens; Godot exports to Android/iOS natively.
 | Desktop-only features | Per-pixel transparency and desktop-pet mode are meaningless on mobile |
 | LLM | Ollama impossible on-device; GDLlama 1.7B is slow/hot → heuristic-only |
 
-### 🤫 M7 — Secrets & lies (agreed direction, **low priority**)
+### ✅ M7 — Secrets & lies (done, 2026-08-28)
 
-The chosen next direction, but deliberately parked — **do not start it ahead of M1–M4**.
+Shipped. The design below was the agreed direction; what was built:
+
+| Piece | What it does |
+|---|---|
+| **SecretState / SecretManager** | ~35% of agents arrive holding a solo truth from a pool (`secret_manager.gd::POOL`). The substance is a protected memory with thread `secret_<id>` — so `get_secrets()`, the RumorMill trust gate, and the producer's leak dilemma all keep working unchanged. |
+| **Propagation is earned** | A holder's own memory names no third party, so **the mill can never lift a secret straight out of their head**. It moves only when the holder CONFIDES (trust > 60, per-conversation roll) — the confidant's memory IS about a third party, and from there the existing gossip chain carries it, distortion and all. Three ears = EXPOSED (narrative ≥ 7.5, social hit). |
+| **The floor lies** | Conversation prompt gains `{secret_line}` (deny, deflect) and `{gossip_line}` (you heard a rumor); heuristic pool gains deflections for holders and probes for knowers. A probe costs the pair trust both ways. Mechanics run at conversation wrap-up next to RumorMill, LLM or not — lines are flavor. |
+| **The booth tells the truth** | Daily roll: one unadmitted holder files a `secret`-kind confessional that names the truth (heuristic lines carry it verbatim — without an LLM this is the player's only organic way to learn it). Confessionals feed only the speaker's memory, so **the cast stays in the dark: dramatic irony, delivered**. |
+| **Surfaced** | Inspector teases ("…is hiding something.") and reveals only what the player has legitimately learned (booth admission or exposure). Save v7, outside the version gate. Three achievements (36 total). Soak logs CONFIDED / BOOTH ADMISSION / EXPOSED. |
+
+**Harness:** `scenes/main/secrets_test.tscn` — **41 passed**. Test seams:
+`SecretManager.auto_assign_enabled` / `auto_admit_enabled`, same convention as
+`ArcManager.auto_start_enabled`.
+
+Original direction, kept for the record:
 
 Confessional Cam created something the sim otherwise lacks: a **truth channel**. Give an agent
 a private secret (broke the coffee machine, job-hunting, resents Opal). In *conversation* they
@@ -652,10 +666,21 @@ config and may point anywhere they like.
   percent of the time. If it resurfaces, capture the `FAIL` line first; all
   three assertions are bounded loops over probabilistic systems and the cause
   is never guessable from the summary count alone.
-- **Harnesses must neutralize `ArcManager` too.** The trap list below names
-  `EventManager` probabilities, the clock, and autosave — `ArcManager` had no
-  off switch until this flake forced one. Set `auto_start_enabled = false` in
-  any harness whose assertions depend on which agents hold arcs.
+- **Harnesses must neutralize EVERY background roll, not just the ones they
+  assert on.** The trap list below names `EventManager` probabilities, the
+  clock, and autosave; `ArcManager.auto_start_enabled` was forced by a flaky
+  arc assertion, and then `confessional_test` — a harness that never mentions
+  goals or secrets — started failing at ~20% the day both landed. The
+  mechanism: the harness emits `romance_started`, a procedural agent holding
+  a "find love" goal resolves it, the resolution narrates at 7.5, the
+  ConfessionalDirector records THAT quip, and its 8s cooldown then silently
+  swallows the quip the harness was testing for (`_record` drops emits during
+  cooldown). Disabling the Secret seams alone did NOT cure it; the GoalManager
+  seam did. The pattern: any autoload that acts on `agent_spawned`,
+  `day_changed`, or the social signals will eventually collide with a harness
+  — through the confessional cooldown if nothing else.
+  New autoload with a background roll ⇒ ship it with an `auto_*_enabled`
+  seam and turn it off in ALL harnesses on the same commit.
 - **`Config.MAX_AGENTS_DESKTOP := 3` is not about desktop-vs-mobile.** It's the *desktop pet*
   overlay (480×320). There is no mobile awareness in the codebase.
 - **`set_v_scroll` is correct on Godot 4** — `ScrollContainer.scroll_vertical` binds to

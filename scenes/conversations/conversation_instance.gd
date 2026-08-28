@@ -101,6 +101,10 @@ func _request_next_line() -> void:
 		"affinity": "%.0f" % rel.affinity,
 		"history": history_text,
 		"mood": speaker.personality.get_mood(speaker.needs.get_all_values()) if speaker.personality else "neutral",
+		# Both resolve to "" for agents with nothing to hide or no rumor heard,
+		# so the placeholders always disappear from the template.
+		"secret_line": SecretManager.denial_prompt_line(speaker.agent_name),
+		"gossip_line": SecretManager.gossip_prompt_line(speaker.agent_name, listener.agent_name),
 	})
 
 	var format_schema := {
@@ -186,6 +190,11 @@ func _end_conversation() -> void:
 	# party, secondhand and slightly warped (RumorMill).
 	RumorMill.maybe_pass(agent_a, agent_b)
 	RumorMill.maybe_pass(agent_b, agent_a)
+
+	# Secrets move too: a holder may confide in someone trusted, and someone
+	# who already knows may needle the holder. Mechanics only — the spoken
+	# lines above were flavor (SecretManager, M7).
+	SecretManager.process_conversation_end(agent_a, agent_b)
 
 	# Restore social need
 	agent_a.needs.restore(NeedType.Type.SOCIAL, 20.0)
@@ -362,6 +371,25 @@ func _heuristic_line(speaker: Node2D, listener: Node2D) -> String:
 				"I don't want to hurt you, but I have to be honest. I see you as a friend.",
 			]
 			return pool[randi() % pool.size()]
+
+	# --- Secrets flavor (M7): the mechanics run at wrap-up in SecretManager;
+	# these lines just make the tension audible on the floor. ---
+	if SecretManager.knows(s_name, l_name) and SecretManager.has_hidden_secret(l_name) and randf() < 0.3:
+		var probe_pool: Array[String] = [
+			"People talk, %s. You'd be surprised what I hear." % l_name,
+			"So... anything you want to tell me, %s?" % l_name,
+			"You've seemed a little cagey lately, %s. Just saying." % l_name,
+			"Funny — someone mentioned your name the other day. Interesting stuff.",
+		]
+		return probe_pool[randi() % probe_pool.size()]
+	if SecretManager.has_hidden_secret(s_name) and randf() < 0.15:
+		var deflect_pool: Array[String] = [
+			"Anyway — how about literally anything else.",
+			"Ha. Why do you ask? Who's asking? Nobody's asking.",
+			"I'm fine. Everything's fine. Great quarter, right?",
+			"Let's change the subject. For no reason. Just variety.",
+		]
+		return deflect_pool[randi() % deflect_pool.size()]
 
 	# --- Parametric helpers ---
 	var quirk: String = _random_from_array(speaker.personality.quirks) if speaker.personality and not speaker.personality.quirks.is_empty() else ""

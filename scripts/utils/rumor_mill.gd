@@ -41,6 +41,8 @@ static func maybe_pass(speaker: Node2D, listener: Node2D) -> bool:
 	mem.emotion = "curiosity"
 	mem.sentiment = candidate.sentiment * (0.6 if warped else 0.8)
 	mem.narrative_thread = candidate.narrative_thread
+	# SecretManager tracks which ears a secret has reached through this chain.
+	EventBus.rumor_passed.emit(listener.agent_name, speaker.agent_name, candidate.narrative_thread)
 	return true
 
 

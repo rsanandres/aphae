@@ -15,6 +15,11 @@ var _rumors: Array[String] = []
 
 func _ready() -> void:
 	ProducerEconomy.meta_persistence_enabled = false
+	# M7 seams off: the spawn-roll must not plant secret memories under the
+	# assertions, and the day-roll must not inject booth admissions mid-test.
+	GoalManager.auto_enabled = false
+	SecretManager.auto_assign_enabled = false
+	SecretManager.auto_admit_enabled = false
 	EventBus.nudge_answered.connect(func(who: String, req: String, ok: bool, reason: String) -> void:
 		_nudges.append({"who": who, "req": req, "ok": ok, "reason": reason})
 		print("   NUDGE %s -> %s%s" % [who, "AGREED" if ok else "REFUSED", "" if ok else " (%s)" % reason])

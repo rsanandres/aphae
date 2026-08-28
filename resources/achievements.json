@@ -197,6 +197,24 @@
       "name": "Self-Actualized",
       "description": "One agent achieves every goal they set out with",
       "category": "goals"
+    },
+    {
+      "id": "true_confessions",
+      "name": "True Confessions",
+      "description": "An agent admits their secret to the camera",
+      "category": "secrets"
+    },
+    {
+      "id": "loose_lips",
+      "name": "Loose Lips",
+      "description": "A confided secret travels through the rumor mill",
+      "category": "secrets"
+    },
+    {
+      "id": "cover_blown",
+      "name": "Cover Blown",
+      "description": "A secret reaches enough ears to become office news",
+      "category": "secrets"
     }
   ]
 }

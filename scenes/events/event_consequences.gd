@@ -349,6 +349,9 @@ static func _script_leak_secret(holder: Node2D) -> void:
 		"importance": 9.0, "emotion": "shock", "sentiment": -0.8, "protected": true,
 	}, holder, holder, null)
 	holder.needs.restore(NeedType.Type.SOCIAL, -20.0)
+	# Keep the M7 state honest: a leaked secret is an exposed secret, or the
+	# holder goes on denying a thing the whole office already heard.
+	SecretManager.mark_exposed_by_thread(secret.narrative_thread)
 	EventBus.narrative_event.emit(
 		"A secret about %s just went public. The office is buzzing." % holder.agent_name,
 		[holder.agent_name], 8.0)

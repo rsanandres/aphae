@@ -17,10 +17,19 @@ set -u
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GODOT="${GODOT:-godot}"
 TIMEOUT_SECS="${TIMEOUT_SECS:-600}"
-HARNESSES=(producer_test confessional_test events_test economy_test goals_test secrets_test)
+# Harnesses are DISCOVERED, not listed: a hard-coded list silently skipped a
+# brand-new harness the day after it shipped. Anything matching
+# scenes/main/*_test.tscn runs; there is no list to forget to update.
+HARNESSES=()
+for scene in "$REPO"/scenes/main/*_test.tscn; do
+	HARNESSES+=("$(basename "$scene" .tscn)")
+done
 if [ $# -gt 0 ]; then
 	HARNESSES=("$@")
 fi
+say() { printf '%s
+' "$*"; }
+say "discovered ${#HARNESSES[@]} harnesses: ${HARNESSES[*]}"
 
 fail=0
 say() { printf '%s\n' "$*"; }

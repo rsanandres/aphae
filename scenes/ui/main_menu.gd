@@ -46,7 +46,7 @@ func _ready() -> void:
 
 	# Title with shadow
 	_title_label = Label.new()
-	_title_label.text = "AYLE"
+	_title_label.text = "APHAE"
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title_label.add_theme_font_size_override("font_size", 32)
 	_title_label.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))

@@ -1,4 +1,4 @@
-# Ayle — Working Plan
+# Aphae — Working Plan
 
 **The single source of truth for this project.** If you are an agent joining this repo, read
 this file before touching anything. It records decisions, environment setup, and findings that
@@ -168,7 +168,7 @@ the cost. See its section for the blocker list.
 
 **Net effect:** with Ollama up the chain resolves bundled (missing) → **Ollama**. Without it,
 → heuristic fallback. Both paths are verified. To use Ollama, write
-`user://settings.cfg` (`%APPDATA%\Godot\app_userdata\Ayle\settings.cfg`):
+`user://settings.cfg` (`%APPDATA%\Godot\app_userdata\Aphae\settings.cfg`):
 
 ```ini
 [llm]
@@ -790,7 +790,7 @@ config and may point anywhere they like.
   missing addon degrades instead of crashing.
 - **The `/Users/raph/...` path in `CLAUDE.md` is a macOS doc example only.** The project is
   cross-platform; `export_presets.cfg` ships Windows, Linux, and macOS presets.
-- Repo is `aphae`; the project/product name is **Ayle**.
+- Repo and product are both **Aphae** now (renamed from Ayle 2026-08-28; `config/name` changed, so `SettingsManager._migrate_from_ayle` copies the old `app_userdata/Ayle` tree into `Aphae` once, never overwriting).
 - **`Time.get_datetime_string_from_system()` contains colons**, which are illegal in Windows
   filenames. Sanitize before using it in a path — `EpisodeRecap._file_stamp()` does.
 - **The Ollama port gotcha below is machine-specific (Windows box).** On the owner's Mac

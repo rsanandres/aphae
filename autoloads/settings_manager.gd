@@ -32,10 +32,43 @@ var mute_when_unfocused: bool = true
 
 
 func _ready() -> void:
+	_migrate_from_ayle()
 	load_settings()
 	_apply_audio()
 	# Apply game settings after all autoloads are initialized
 	call_deferred("_apply_game_settings")
+
+
+func _migrate_from_ayle() -> void:
+	## 2026-08-28: the product was renamed Ayle -> Aphae. user:// derives from
+	## config/name, so the rename orphaned every save, setting, achievement,
+	## and the lifetime producer.json. Copy the old tree over exactly once —
+	## this runs before anything reads user://, and never overwrites.
+	if FileAccess.file_exists(SETTINGS_PATH) or DirAccess.dir_exists_absolute("user://saves"):
+		return  # already migrated, or a genuinely fresh install with new data
+	var old_root := ProjectSettings.globalize_path("user://").rstrip("/")
+	old_root = old_root.substr(0, old_root.rfind("/")) + "/Ayle"
+	if not DirAccess.dir_exists_absolute(old_root):
+		return
+	_copy_tree(old_root, ProjectSettings.globalize_path("user://"))
+	print("[SettingsManager] Migrated user data from Ayle -> Aphae")
+
+
+func _copy_tree(from: String, to: String) -> void:
+	DirAccess.make_dir_recursive_absolute(to)
+	var dir := DirAccess.open(from)
+	if dir == null:
+		return
+	dir.list_dir_begin()
+	var entry := dir.get_next()
+	while entry != "":
+		if entry != "." and entry != "..":
+			if dir.current_is_dir():
+				_copy_tree(from + "/" + entry, to + "/" + entry)
+			elif not FileAccess.file_exists(to + "/" + entry):
+				DirAccess.copy_absolute(from + "/" + entry, to + "/" + entry)
+		entry = dir.get_next()
+	dir.list_dir_end()
 
 
 func load_settings() -> void:

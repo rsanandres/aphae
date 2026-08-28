@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Ayle — AI Agent Office Simulation. A top-down 2D pixel art game where AI agents with distinct personalities live together in an office. The player observes and rearranges the environment as emergent social behavior unfolds. Built with Godot 4.6 (GDScript) with bundled LLM (GDLlama) + Ollama fallback.
+Aphae — AI Agent Office Simulation. A top-down 2D pixel art game where AI agents with distinct personalities live together in an office. The player observes and rearranges the environment as emergent social behavior unfolds. Built with Godot 4.6 (GDScript) with bundled LLM (GDLlama) + Ollama fallback.
 
 ## Build & Development
 
 - **Engine**: Godot 4.6 (GDScript)
 - **LLM Backend**: Bundled (GDLlama GDExtension) → Ollama → heuristic fallback
 - Open project in Godot editor: `godot --editor project.godot`
-- Run from CLI: `godot --path /Users/raph/Documents/ayle`
+- Run from CLI: `godot --path /path/to/aphae`
 - Parse check: `godot --headless -e --quit-after 5`
 
 ## Architecture

@@ -18,7 +18,7 @@ static func build() -> String:
 	var cast: Array[String] = _gather_cast(storylines, confessionals)
 
 	var lines: PackedStringArray = []
-	lines.append("# Ayle — Episode Recap")
+	lines.append("# Aphae — Episode Recap")
 	lines.append("")
 	lines.append("**Day %d** · %s · %s · %s" % [
 		TimeManager.day,

@@ -198,7 +198,7 @@ func _run() -> void:
 
 	print("[TEST] 9. episode recap assembles from storylines + confessionals")
 	var recap := EpisodeRecap.build()
-	var recap_ok: bool = recap.begins_with("# Ayle — Episode Recap") \
+	var recap_ok: bool = recap.begins_with("# Aphae — Episode Recap") \
 		and "## From the Confessional Booth" in recap \
 		and "## The Cast" in recap \
 		and not ("{" in recap and "}" in recap)

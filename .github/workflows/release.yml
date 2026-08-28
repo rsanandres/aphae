@@ -52,19 +52,19 @@ jobs:
         run: |
           mkdir -p build/windows
           ~/godot-bin/godot --headless --path . --audio-driver Dummy \
-            --export-release "Windows Desktop" build/windows/Ayle.exe
+            --export-release "Windows Desktop" build/windows/Aphae.exe
 
       - name: Export Linux
         run: |
           mkdir -p build/linux
           ~/godot-bin/godot --headless --path . --audio-driver Dummy \
-            --export-release "Linux" build/linux/Ayle.x86_64
+            --export-release "Linux" build/linux/Aphae.x86_64
 
       - name: Smoke-test the Linux build
         # The exported binary must at least boot its autoload stack and reach
         # the main scene. A broken pack dies here, not on a player's machine.
         run: |
-          timeout 60 ./build/linux/Ayle.x86_64 --headless --audio-driver Dummy --quit-after 300 2>&1 | tee /tmp/smoke.log || true
+          timeout 60 ./build/linux/Aphae.x86_64 --headless --audio-driver Dummy --quit-after 300 2>&1 | tee /tmp/smoke.log || true
           if grep -qE "SCRIPT ERROR|Failed to load script" /tmp/smoke.log; then
             echo "smoke test found script errors:"; grep -A4 -E "SCRIPT ERROR|Failed to load" /tmp/smoke.log; exit 1
           fi
@@ -72,7 +72,7 @@ jobs:
       - name: Upload Windows build
         uses: actions/upload-artifact@v4
         with:
-          name: Ayle-windows
+          name: Aphae-windows
           path: build/windows/
           # Private-repo artifact storage is capped at 500MB and one run
           # uploads ~175MB; keep only the latest few runs' builds.
@@ -81,15 +81,15 @@ jobs:
       - name: Upload Linux build
         uses: actions/upload-artifact@v4
         with:
-          name: Ayle-linux
+          name: Aphae-linux
           path: build/linux/
           retention-days: 7
 
       - name: Zip builds for the release
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          cd build/windows && zip -qr ../../Ayle-windows.zip . && cd ../..
-          cd build/linux && zip -qr ../../Ayle-linux.zip . && cd ../..
+          cd build/windows && zip -qr ../../Aphae-windows.zip . && cd ../..
+          cd build/linux && zip -qr ../../Aphae-linux.zip . && cd ../..
 
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
@@ -98,4 +98,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${GITHUB_REF_NAME}"             Ayle-windows.zip Ayle-linux.zip             --repo "${GITHUB_REPOSITORY}"             --title "Ayle ${GITHUB_REF_NAME}"             --generate-notes
+          gh release create "${GITHUB_REF_NAME}"             Aphae-windows.zip Aphae-linux.zip             --repo "${GITHUB_REPOSITORY}"             --title "Aphae ${GITHUB_REF_NAME}"             --generate-notes

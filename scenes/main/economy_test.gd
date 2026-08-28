@@ -184,11 +184,25 @@ func _run() -> void:
 	_check("events while focused are not collected", focused_digest.is_empty())
 
 	# --- Meta kill-switch ---
+	# Snapshot the REAL producer.json first: when this harness runs outside
+	# the sandbox, user:// is the owner's live data, and deleting their
+	# lifetime progression to test a kill-switch is the exact harm the
+	# kill-switch exists to prevent. (It did exactly that before this guard.)
 	var meta_path: String = ProducerEconomy.META_PATH
+	var meta_backup := ""
 	if FileAccess.file_exists(meta_path):
+		var meta_in := FileAccess.open(meta_path, FileAccess.READ)
+		if meta_in:
+			meta_backup = meta_in.get_as_text()
+			meta_in.close()
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(meta_path))
 	ProducerEconomy.grant(5, "test")
 	_check("meta kill-switch blocks producer.json writes", not FileAccess.file_exists(meta_path))
+	if meta_backup != "":
+		var meta_out := FileAccess.open(meta_path, FileAccess.WRITE)
+		if meta_out:
+			meta_out.store_string(meta_backup)
+			meta_out.close()
 
 
 func _check(test_name: String, ok: bool) -> void:

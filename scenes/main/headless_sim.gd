@@ -20,7 +20,7 @@ func _ready() -> void:
 
 	print("")
 	print("========================================")
-	print("  AYLE Headless Simulation")
+	print("  APHAE Headless Simulation")
 	print("  Agents: %d | Speed: %dx" % [_agent_count, _speed])
 	print("========================================")
 	print("")

@@ -4,7 +4,7 @@
 [![release](https://img.shields.io/github/v/release/rsanandres/aphae?include_prereleases&label=download)](https://github.com/rsanandres/aphae/releases/latest)
 [![godot](https://img.shields.io/badge/godot-4.6-478cbf?logo=godotengine&logoColor=white)](https://godotengine.org)
 
-![Ayle in motion: agents living their day while the confessional cam cuts away](docs/demo.gif)
+![Aphae in motion: agents living their day while the confessional cam cuts away](docs/demo.gif)
 
 **A tiny reality show that lives on your desktop.** AI-driven agents with distinct personalities share an office, and the cameras never stop rolling. Leave it running in the corner of your screen while you work — the office keeps living without you, and tells you what you missed when you glance back.
 

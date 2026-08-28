@@ -13,7 +13,7 @@ var _game_started: bool = false
 
 # Hint definitions: {id, text, trigger_type, trigger_value}
 var _hints := [
-	{"id": "welcome", "text": "Welcome to Ayle! Watch your AI agents live, work, and form relationships in this tiny office.", "delay": 1.0},
+	{"id": "welcome", "text": "Welcome to Aphae! Watch your AI agents live, work, and form relationships in this tiny office.", "delay": 1.0},
 	{"id": "click_agent", "text": "Click an agent to follow them and see their thoughts.", "delay": 10.0},
 	{"id": "right_click", "text": "Right-click anywhere for the menu (speed, settings, save).", "delay": 30.0},
 	{"id": "god_mode", "text": "Press Tab to toggle God Mode and rearrange the office.", "delay": 60.0},

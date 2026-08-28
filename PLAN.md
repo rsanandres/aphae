@@ -25,7 +25,7 @@ Items inside a phase are independent and can run in parallel.
 | Item | Status | Needs |
 |---|---|---|
 | **M2 — GUI check** | ✅ **done** (`e8c5e9b`) | — |
-| **M4 — demo GIF** | ❌ open | windowed Godot |
+| **M4 — demo GIF** | ✅ **done** (2026-08-28, `docs/demo.gif`, top of the README) | — |
 
 **The GUI check was worth doing — it found six real defects in one pass**, none of which any
 headless run could have seen. The viewport is **320×214** and every offset is authored in that

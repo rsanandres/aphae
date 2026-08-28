@@ -33,4 +33,14 @@ jobs:
 
       - name: Run the suite
         run: |
-          GODOT=~/godot-bin/godot bash tools/run_tests.sh
+          set -o pipefail
+          GODOT=~/godot-bin/godot bash tools/run_tests.sh 2>&1 | tee /tmp/suite.log
+
+      - name: Publish output to the step summary on failure
+        if: failure()
+        # The job summary is readable without auth; the raw logs are not.
+        run: |
+          echo '### Suite output (last 120 lines)' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -120 /tmp/suite.log >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

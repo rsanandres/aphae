@@ -71,9 +71,13 @@ jobs:
         with:
           name: Ayle-windows
           path: build/windows/
+          # Private-repo artifact storage is capped at 500MB and one run
+          # uploads ~175MB; keep only the latest few runs' builds.
+          retention-days: 7
 
       - name: Upload Linux build
         uses: actions/upload-artifact@v4
         with:
           name: Ayle-linux
           path: build/linux/
+          retention-days: 7

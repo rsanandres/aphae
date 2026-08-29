@@ -550,6 +550,85 @@ static func create_bed_sprite() -> ImageTexture:
 	return ImageTexture.create_from_image(_outlined(img))
 
 
+static func create_archetype_sprite(shape: String, w: int, h: int,
+		c1: Color, c2: Color, c3: Color, seed_val: int = 0) -> ImageTexture:
+	## One painter, nine furniture archetypes: the data-object catalog gets
+	## 100+ distinct sprites from four numbers and three colors apiece,
+	## instead of 100 hand-drawn recipe functions. The seed nudges accents so
+	## two objects sharing an archetype still read as different things.
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_val
+	match shape:
+		"tall":  # cabinet / shelf / locker
+			_rect(img, 1, 1, w - 2, h - 2, c1)
+			for i in range(1, 3 + (h / 10)):
+				var shelf_y := 1 + i * (h - 2) / (3 + h / 10)
+				_rect(img, 2, shelf_y, w - 4, 1, c2)
+			_rect(img, 1, h - 2, w - 2, 1, c3)
+			_px(img, w - 4, h / 2, c3); _px(img, w - 4, h / 2 + 1, c3)  # handle
+		"flat":  # low table / rug / mat
+			if h <= 7:  # rug: bordered slab
+				_rect(img, 0, 0, w, h, c2)
+				_rect(img, 1, 1, w - 2, h - 2, c1)
+				for i in range(2 + seed_val % 3):
+					_px(img, 3 + rng.randi_range(0, w - 6), 2 + rng.randi_range(0, h - 4), c3)
+			else:  # table: top slab + corner legs
+				_rect(img, 1, 2, w - 2, 3, c1)
+				_rect(img, 1, 2, w - 2, 1, c2)
+				_rect(img, 2, 5, 2, h - 6, c3)
+				_rect(img, w - 4, 5, 2, h - 6, c3)
+		"seat":  # chair / sofa / stool
+			_rect(img, 1, 1, w - 2, h / 3, c1)             # backrest
+			_rect(img, 1, 1 + h / 3, w - 2, h / 3, c2)     # cushion
+			_rect(img, 2, 1 + 2 * h / 3, 2, h / 3 - 1, c3) # legs
+			_rect(img, w - 4, 1 + 2 * h / 3, 2, h / 3 - 1, c3)
+		"plant":  # anything leafy
+			var pot_h := maxi(3, h / 3)
+			_rect(img, w / 2 - 3, h - pot_h, 6, pot_h - 1, c3)
+			for i in range(6 + seed_val % 4):
+				var lx := w / 2 + rng.randi_range(-w / 3, w / 3)
+				var ly := rng.randi_range(1, h - pot_h)
+				_rect(img, lx - 1, ly, 3, 2, c1 if rng.randf() < 0.7 else c2)
+		"screen":  # tv / monitor / display
+			_rect(img, w / 2 - 2, h - 3, 4, 2, c3)          # stand
+			_rect(img, 1, 1, w - 2, h - 5, c2)              # bezel
+			_rect(img, 2, 2, w - 4, h - 7, c1)              # screen
+			_rect(img, 3, 3, w - 6, 1, c1.lightened(0.35))  # sheen
+		"machine":  # appliance with a panel and lights
+			_rect(img, 1, 1, w - 2, h - 2, c1)
+			_rect(img, 2, h / 3, w - 4, h / 3, c2)          # panel
+			for i in range(2 + seed_val % 3):
+				_px(img, 3 + i * 3, h / 3 + 1, c3)          # buttons
+			_px(img, w - 4, 2, Color(0.4, 1.0, 0.5))        # power light
+		"round":  # round table / pouf / drum
+			for row in range(h - 2):
+				var inset := absi(row - (h - 2) / 2) * 2 / maxi(1, h / 4)
+				_rect(img, 1 + inset, 1 + row, w - 2 - inset * 2, 1, c1)
+			_rect(img, 2, 1, w - 4, 1, c2)
+			_rect(img, w / 2 - 1, h - 2, 2, 1, c3)
+		"art":  # framed wall piece / poster / sign
+			_rect(img, 0, 0, w, h, c3)                      # frame
+			_rect(img, 1, 1, w - 2, h - 2, c1)              # canvas
+			for i in range(3 + seed_val % 4):
+				_rect(img, 1 + rng.randi_range(0, w - 5), 1 + rng.randi_range(0, h - 4),
+					rng.randi_range(2, 4), rng.randi_range(1, 2), c2)
+		_:  # "box" — the honest default
+			_rect(img, 1, 1, w - 2, h - 2, c1)
+			_rect(img, 1, 1, w - 2, 2, c2)
+			_rect(img, w / 3, h / 2, w / 3, 2, c3)
+			if seed_val % 2 == 0:
+				_px(img, 2, h - 3, c3)
+	return ImageTexture.create_from_image(_outlined(img))
+
+
+static func _rect(img: Image, x: int, y: int, rw: int, rh: int, color: Color) -> void:
+	for px_x in range(maxi(0, x), mini(img.get_width(), x + rw)):
+		for px_y in range(maxi(0, y), mini(img.get_height(), y + rh)):
+			img.set_pixel(px_x, px_y, color)
+
+
 static func create_from_color(primary: Color) -> Array[ImageTexture]:
 	## Generate a character sprite from a primary color. Hair and skin derive
 	## deterministically from the color so a saved agent keeps their look.

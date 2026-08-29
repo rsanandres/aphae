@@ -694,6 +694,35 @@ smoke-test, and `build/` + `steam_appid.txt` gitignored.
   AI content" disclosure box honestly — with the heuristic-only build this
   is canned-lines-only and simpler to answer.
 
+## The object catalog (2026-08-29)
+
+100 new placeable objects landed as DATA, not code: `resources/objects.json`
+defines each one (name, category, size, duration, occupancy, need effects,
+passive aura, sprite recipe) and one generic class —
+`scenes/objects/data_object.gd` — serves them all. Sprites come from
+`SpriteFactory.create_archetype_sprite`: nine parameterized furniture
+archetypes (box/tall/flat/seat/plant/screen/machine/round/art) with three
+colors apiece and a per-id seeded accent, so 100 sprites cost data instead
+of 100 hand-drawn recipe functions.
+
+Rules of the system:
+- **Bespoke wins.** `ObjectFactory.create(id)` uses `scenes/objects/<id>.gd`
+  when it exists; the catalog only fills the gap. Special behavior stays in
+  scripts.
+- **Decor is felt, never used.** `occupants: 0` + a `passive` aura mirrors
+  the aquarium contract; `is_available()` is false.
+- **Heuristic agents actually use them** via
+  `HeuristicBrain._find_need_satisfying` — the closest available object
+  restoring the urgent need by ≥5. Without that, 100 objects would have been
+  scenery only the LLM path could name.
+- The god-mode picker grew a scrolled, categorized grid (113 flat buttons
+  ran off the screen). Eight of the best entries are also purchasable in the
+  Producer's Catalog with prices/unlock gates.
+- Adding object #101 is a JSON entry. No code.
+
+Covered in `economy_test` (36 -> 43): all 100 build, sprites are real,
+decor/interactive contracts hold, bespoke precedence, effects parse.
+
 ## Playtest program (2026-08-28)
 
 Nine single-feature playtesters (subagents) each spent a session on one

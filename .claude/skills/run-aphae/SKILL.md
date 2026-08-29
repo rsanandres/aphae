@@ -73,7 +73,7 @@ $G -e --quit-after 5 2>&1 | grep -E 'Parse Error|Compile Error'   # must print N
 $G res://scenes/main/producer_test.tscn               # 30 passed
 $G res://scenes/main/confessional_test.tscn           # 15 passed
 $G res://scenes/main/events_test.tscn                 # 66 passed
-$G res://scenes/main/economy_test.tscn                # 36 passed
+$G res://scenes/main/economy_test.tscn                # 43 passed
 $G res://scenes/main/goals_test.tscn                  # 75 passed
 $G res://scenes/main/secrets_test.tscn                # 41 passed
 $G res://scenes/main/whodunit_test.tscn               # 43 passed

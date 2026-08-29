@@ -65,6 +65,13 @@ func decide(needs: AgentNeeds, nearby_objects: Array, nearby_agents: Array) -> D
 			if fallback_obj:
 				return {"action": ActionType.Type.GO_TO_OBJECT, "target": fallback_obj}
 
+	# Any nearby object that helps the urgent need will do — this is how the
+	# data-catalog objects (espresso machines, nap pods, salad bars...) get
+	# used by heuristic brains instead of being scenery only the LLM names.
+	var helper := _find_need_satisfying(nearby_objects, urgent_need)
+	if helper:
+		return {"action": ActionType.Type.GO_TO_OBJECT, "target": helper}
+
 	# Fallback: wander to find something
 	return {"action": ActionType.Type.WANDER}
 
@@ -226,6 +233,24 @@ func _get_preferred_object(need: NeedType.Type, personality: PersonalityProfile)
 			return ""
 		_:
 			return NEED_TO_OBJECT_TYPE.get(need, "")
+
+
+func _find_need_satisfying(objects: Array, need: NeedType.Type) -> Node2D:
+	## Closest available object whose use meaningfully restores the need.
+	var best: Node2D = null
+	var best_dist := INF
+	for obj in objects:
+		if not is_instance_valid(obj) or not obj is InteractableObject:
+			continue
+		if not obj.is_available():
+			continue
+		if float((obj as InteractableObject).get_need_effects().get(need, 0.0)) < 5.0:
+			continue
+		var dist: float = _agent.global_position.distance_squared_to(obj.global_position)
+		if dist < best_dist:
+			best_dist = dist
+			best = obj
+	return best
 
 
 func _find_available_object(objects: Array, object_type: String) -> Node2D:

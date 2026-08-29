@@ -1,0 +1,1937 @@
+[
+ {
+  "id": "espresso_machine",
+  "name": "Espresso Machine",
+  "category": "food",
+  "sprite": {
+   "shape": "machine",
+   "w": 14,
+   "h": 14,
+   "c1": "#6a7178",
+   "c2": "#3a3f47",
+   "c3": "#c3423f"
+  },
+  "duration": 8,
+  "occupants": 1,
+  "effects": {
+   "hunger": 12,
+   "energy": 15
+  }
+ },
+ {
+  "id": "tea_station",
+  "name": "Tea Station",
+  "category": "food",
+  "sprite": {
+   "shape": "box",
+   "w": 16,
+   "h": 12,
+   "c1": "#d9d2c0",
+   "c2": "#8a6142",
+   "c3": "#4f9d5d"
+  },
+  "duration": 12,
+  "occupants": 1,
+  "effects": {
+   "hunger": 10,
+   "energy": 8,
+   "health": 3
+  }
+ },
+ {
+  "id": "vending_machine",
+  "name": "Vending Machine",
+  "category": "food",
+  "sprite": {
+   "shape": "machine",
+   "w": 14,
+   "h": 22,
+   "c1": "#c3423f",
+   "c2": "#3a3f47",
+   "c3": "#e8e6df"
+  },
+  "duration": 5,
+  "occupants": 1,
+  "effects": {
+   "hunger": 15
+  }
+ },
+ {
+  "id": "snack_bar",
+  "name": "Snack Bar",
+  "category": "food",
+  "sprite": {
+   "shape": "flat",
+   "w": 26,
+   "h": 12,
+   "c1": "#8a6142",
+   "c2": "#6b4a2f",
+   "c3": "#e0b64c"
+  },
+  "duration": 15,
+  "occupants": 2,
+  "effects": {
+   "hunger": 20,
+   "social": 5
+  }
+ },
+ {
+  "id": "fruit_bowl",
+  "name": "Fruit Bowl",
+  "category": "food",
+  "sprite": {
+   "shape": "round",
+   "w": 12,
+   "h": 8,
+   "c1": "#d97b3f",
+   "c2": "#e0b64c",
+   "c3": "#6b4a2f"
+  },
+  "duration": 5,
+  "occupants": 1,
+  "effects": {
+   "hunger": 8,
+   "health": 5
+  }
+ },
+ {
+  "id": "donut_box",
+  "name": "Donut Box",
+  "category": "food",
+  "sprite": {
+   "shape": "flat",
+   "w": 12,
+   "h": 6,
+   "c1": "#d976a8",
+   "c2": "#d9d2c0",
+   "c3": "#6b4a2f"
+  },
+  "duration": 5,
+  "occupants": 1,
+  "effects": {
+   "hunger": 12,
+   "health": -2
+  }
+ },
+ {
+  "id": "instant_noodle_shelf",
+  "name": "Noodle Shelf",
+  "category": "food",
+  "sprite": {
+   "shape": "tall",
+   "w": 14,
+   "h": 18,
+   "c1": "#e0b64c",
+   "c2": "#c3423f",
+   "c3": "#4a3320"
+  },
+  "duration": 10,
+  "occupants": 1,
+  "effects": {
+   "hunger": 18,
+   "health": -2
+  }
+ },
+ {
+  "id": "smoothie_blender",
+  "name": "Smoothie Blender",
+  "category": "food",
+  "sprite": {
+   "shape": "machine",
+   "w": 10,
+   "h": 14,
+   "c1": "#3fae9f",
+   "c2": "#9aa3ad",
+   "c3": "#4f9d5d"
+  },
+  "duration": 8,
+  "occupants": 1,
+  "effects": {
+   "hunger": 10,
+   "health": 8
+  }
+ },
+ {
+  "id": "popcorn_machine",
+  "name": "Popcorn Machine",
+  "category": "food",
+  "sprite": {
+   "shape": "machine",
+   "w": 14,
+   "h": 18,
+   "c1": "#c3423f",
+   "c2": "#e0b64c",
+   "c3": "#3a3f47"
+  },
+  "duration": 8,
+  "occupants": 1,
+  "effects": {
+   "hunger": 10,
+   "social": 5
+  }
+ },
+ {
+  "id": "candy_jar",
+  "name": "Candy Jar",
+  "category": "food",
+  "sprite": {
+   "shape": "round",
+   "w": 8,
+   "h": 8,
+   "c1": "#d976a8",
+   "c2": "#8859c9",
+   "c3": "#6a7178"
+  },
+  "duration": 3,
+  "occupants": 1,
+  "effects": {
+   "hunger": 5,
+   "energy": 5
+  }
+ },
+ {
+  "id": "soda_fridge",
+  "name": "Soda Fridge",
+  "category": "food",
+  "sprite": {
+   "shape": "machine",
+   "w": 14,
+   "h": 20,
+   "c1": "#7fb2d9",
+   "c2": "#e8e6df",
+   "c3": "#3f6fc3"
+  },
+  "duration": 5,
+  "occupants": 1,
+  "effects": {
+   "hunger": 6,
+   "energy": 8
+  }
+ },
+ {
+  "id": "pizza_warmer",
+  "name": "Pizza Warmer",
+  "category": "food",
+  "sprite": {
+   "shape": "box",
+   "w": 18,
+   "h": 12,
+   "c1": "#d97b3f",
+   "c2": "#c3423f",
+   "c3": "#3a3f47"
+  },
+  "duration": 20,
+  "occupants": 2,
+  "effects": {
+   "hunger": 30,
+   "social": 5
+  }
+ },
+ {
+  "id": "salad_bar",
+  "name": "Salad Bar",
+  "category": "food",
+  "sprite": {
+   "shape": "flat",
+   "w": 24,
+   "h": 12,
+   "c1": "#4f9d5d",
+   "c2": "#6fae5c",
+   "c3": "#9aa3ad"
+  },
+  "duration": 20,
+  "occupants": 2,
+  "effects": {
+   "hunger": 22,
+   "health": 8
+  }
+ },
+ {
+  "id": "ice_cream_freezer",
+  "name": "Ice Cream Freezer",
+  "category": "food",
+  "sprite": {
+   "shape": "box",
+   "w": 16,
+   "h": 12,
+   "c1": "#e8e6df",
+   "c2": "#7fb2d9",
+   "c3": "#3f6fc3"
+  },
+  "duration": 8,
+  "occupants": 1,
+  "effects": {
+   "hunger": 10,
+   "social": 4
+  }
+ },
+ {
+  "id": "hot_chocolate_pot",
+  "name": "Hot Chocolate Pot",
+  "category": "food",
+  "sprite": {
+   "shape": "machine",
+   "w": 10,
+   "h": 12,
+   "c1": "#6b4a2f",
+   "c2": "#d9d2c0",
+   "c3": "#c3423f"
+  },
+  "duration": 10,
+  "occupants": 1,
+  "effects": {
+   "hunger": 10,
+   "energy": 5,
+   "social": 3
+  }
+ },
+ {
+  "id": "armchair",
+  "name": "Armchair",
+  "category": "comfort",
+  "sprite": {
+   "shape": "seat",
+   "w": 16,
+   "h": 14,
+   "c1": "#8859c9",
+   "c2": "#6d47a1",
+   "c3": "#4a3320"
+  },
+  "duration": 45,
+  "occupants": 1,
+  "effects": {
+   "energy": 28
+  }
+ },
+ {
+  "id": "bean_bag",
+  "name": "Bean Bag",
+  "category": "comfort",
+  "sprite": {
+   "shape": "round",
+   "w": 16,
+   "h": 10,
+   "c1": "#3fae9f",
+   "c2": "#2f8a7d",
+   "c3": "#3a3f47"
+  },
+  "duration": 40,
+  "occupants": 1,
+  "effects": {
+   "energy": 22,
+   "social": 3
+  }
+ },
+ {
+  "id": "hammock",
+  "name": "Hammock",
+  "category": "comfort",
+  "sprite": {
+   "shape": "flat",
+   "w": 28,
+   "h": 10,
+   "c1": "#d9d2c0",
+   "c2": "#8a6142",
+   "c3": "#4a3320"
+  },
+  "duration": 70,
+  "occupants": 1,
+  "effects": {
+   "energy": 40
+  }
+ },
+ {
+  "id": "massage_chair",
+  "name": "Massage Chair",
+  "category": "comfort",
+  "sprite": {
+   "shape": "seat",
+   "w": 16,
+   "h": 16,
+   "c1": "#3a3f47",
+   "c2": "#4a5160",
+   "c3": "#c3423f"
+  },
+  "duration": 30,
+  "occupants": 1,
+  "effects": {
+   "energy": 25,
+   "health": 10
+  }
+ },
+ {
+  "id": "nap_pod",
+  "name": "Nap Pod",
+  "category": "comfort",
+  "sprite": {
+   "shape": "round",
+   "w": 20,
+   "h": 14,
+   "c1": "#e8e6df",
+   "c2": "#9aa3ad",
+   "c3": "#3f6fc3"
+  },
+  "duration": 80,
+  "occupants": 1,
+  "effects": {
+   "energy": 50
+  }
+ },
+ {
+  "id": "window_bench",
+  "name": "Window Bench",
+  "category": "comfort",
+  "sprite": {
+   "shape": "seat",
+   "w": 22,
+   "h": 10,
+   "c1": "#8a6142",
+   "c2": "#d9d2c0",
+   "c3": "#4a3320"
+  },
+  "duration": 35,
+  "occupants": 2,
+  "effects": {
+   "energy": 15,
+   "social": 8
+  }
+ },
+ {
+  "id": "rocking_chair",
+  "name": "Rocking Chair",
+  "category": "comfort",
+  "sprite": {
+   "shape": "seat",
+   "w": 14,
+   "h": 14,
+   "c1": "#6b4a2f",
+   "c2": "#8a6142",
+   "c3": "#4a3320"
+  },
+  "duration": 45,
+  "occupants": 1,
+  "effects": {
+   "energy": 25,
+   "health": 3
+  }
+ },
+ {
+  "id": "heated_blanket_couch",
+  "name": "Heated Couch",
+  "category": "comfort",
+  "sprite": {
+   "shape": "seat",
+   "w": 28,
+   "h": 14,
+   "c1": "#c3423f",
+   "c2": "#a03532",
+   "c3": "#4a3320"
+  },
+  "duration": 60,
+  "occupants": 2,
+  "effects": {
+   "energy": 35,
+   "social": 5
+  }
+ },
+ {
+  "id": "footrest_ottoman",
+  "name": "Ottoman",
+  "category": "comfort",
+  "sprite": {
+   "shape": "round",
+   "w": 12,
+   "h": 8,
+   "c1": "#8859c9",
+   "c2": "#d976a8",
+   "c3": "#4a3320"
+  },
+  "duration": 20,
+  "occupants": 1,
+  "effects": {
+   "energy": 10
+  }
+ },
+ {
+  "id": "reading_nook",
+  "name": "Reading Nook",
+  "category": "comfort",
+  "sprite": {
+   "shape": "tall",
+   "w": 20,
+   "h": 18,
+   "c1": "#8a6142",
+   "c2": "#d9d2c0",
+   "c3": "#4f9d5d"
+  },
+  "duration": 50,
+  "occupants": 1,
+  "effects": {
+   "energy": 20,
+   "productivity": 8
+  }
+ },
+ {
+  "id": "sun_lounger",
+  "name": "Sun Lounger",
+  "category": "comfort",
+  "sprite": {
+   "shape": "flat",
+   "w": 26,
+   "h": 10,
+   "c1": "#e0b64c",
+   "c2": "#d97b3f",
+   "c3": "#6a7178"
+  },
+  "duration": 55,
+  "occupants": 1,
+  "effects": {
+   "energy": 30,
+   "health": 5
+  }
+ },
+ {
+  "id": "papasan_chair",
+  "name": "Papasan Chair",
+  "category": "comfort",
+  "sprite": {
+   "shape": "round",
+   "w": 16,
+   "h": 12,
+   "c1": "#d9d2c0",
+   "c2": "#8a6142",
+   "c3": "#4a3320"
+  },
+  "duration": 40,
+  "occupants": 1,
+  "effects": {
+   "energy": 24
+  }
+ },
+ {
+  "id": "standing_desk",
+  "name": "Standing Desk",
+  "category": "work",
+  "sprite": {
+   "shape": "flat",
+   "w": 24,
+   "h": 16,
+   "c1": "#e8e6df",
+   "c2": "#9aa3ad",
+   "c3": "#3a3f47"
+  },
+  "duration": 60,
+  "occupants": 1,
+  "effects": {
+   "productivity": 35,
+   "health": 5,
+   "energy": -8
+  }
+ },
+ {
+  "id": "drafting_table",
+  "name": "Drafting Table",
+  "category": "work",
+  "sprite": {
+   "shape": "flat",
+   "w": 22,
+   "h": 16,
+   "c1": "#8a6142",
+   "c2": "#d9d2c0",
+   "c3": "#6a7178"
+  },
+  "duration": 55,
+  "occupants": 1,
+  "effects": {
+   "productivity": 30,
+   "energy": -5
+  }
+ },
+ {
+  "id": "corner_office_desk",
+  "name": "Corner Desk",
+  "category": "work",
+  "sprite": {
+   "shape": "flat",
+   "w": 28,
+   "h": 16,
+   "c1": "#6b4a2f",
+   "c2": "#8a6142",
+   "c3": "#4a3320"
+  },
+  "duration": 70,
+  "occupants": 1,
+  "effects": {
+   "productivity": 45,
+   "energy": -10
+  }
+ },
+ {
+  "id": "dual_monitor_rig",
+  "name": "Dual-Monitor Rig",
+  "category": "work",
+  "sprite": {
+   "shape": "screen",
+   "w": 22,
+   "h": 14,
+   "c1": "#3f6fc3",
+   "c2": "#3a3f47",
+   "c3": "#6a7178"
+  },
+  "duration": 65,
+  "occupants": 1,
+  "effects": {
+   "productivity": 40,
+   "energy": -8,
+   "health": -2
+  }
+ },
+ {
+  "id": "typewriter_desk",
+  "name": "Typewriter Desk",
+  "category": "work",
+  "sprite": {
+   "shape": "flat",
+   "w": 20,
+   "h": 14,
+   "c1": "#4a3320",
+   "c2": "#8a6142",
+   "c3": "#23262b"
+  },
+  "duration": 50,
+  "occupants": 1,
+  "effects": {
+   "productivity": 28,
+   "social": 3
+  }
+ },
+ {
+  "id": "workbench",
+  "name": "Workbench",
+  "category": "work",
+  "sprite": {
+   "shape": "flat",
+   "w": 26,
+   "h": 14,
+   "c1": "#8a6142",
+   "c2": "#6a7178",
+   "c3": "#3a3f47"
+  },
+  "duration": 55,
+  "occupants": 1,
+  "effects": {
+   "productivity": 32,
+   "energy": -6
+  }
+ },
+ {
+  "id": "filing_cabinet",
+  "name": "Filing Cabinet",
+  "category": "work",
+  "sprite": {
+   "shape": "tall",
+   "w": 12,
+   "h": 18,
+   "c1": "#6a7178",
+   "c2": "#9aa3ad",
+   "c3": "#3a3f47"
+  },
+  "duration": 15,
+  "occupants": 1,
+  "effects": {
+   "productivity": 10
+  }
+ },
+ {
+  "id": "printer_station",
+  "name": "Printer Station",
+  "category": "work",
+  "sprite": {
+   "shape": "machine",
+   "w": 16,
+   "h": 14,
+   "c1": "#e8e6df",
+   "c2": "#9aa3ad",
+   "c3": "#3a3f47"
+  },
+  "duration": 10,
+  "occupants": 1,
+  "effects": {
+   "productivity": 8,
+   "social": 5
+  }
+ },
+ {
+  "id": "server_rack",
+  "name": "Server Rack",
+  "category": "work",
+  "sprite": {
+   "shape": "tall",
+   "w": 14,
+   "h": 22,
+   "c1": "#3a3f47",
+   "c2": "#4a5160",
+   "c3": "#4f9d5d"
+  },
+  "duration": 25,
+  "occupants": 1,
+  "effects": {
+   "productivity": 20,
+   "energy": -4
+  }
+ },
+ {
+  "id": "brainstorm_wall",
+  "name": "Brainstorm Wall",
+  "category": "work",
+  "sprite": {
+   "shape": "art",
+   "w": 26,
+   "h": 16,
+   "c1": "#e8e6df",
+   "c2": "#e0b64c",
+   "c3": "#6a7178"
+  },
+  "duration": 40,
+  "occupants": 3,
+  "effects": {
+   "productivity": 22,
+   "social": 10
+  }
+ },
+ {
+  "id": "focus_booth",
+  "name": "Focus Booth",
+  "category": "work",
+  "sprite": {
+   "shape": "tall",
+   "w": 18,
+   "h": 20,
+   "c1": "#4a5160",
+   "c2": "#3a3f47",
+   "c3": "#3fae9f"
+  },
+  "duration": 60,
+  "occupants": 1,
+  "effects": {
+   "productivity": 38,
+   "social": -5
+  }
+ },
+ {
+  "id": "ergonomic_pod",
+  "name": "Ergonomic Pod",
+  "category": "work",
+  "sprite": {
+   "shape": "round",
+   "w": 18,
+   "h": 14,
+   "c1": "#3fae9f",
+   "c2": "#9aa3ad",
+   "c3": "#3a3f47"
+  },
+  "duration": 60,
+  "occupants": 1,
+  "effects": {
+   "productivity": 30,
+   "health": 8,
+   "energy": -5
+  }
+ },
+ {
+  "id": "foosball_table",
+  "name": "Foosball Table",
+  "category": "fun",
+  "sprite": {
+   "shape": "flat",
+   "w": 26,
+   "h": 16,
+   "c1": "#4f9d5d",
+   "c2": "#8a6142",
+   "c3": "#3a3f47"
+  },
+  "duration": 25,
+  "occupants": 2,
+  "effects": {
+   "social": 22,
+   "energy": -5
+  }
+ },
+ {
+  "id": "ping_pong_table",
+  "name": "Ping-Pong Table",
+  "category": "fun",
+  "sprite": {
+   "shape": "flat",
+   "w": 30,
+   "h": 16,
+   "c1": "#3f6fc3",
+   "c2": "#e8e6df",
+   "c3": "#3a3f47"
+  },
+  "duration": 30,
+  "occupants": 2,
+  "effects": {
+   "social": 22,
+   "energy": -8,
+   "health": 6
+  }
+ },
+ {
+  "id": "dartboard",
+  "name": "Dartboard",
+  "category": "fun",
+  "sprite": {
+   "shape": "art",
+   "w": 10,
+   "h": 10,
+   "c1": "#c3423f",
+   "c2": "#d9d2c0",
+   "c3": "#3a3f47"
+  },
+  "duration": 15,
+  "occupants": 2,
+  "effects": {
+   "social": 12
+  }
+ },
+ {
+  "id": "board_game_shelf",
+  "name": "Board Game Shelf",
+  "category": "fun",
+  "sprite": {
+   "shape": "tall",
+   "w": 16,
+   "h": 18,
+   "c1": "#8a6142",
+   "c2": "#c3423f",
+   "c3": "#3f6fc3"
+  },
+  "duration": 40,
+  "occupants": 3,
+  "effects": {
+   "social": 25,
+   "energy": -3
+  }
+ },
+ {
+  "id": "pinball_machine",
+  "name": "Pinball Machine",
+  "category": "fun",
+  "sprite": {
+   "shape": "machine",
+   "w": 14,
+   "h": 20,
+   "c1": "#8859c9",
+   "c2": "#d976a8",
+   "c3": "#e0b64c"
+  },
+  "duration": 20,
+  "occupants": 1,
+  "effects": {
+   "social": 10,
+   "energy": -3
+  }
+ },
+ {
+  "id": "vr_corner",
+  "name": "VR Corner",
+  "category": "fun",
+  "sprite": {
+   "shape": "screen",
+   "w": 18,
+   "h": 16,
+   "c1": "#23262b",
+   "c2": "#8859c9",
+   "c3": "#3fae9f"
+  },
+  "duration": 30,
+  "occupants": 1,
+  "effects": {
+   "social": 8,
+   "energy": -6,
+   "productivity": -3
+  }
+ },
+ {
+  "id": "chess_table",
+  "name": "Chess Table",
+  "category": "fun",
+  "sprite": {
+   "shape": "flat",
+   "w": 16,
+   "h": 14,
+   "c1": "#6b4a2f",
+   "c2": "#d9d2c0",
+   "c3": "#23262b"
+  },
+  "duration": 35,
+  "occupants": 2,
+  "effects": {
+   "social": 15,
+   "productivity": 5
+  }
+ },
+ {
+  "id": "claw_machine",
+  "name": "Claw Machine",
+  "category": "fun",
+  "sprite": {
+   "shape": "machine",
+   "w": 16,
+   "h": 20,
+   "c1": "#d976a8",
+   "c2": "#7fb2d9",
+   "c3": "#e0b64c"
+  },
+  "duration": 10,
+  "occupants": 1,
+  "effects": {
+   "social": 8,
+   "hunger": -2
+  }
+ },
+ {
+  "id": "mini_golf_hole",
+  "name": "Mini-Golf Hole",
+  "category": "fun",
+  "sprite": {
+   "shape": "flat",
+   "w": 28,
+   "h": 10,
+   "c1": "#6fae5c",
+   "c2": "#4f9d5d",
+   "c3": "#e8e6df"
+  },
+  "duration": 20,
+  "occupants": 2,
+  "effects": {
+   "social": 15,
+   "energy": -4
+  }
+ },
+ {
+  "id": "lego_station",
+  "name": "Brick-Build Station",
+  "category": "fun",
+  "sprite": {
+   "shape": "flat",
+   "w": 20,
+   "h": 12,
+   "c1": "#e0b64c",
+   "c2": "#c3423f",
+   "c3": "#3f6fc3"
+  },
+  "duration": 30,
+  "occupants": 2,
+  "effects": {
+   "social": 12,
+   "productivity": 8
+  }
+ },
+ {
+  "id": "puzzle_table",
+  "name": "Puzzle Table",
+  "category": "fun",
+  "sprite": {
+   "shape": "flat",
+   "w": 18,
+   "h": 12,
+   "c1": "#7fb2d9",
+   "c2": "#d9d2c0",
+   "c3": "#6b4a2f"
+  },
+  "duration": 35,
+  "occupants": 2,
+  "effects": {
+   "social": 12,
+   "energy": 5
+  }
+ },
+ {
+  "id": "jukebox",
+  "name": "Jukebox",
+  "category": "fun",
+  "sprite": {
+   "shape": "machine",
+   "w": 16,
+   "h": 20,
+   "c1": "#d97b3f",
+   "c2": "#8859c9",
+   "c3": "#e0b64c"
+  },
+  "duration": 10,
+  "occupants": 1,
+  "effects": {
+   "social": 15,
+   "energy": 5
+  }
+ },
+ {
+  "id": "air_hockey_table",
+  "name": "Air Hockey Table",
+  "category": "fun",
+  "sprite": {
+   "shape": "flat",
+   "w": 28,
+   "h": 16,
+   "c1": "#e8e6df",
+   "c2": "#3f6fc3",
+   "c3": "#c3423f"
+  },
+  "duration": 25,
+  "occupants": 2,
+  "effects": {
+   "social": 20,
+   "energy": -6
+  }
+ },
+ {
+  "id": "trampoline_spot",
+  "name": "Mini Trampoline",
+  "category": "fun",
+  "sprite": {
+   "shape": "round",
+   "w": 16,
+   "h": 8,
+   "c1": "#23262b",
+   "c2": "#3f6fc3",
+   "c3": "#6a7178"
+  },
+  "duration": 15,
+  "occupants": 1,
+  "effects": {
+   "energy": -8,
+   "health": 10,
+   "social": 8
+  }
+ },
+ {
+  "id": "comic_rack",
+  "name": "Comic Rack",
+  "category": "fun",
+  "sprite": {
+   "shape": "tall",
+   "w": 12,
+   "h": 16,
+   "c1": "#c3423f",
+   "c2": "#e0b64c",
+   "c3": "#3a3f47"
+  },
+  "duration": 25,
+  "occupants": 1,
+  "effects": {
+   "energy": 12,
+   "social": 5
+  }
+ },
+ {
+  "id": "fern_giant",
+  "name": "Giant Fern",
+  "category": "decor",
+  "sprite": {
+   "shape": "plant",
+   "w": 16,
+   "h": 18,
+   "c1": "#3e7d46",
+   "c2": "#6fae5c",
+   "c3": "#8a5a35"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 70,
+  "passive": {
+   "health": 0.2
+  }
+ },
+ {
+  "id": "bonsai",
+  "name": "Bonsai",
+  "category": "decor",
+  "sprite": {
+   "shape": "plant",
+   "w": 12,
+   "h": 10,
+   "c1": "#3e7d46",
+   "c2": "#6b4a2f",
+   "c3": "#7a4a2a"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 60,
+  "passive": {
+   "health": 0.15,
+   "productivity": 0.1
+  }
+ },
+ {
+  "id": "cactus_cluster",
+  "name": "Cactus Cluster",
+  "category": "decor",
+  "sprite": {
+   "shape": "plant",
+   "w": 14,
+   "h": 12,
+   "c1": "#4f9d5d",
+   "c2": "#6fae5c",
+   "c3": "#d97b3f"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 50,
+  "passive": {
+   "health": 0.1
+  }
+ },
+ {
+  "id": "flower_vase",
+  "name": "Flower Vase",
+  "category": "decor",
+  "sprite": {
+   "shape": "plant",
+   "w": 10,
+   "h": 12,
+   "c1": "#d976a8",
+   "c2": "#e0b64c",
+   "c3": "#3fae9f"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 60,
+  "passive": {
+   "social": 0.15
+  }
+ },
+ {
+  "id": "wall_fountain",
+  "name": "Wall Fountain",
+  "category": "decor",
+  "sprite": {
+   "shape": "art",
+   "w": 16,
+   "h": 14,
+   "c1": "#7fb2d9",
+   "c2": "#3f6fc3",
+   "c3": "#6a7178"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 80,
+  "passive": {
+   "health": 0.2,
+   "energy": 0.1
+  }
+ },
+ {
+  "id": "lava_lamp",
+  "name": "Lava Lamp",
+  "category": "decor",
+  "sprite": {
+   "shape": "tall",
+   "w": 8,
+   "h": 14,
+   "c1": "#8859c9",
+   "c2": "#d97b3f",
+   "c3": "#3a3f47"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 50,
+  "passive": {
+   "energy": 0.1
+  }
+ },
+ {
+  "id": "neon_sign",
+  "name": "Neon Sign",
+  "category": "decor",
+  "sprite": {
+   "shape": "art",
+   "w": 20,
+   "h": 10,
+   "c1": "#23262b",
+   "c2": "#d976a8",
+   "c3": "#3fae9f"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 70,
+  "passive": {
+   "social": 0.2
+  }
+ },
+ {
+  "id": "motivational_poster",
+  "name": "Motivational Poster",
+  "category": "decor",
+  "sprite": {
+   "shape": "art",
+   "w": 14,
+   "h": 10,
+   "c1": "#7fb2d9",
+   "c2": "#e8e6df",
+   "c3": "#3a3f47"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 60,
+  "passive": {
+   "productivity": 0.2
+  }
+ },
+ {
+  "id": "abstract_painting",
+  "name": "Abstract Painting",
+  "category": "decor",
+  "sprite": {
+   "shape": "art",
+   "w": 16,
+   "h": 12,
+   "c1": "#d9d2c0",
+   "c2": "#c3423f",
+   "c3": "#4a3320"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 60,
+  "passive": {
+   "social": 0.1,
+   "productivity": 0.1
+  }
+ },
+ {
+  "id": "string_lights",
+  "name": "String Lights",
+  "category": "decor",
+  "sprite": {
+   "shape": "art",
+   "w": 24,
+   "h": 6,
+   "c1": "#3a3f47",
+   "c2": "#e0b64c",
+   "c3": "#d97b3f"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 80,
+  "passive": {
+   "social": 0.15,
+   "energy": 0.05
+  }
+ },
+ {
+  "id": "disco_ball",
+  "name": "Disco Ball",
+  "category": "decor",
+  "sprite": {
+   "shape": "round",
+   "w": 10,
+   "h": 10,
+   "c1": "#9aa3ad",
+   "c2": "#e8e6df",
+   "c3": "#7fb2d9"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 80,
+  "passive": {
+   "social": 0.3,
+   "productivity": -0.1
+  }
+ },
+ {
+  "id": "globe_stand",
+  "name": "Globe",
+  "category": "decor",
+  "sprite": {
+   "shape": "round",
+   "w": 12,
+   "h": 14,
+   "c1": "#3f6fc3",
+   "c2": "#4f9d5d",
+   "c3": "#6b4a2f"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 50,
+  "passive": {
+   "productivity": 0.1
+  }
+ },
+ {
+  "id": "sculpture_modern",
+  "name": "Modern Sculpture",
+  "category": "decor",
+  "sprite": {
+   "shape": "tall",
+   "w": 10,
+   "h": 16,
+   "c1": "#9aa3ad",
+   "c2": "#6a7178",
+   "c3": "#3a3f47"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 60,
+  "passive": {
+   "social": 0.1
+  }
+ },
+ {
+  "id": "terrarium",
+  "name": "Terrarium",
+  "category": "decor",
+  "sprite": {
+   "shape": "box",
+   "w": 16,
+   "h": 10,
+   "c1": "#3fae9f",
+   "c2": "#6fae5c",
+   "c3": "#6a7178"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 60,
+  "passive": {
+   "health": 0.15
+  }
+ },
+ {
+  "id": "wind_chimes",
+  "name": "Wind Chimes",
+  "category": "decor",
+  "sprite": {
+   "shape": "tall",
+   "w": 8,
+   "h": 12,
+   "c1": "#9aa3ad",
+   "c2": "#e0b64c",
+   "c3": "#6b4a2f"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 70,
+  "passive": {
+   "energy": 0.1,
+   "health": 0.05
+  }
+ },
+ {
+  "id": "persian_rug",
+  "name": "Persian Rug",
+  "category": "decor",
+  "sprite": {
+   "shape": "flat",
+   "w": 28,
+   "h": 6,
+   "c1": "#c3423f",
+   "c2": "#e0b64c",
+   "c3": "#4a3320"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 60,
+  "passive": {
+   "social": 0.1
+  }
+ },
+ {
+  "id": "fireplace_electric",
+  "name": "Electric Fireplace",
+  "category": "decor",
+  "sprite": {
+   "shape": "box",
+   "w": 20,
+   "h": 14,
+   "c1": "#3a3f47",
+   "c2": "#d97b3f",
+   "c3": "#c3423f"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 80,
+  "passive": {
+   "energy": 0.2,
+   "social": 0.15
+  }
+ },
+ {
+  "id": "skylight_lamp",
+  "name": "Daylight Lamp",
+  "category": "decor",
+  "sprite": {
+   "shape": "tall",
+   "w": 10,
+   "h": 18,
+   "c1": "#e8e6df",
+   "c2": "#e0b64c",
+   "c3": "#6a7178"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 80,
+  "passive": {
+   "energy": 0.15,
+   "health": 0.1
+  }
+ },
+ {
+  "id": "yoga_mat",
+  "name": "Yoga Mat",
+  "category": "wellness",
+  "sprite": {
+   "shape": "flat",
+   "w": 22,
+   "h": 6,
+   "c1": "#8859c9",
+   "c2": "#d976a8",
+   "c3": "#3a3f47"
+  },
+  "duration": 30,
+  "occupants": 1,
+  "effects": {
+   "health": 15,
+   "energy": 10
+  }
+ },
+ {
+  "id": "treadmill_desk",
+  "name": "Treadmill Desk",
+  "category": "wellness",
+  "sprite": {
+   "shape": "machine",
+   "w": 22,
+   "h": 16,
+   "c1": "#9aa3ad",
+   "c2": "#3a3f47",
+   "c3": "#4f9d5d"
+  },
+  "duration": 45,
+  "occupants": 1,
+  "effects": {
+   "health": 18,
+   "productivity": 15,
+   "energy": -12
+  }
+ },
+ {
+  "id": "stationary_bike",
+  "name": "Stationary Bike",
+  "category": "wellness",
+  "sprite": {
+   "shape": "machine",
+   "w": 18,
+   "h": 14,
+   "c1": "#c3423f",
+   "c2": "#6a7178",
+   "c3": "#3a3f47"
+  },
+  "duration": 30,
+  "occupants": 1,
+  "effects": {
+   "health": 20,
+   "energy": -10
+  }
+ },
+ {
+  "id": "punching_bag",
+  "name": "Punching Bag",
+  "category": "wellness",
+  "sprite": {
+   "shape": "tall",
+   "w": 10,
+   "h": 18,
+   "c1": "#c3423f",
+   "c2": "#4a3320",
+   "c3": "#6a7178"
+  },
+  "duration": 20,
+  "occupants": 1,
+  "effects": {
+   "health": 12,
+   "energy": -8,
+   "social": 3
+  }
+ },
+ {
+  "id": "zen_garden",
+  "name": "Zen Garden",
+  "category": "wellness",
+  "sprite": {
+   "shape": "flat",
+   "w": 18,
+   "h": 8,
+   "c1": "#d9d2c0",
+   "c2": "#6a7178",
+   "c3": "#3e7d46"
+  },
+  "duration": 20,
+  "occupants": 1,
+  "effects": {
+   "health": 12,
+   "energy": 8
+  }
+ },
+ {
+  "id": "salt_lamp_station",
+  "name": "Salt Lamp Corner",
+  "category": "wellness",
+  "sprite": {
+   "shape": "round",
+   "w": 10,
+   "h": 10,
+   "c1": "#d97b3f",
+   "c2": "#d976a8",
+   "c3": "#6b4a2f"
+  },
+  "duration": 15,
+  "occupants": 1,
+  "effects": {
+   "health": 8,
+   "energy": 8
+  }
+ },
+ {
+  "id": "stretching_bar",
+  "name": "Stretching Bar",
+  "category": "wellness",
+  "sprite": {
+   "shape": "tall",
+   "w": 16,
+   "h": 16,
+   "c1": "#9aa3ad",
+   "c2": "#6a7178",
+   "c3": "#3a3f47"
+  },
+  "duration": 15,
+  "occupants": 1,
+  "effects": {
+   "health": 10,
+   "energy": 5
+  }
+ },
+ {
+  "id": "weights_rack",
+  "name": "Weights Rack",
+  "category": "wellness",
+  "sprite": {
+   "shape": "flat",
+   "w": 20,
+   "h": 12,
+   "c1": "#3a3f47",
+   "c2": "#6a7178",
+   "c3": "#c3423f"
+  },
+  "duration": 30,
+  "occupants": 1,
+  "effects": {
+   "health": 18,
+   "energy": -12
+  }
+ },
+ {
+  "id": "balance_board",
+  "name": "Balance Board",
+  "category": "wellness",
+  "sprite": {
+   "shape": "flat",
+   "w": 14,
+   "h": 6,
+   "c1": "#8a6142",
+   "c2": "#6b4a2f",
+   "c3": "#3a3f47"
+  },
+  "duration": 15,
+  "occupants": 1,
+  "effects": {
+   "health": 8,
+   "productivity": 3
+  }
+ },
+ {
+  "id": "breathing_corner",
+  "name": "Breathing Corner",
+  "category": "wellness",
+  "sprite": {
+   "shape": "round",
+   "w": 16,
+   "h": 10,
+   "c1": "#7fb2d9",
+   "c2": "#e8e6df",
+   "c3": "#3fae9f"
+  },
+  "duration": 20,
+  "occupants": 1,
+  "effects": {
+   "health": 12,
+   "energy": 10,
+   "social": -3
+  }
+ },
+ {
+  "id": "retro_tv",
+  "name": "Retro TV",
+  "category": "tech",
+  "sprite": {
+   "shape": "screen",
+   "w": 16,
+   "h": 14,
+   "c1": "#6b4a2f",
+   "c2": "#3a3f47",
+   "c3": "#7fb2d9"
+  },
+  "duration": 25,
+  "occupants": 2,
+  "effects": {
+   "social": 15,
+   "energy": 8,
+   "productivity": -5
+  }
+ },
+ {
+  "id": "gaming_pc",
+  "name": "Gaming PC",
+  "category": "tech",
+  "sprite": {
+   "shape": "screen",
+   "w": 18,
+   "h": 16,
+   "c1": "#23262b",
+   "c2": "#8859c9",
+   "c3": "#4f9d5d"
+  },
+  "duration": 40,
+  "occupants": 1,
+  "effects": {
+   "social": 5,
+   "energy": -5,
+   "productivity": -8,
+   "hunger": -3
+  }
+ },
+ {
+  "id": "holo_projector",
+  "name": "Holo Projector",
+  "category": "tech",
+  "sprite": {
+   "shape": "machine",
+   "w": 14,
+   "h": 12,
+   "c1": "#3a3f47",
+   "c2": "#3fae9f",
+   "c3": "#7fb2d9"
+  },
+  "duration": 20,
+  "occupants": 3,
+  "effects": {
+   "social": 15,
+   "productivity": 10
+  }
+ },
+ {
+  "id": "three_d_printer",
+  "name": "3D Printer",
+  "category": "tech",
+  "sprite": {
+   "shape": "machine",
+   "w": 14,
+   "h": 14,
+   "c1": "#e8e6df",
+   "c2": "#d97b3f",
+   "c3": "#3a3f47"
+  },
+  "duration": 35,
+  "occupants": 1,
+  "effects": {
+   "productivity": 20,
+   "social": 5
+  }
+ },
+ {
+  "id": "robot_vacuum_dock",
+  "name": "Robot Vacuum Dock",
+  "category": "tech",
+  "sprite": {
+   "shape": "box",
+   "w": 12,
+   "h": 8,
+   "c1": "#9aa3ad",
+   "c2": "#3a3f47",
+   "c3": "#4f9d5d"
+  },
+  "duration": 5,
+  "occupants": 1,
+  "effects": {
+   "productivity": 5,
+   "social": 3
+  }
+ },
+ {
+  "id": "photo_booth",
+  "name": "Photo Booth",
+  "category": "tech",
+  "sprite": {
+   "shape": "tall",
+   "w": 18,
+   "h": 22,
+   "c1": "#c3423f",
+   "c2": "#d9d2c0",
+   "c3": "#3a3f47"
+  },
+  "duration": 15,
+  "occupants": 2,
+  "effects": {
+   "social": 20
+  }
+ },
+ {
+  "id": "telescope",
+  "name": "Telescope",
+  "category": "tech",
+  "sprite": {
+   "shape": "tall",
+   "w": 12,
+   "h": 18,
+   "c1": "#6a7178",
+   "c2": "#23262b",
+   "c3": "#e0b64c"
+  },
+  "duration": 25,
+  "occupants": 1,
+  "effects": {
+   "energy": 10,
+   "productivity": 5,
+   "social": -3
+  }
+ },
+ {
+  "id": "synth_keyboard",
+  "name": "Synth Keyboard",
+  "category": "tech",
+  "sprite": {
+   "shape": "flat",
+   "w": 22,
+   "h": 10,
+   "c1": "#23262b",
+   "c2": "#e8e6df",
+   "c3": "#8859c9"
+  },
+  "duration": 25,
+  "occupants": 1,
+  "effects": {
+   "social": 10,
+   "energy": 8
+  }
+ },
+ {
+  "id": "soldering_bench",
+  "name": "Soldering Bench",
+  "category": "tech",
+  "sprite": {
+   "shape": "flat",
+   "w": 20,
+   "h": 12,
+   "c1": "#6a7178",
+   "c2": "#3a3f47",
+   "c3": "#d97b3f"
+  },
+  "duration": 40,
+  "occupants": 1,
+  "effects": {
+   "productivity": 25,
+   "energy": -6
+  }
+ },
+ {
+  "id": "drone_pad",
+  "name": "Drone Pad",
+  "category": "tech",
+  "sprite": {
+   "shape": "round",
+   "w": 16,
+   "h": 8,
+   "c1": "#3a3f47",
+   "c2": "#e0b64c",
+   "c3": "#9aa3ad"
+  },
+  "duration": 20,
+  "occupants": 1,
+  "effects": {
+   "social": 8,
+   "productivity": 8
+  }
+ },
+ {
+  "id": "gong",
+  "name": "Office Gong",
+  "category": "weird",
+  "sprite": {
+   "shape": "round",
+   "w": 14,
+   "h": 16,
+   "c1": "#e0b64c",
+   "c2": "#6b4a2f",
+   "c3": "#3a3f47"
+  },
+  "duration": 5,
+  "occupants": 1,
+  "effects": {
+   "social": 10,
+   "energy": 5
+  }
+ },
+ {
+  "id": "suggestion_box",
+  "name": "Suggestion Box",
+  "category": "weird",
+  "sprite": {
+   "shape": "box",
+   "w": 10,
+   "h": 8,
+   "c1": "#8a6142",
+   "c2": "#6a7178",
+   "c3": "#c3423f"
+  },
+  "duration": 5,
+  "occupants": 1,
+  "effects": {
+   "social": 5,
+   "productivity": 3
+  }
+ },
+ {
+  "id": "taxidermy_duck",
+  "name": "Taxidermy Duck",
+  "category": "weird",
+  "sprite": {
+   "shape": "round",
+   "w": 10,
+   "h": 10,
+   "c1": "#6b4a2f",
+   "c2": "#4f9d5d",
+   "c3": "#e0b64c"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 50,
+  "passive": {
+   "social": 0.1
+  }
+ },
+ {
+  "id": "crystal_ball",
+  "name": "Crystal Ball",
+  "category": "weird",
+  "sprite": {
+   "shape": "round",
+   "w": 10,
+   "h": 10,
+   "c1": "#8859c9",
+   "c2": "#7fb2d9",
+   "c3": "#4a3320"
+  },
+  "duration": 10,
+  "occupants": 1,
+  "effects": {
+   "social": 8,
+   "energy": 3
+  }
+ },
+ {
+  "id": "office_shrine",
+  "name": "Office Shrine",
+  "category": "weird",
+  "sprite": {
+   "shape": "tall",
+   "w": 14,
+   "h": 14,
+   "c1": "#4a3320",
+   "c2": "#e0b64c",
+   "c3": "#c3423f"
+  },
+  "duration": 10,
+  "occupants": 1,
+  "effects": {
+   "health": 8,
+   "social": 5
+  }
+ },
+ {
+  "id": "complaint_shredder",
+  "name": "Complaint Shredder",
+  "category": "weird",
+  "sprite": {
+   "shape": "machine",
+   "w": 12,
+   "h": 12,
+   "c1": "#6a7178",
+   "c2": "#3a3f47",
+   "c3": "#c3423f"
+  },
+  "duration": 5,
+  "occupants": 1,
+  "effects": {
+   "health": 6,
+   "social": 3
+  }
+ },
+ {
+  "id": "rubber_duck_army",
+  "name": "Rubber Duck Army",
+  "category": "weird",
+  "sprite": {
+   "shape": "flat",
+   "w": 18,
+   "h": 6,
+   "c1": "#e0b64c",
+   "c2": "#d97b3f",
+   "c3": "#3a3f47"
+  },
+  "duration": 0,
+  "occupants": 0,
+  "effects": {},
+  "passive_radius": 60,
+  "passive": {
+   "productivity": 0.15,
+   "social": 0.1
+  }
+ },
+ {
+  "id": "mystery_crate",
+  "name": "Mystery Crate",
+  "category": "weird",
+  "sprite": {
+   "shape": "box",
+   "w": 14,
+   "h": 12,
+   "c1": "#6b4a2f",
+   "c2": "#4a3320",
+   "c3": "#c3423f"
+  },
+  "duration": 10,
+  "occupants": 1,
+  "effects": {
+   "social": 6,
+   "energy": 3
+  }
+ }
+]

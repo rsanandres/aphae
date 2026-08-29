@@ -190,13 +190,40 @@ func _rebuild_object_panel() -> void:
 	title.add_theme_font_size_override("font_size", 9)
 	_object_panel.add_child(title)
 
-	var types := ["desk", "couch", "coffee_machine", "water_cooler", "whiteboard", "bookshelf", "plant", "radio", "bed", "karaoke_machine", "arcade_cabinet", "meditation_pod", "aquarium"]
-	for t in types:
-		var btn := Button.new()
-		btn.text = t.replace("_", " ").capitalize()
-		btn.add_theme_font_size_override("font_size", 9)
-		btn.pressed.connect(_on_select_object_type.bind(t))
-		_object_panel.add_child(btn)
+	# 113 placeable types (13 bespoke + the data catalog) need a scroll and
+	# categories, not a flat column that runs off the screen.
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(150, 150)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_object_panel.add_child(scroll)
+	var list := VBoxContainer.new()
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(list)
+
+	var groups: Dictionary = {"classic": ["desk", "couch", "coffee_machine", "water_cooler",
+		"whiteboard", "bookshelf", "plant", "radio", "bed", "karaoke_machine",
+		"arcade_cabinet", "meditation_pod", "aquarium"]}
+	groups.merge(DataObject.get_ids_by_category())
+	for cat in groups.keys():
+		var header := Label.new()
+		header.text = str(cat).capitalize()
+		header.add_theme_font_size_override("font_size", 9)
+		header.add_theme_color_override("font_color", Color(0.85, 0.75, 0.5))
+		list.add_child(header)
+		var grid := GridContainer.new()
+		grid.columns = 2
+		grid.add_theme_constant_override("h_separation", 2)
+		grid.add_theme_constant_override("v_separation", 1)
+		list.add_child(grid)
+		for t in groups[cat]:
+			var btn := Button.new()
+			var def := DataObject.get_def(t)
+			btn.text = str(def.get("name", str(t).replace("_", " ").capitalize()))
+			btn.clip_text = true
+			btn.custom_minimum_size = Vector2(72, 0)
+			btn.add_theme_font_size_override("font_size", 8)
+			btn.pressed.connect(_on_select_object_type.bind(str(t)))
+			grid.add_child(btn)
 
 
 func _rebuild_agent_panel() -> void:

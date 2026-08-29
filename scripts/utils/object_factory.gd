@@ -13,9 +13,15 @@ static func create(obj_type: String) -> InteractableObject:
 		push_warning("ObjectFactory: rejected object type '%s'" % obj_type)
 		return null
 	var script_path := "res://scenes/objects/%s.gd" % obj_type
+	var from_catalog := false
 	if not FileAccess.file_exists(script_path):
-		push_warning("ObjectFactory: unknown object type '%s'" % obj_type)
-		return null
+		# No bespoke script — the data catalog (resources/objects.json) may
+		# define it. Bespoke always wins so special behavior stays special.
+		if DataObject.get_def(obj_type).is_empty():
+			push_warning("ObjectFactory: unknown object type '%s'" % obj_type)
+			return null
+		script_path = "res://scenes/objects/data_object.gd"
+		from_catalog = true
 	var obj := StaticBody2D.new()
 	obj.collision_layer = 4
 	obj.collision_mask = 0
@@ -35,4 +41,7 @@ static func create(obj_type: String) -> InteractableObject:
 	shape.shape = rect
 	obj.add_child(shape)
 
+	if from_catalog and not (obj as DataObject).configure(obj_type):
+		obj.free()
+		return null
 	return obj

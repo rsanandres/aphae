@@ -143,6 +143,43 @@ func _run() -> void:
 		ObjectFactory.create("../../autoloads/config") == null)
 	_check("factory refuses empty type", ObjectFactory.create("") == null)
 
+	# --- The data-object catalog: all 100 build, and the contracts hold ------
+	var catalog_ids: Array = DataObject.get_ids()
+	_check("the catalog defines at least 100 objects", catalog_ids.size() >= 100)
+	var built := 0
+	var bad_sprite := 0
+	var decor_usable := 0
+	var interactive_ineffective := 0
+	for oid in catalog_ids:
+		var data_obj := ObjectFactory.create(str(oid))
+		if data_obj == null:
+			print("      catalog build failed: %s" % oid)
+			continue
+		built += 1
+		var sprite_node: Sprite2D = data_obj.get_node_or_null("Sprite2D")
+		if sprite_node == null or sprite_node.texture == null 				or sprite_node.texture.get_width() < 4:
+			bad_sprite += 1
+		if data_obj.max_occupants <= 0:
+			# Decor contract: never available, but felt (passive aura).
+			if data_obj.is_available() or data_obj.passive_effect_radius <= 0.0:
+				decor_usable += 1
+		else:
+			# Interactive contract: a real duration and at least one effect.
+			if data_obj.get_interaction_duration() <= 0.0 					or data_obj.get_need_effects().is_empty():
+				interactive_ineffective += 1
+		data_obj.free()
+	_check("every catalog object builds", built == catalog_ids.size())
+	_check("every catalog object has a real sprite", bad_sprite == 0)
+	_check("decor is felt, never used", decor_usable == 0)
+	_check("every interactive object does something", interactive_ineffective == 0)
+	_check("bespoke scripts still win over the catalog",
+		ObjectFactory.create("desk").get_script().resource_path.ends_with("desk.gd"))
+	var espresso := ObjectFactory.create("espresso_machine")
+	_check("a catalog object carries its parsed effects",
+		espresso != null and float(espresso.get_need_effects().get(NeedType.Type.ENERGY, 0.0)) > 0.0)
+	if espresso:
+		espresso.free()
+
 	# --- Malformed save data must degrade, not abort ---
 	var bad_color := PersonalityProfile.from_dict({"name": "Mallory", "color": [1.0]})
 	_check("short color array falls back to default",

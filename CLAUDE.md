@@ -70,8 +70,8 @@ Aphae — AI Agent Office Simulation. A top-down 2D pixel art game where AI agen
 - **State machine**: IDLE → DECIDING → WALKING → INTERACTING / TALKING → IDLE
 - **Sprites**: 6-frame procedural pixel art (2 idle + 4 walk cycle)
 
-### Objects (9 types)
-desk, couch, coffee_machine, water_cooler (2 occupants), whiteboard (3 occupants), bookshelf, plant (passive), radio (toggleable), bed
+### Objects (113 placeable types)
+13 bespoke scripts (desk, couch, coffee_machine, water_cooler, whiteboard, bookshelf, plant, radio, bed, karaoke_machine, arcade_cabinet, meditation_pod, aquarium) + **100 data-defined objects** in `resources/objects.json` across 8 categories (food, comfort, work, fun, decor, wellness, tech, weird). One generic class (`scenes/objects/data_object.gd`) serves the whole catalog; sprites come from `SpriteFactory.create_archetype_sprite` (9 parameterized archetypes + per-id seeded accents). `ObjectFactory.create(id)` prefers a bespoke script when one exists. Decor entries (occupants 0) are passive auras, never used directly. Heuristic brains use catalog objects via `_find_need_satisfying` — any nearby available object restoring the urgent need ≥5.
 
 ### Keyboard Shortcuts
 Space=pause, 1/2/3=speed, Tab=god mode, F5=save, F9=load, F12=screenshot, L=narrative log, R=relationships, C=confessional cam, E=episode recap, Esc=close overlays

@@ -16,7 +16,7 @@ Built with **Godot 4.6** (GDScript). Fully playable offline — no accounts, no 
 
 **[⬇ Download the latest release](https://github.com/rsanandres/aphae/releases/latest)** — Windows and Linux. Unzip and run, nothing to install.
 
-**[▶ Play in your browser](https://rsanandres.github.io/aphae/)** *(going live soon)* — the full simulation, no download.
+**[▶ Play in your browser](https://rsanandres.github.io/aphae/)** — the full simulation, no download. Updates automatically with every change to `main`.
 
 Out of the box the cast runs on a rich personality-driven heuristic brain. If you have [Ollama](https://ollama.ai) running, they get an LLM brain instead — live-written dialogue, confessionals, and inner thoughts in each character's own voice. See [LLM setup](#llm-setup-optional).
 

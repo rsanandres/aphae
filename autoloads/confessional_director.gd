@@ -163,7 +163,7 @@ func _record(kind: String, event_text: String, speaker: Node2D, force_host: bool
 	if LLMManager.is_available and LLMManager.get_queue_size() <= 6:
 		_request_llm(kind, event_text, speaker)
 	else:
-		_emit(kind, _heuristic_line(kind, speaker), speaker)
+		_emit(kind, _heuristic_line(kind, speaker, event_text), speaker)
 
 
 func _request_llm(kind: String, event_text: String, speaker: Node2D) -> void:
@@ -306,11 +306,17 @@ func _clean(raw: String) -> String:
 # --- Heuristic fallback ----------------------------------------------------
 ## Personality-flavored canned lines so the feature is fun with the LLM off.
 
+var _last_heuristic: Dictionary = {}  # kind -> last line emitted
+
+
 func _heuristic_line(kind: String, speaker: Node2D, detail: String = "") -> String:
 	var p: PersonalityProfile = speaker.personality
 	var catty := p != null and p.agreeableness < 0.4
 	var anxious := p != null and p.neuroticism > 0.6
 	var bold := p != null and p.extraversion > 0.6
+	# Mid-range personalities hit none of the gates above and were stuck with
+	# the 3 generic lines forever. The middle of the bell curve gets deadpan.
+	var even := p != null and not (catty or anxious or bold)
 
 	var options: Array[String] = []
 	match kind:
@@ -363,6 +369,18 @@ func _heuristic_line(kind: String, speaker: Node2D, detail: String = "") -> Stri
 				options.append("I've replayed it a hundred times. What if it all falls apart?")
 			if bold:
 				options.append("I make things happen. This place needed a little heat.")
+			if even:
+				options.append("We're keeping it professional. At work. Mostly.")
+			# Name the partner when the event text carries one — a romance
+			# quip that names nobody wastes the whole cutaway.
+			var partner := ""
+			if detail.begins_with("You and "):
+				partner = detail.substr(8).get_slice(" ", 0)
+			elif "confessed your feelings to " in detail:
+				partner = detail.get_slice("confessed your feelings to ", 1).get_slice(" ", 0)
+			if partner != "":
+				options.append("%s. Yeah. I know exactly what I'm doing. ...No I don't." % partner)
+				options.append("Whatever happens with %s, the cameras got it first. Great." % partner)
 		"tragedy":
 			options = [
 				"You never think it'll actually happen. And then it does.",
@@ -371,6 +389,12 @@ func _heuristic_line(kind: String, speaker: Node2D, detail: String = "") -> Stri
 			]
 			if anxious:
 				options.append("I can't stop thinking about it. Who's next?")
+			if even:
+				options.append("Somebody should water their plant. I'll do it. It's fine.")
+			var lost := detail.get_slice(" ", 0)
+			if lost.length() > 1 and lost[0] == lost[0].to_upper() and not detail.begins_with("You"):
+				options.append("%s deserved better than this place gave them." % lost)
+				options.append("I had a joke ready for %s this morning. Guess I'll keep it." % lost)
 		"rivalry":
 			options = [
 				"They started it. We're just going to finish it.",
@@ -381,20 +405,33 @@ func _heuristic_line(kind: String, speaker: Node2D, detail: String = "") -> Stri
 				options.append("Bless their hearts. They really think they stand a chance.")
 			if bold:
 				options.append("Bring it. I've been waiting for a reason.")
-		_:  # generic drama
+			if even:
+				options.append("I don't do drama. I do winning quietly.")
+			if "at war with " in detail:
+				var enemy := detail.get_slice("at war with ", 1).trim_suffix(".")
+				options.append("%s? Never heard of them. Kidding. We're going to bury them." % enemy)
+		_:  # generic drama — the most-fired pool, so it gets the most lines
 			options = [
 				"You can't make this stuff up. Except, well, here we are.",
 				"I'm just here to do my job. The chaos finds me.",
-				"Every day something new. I need a vacation.",
+				"I have seen things at this water cooler. Things.",
+				"HR is going to LOVE this week's footage.",
+				"Don't look at me. I was at my desk. Allegedly.",
 			]
 			if catty:
 				options.append("I'm not saying I told you so. But I told you so.")
 			if anxious:
 				options.append("My stomach's been in knots all day. Something's off.")
+			if even:
+				options.append("On a scale of one to office meltdown? Solid seven.")
 
 	if options.is_empty():
 		return "No comment. ...Okay, maybe a little comment."
-	return options[randi() % options.size()]
+	var line: String = options[randi() % options.size()]
+	if options.size() > 1 and line == str(_last_heuristic.get(kind, "")):
+		line = options[randi() % options.size()]
+	_last_heuristic[kind] = line
+	return line
 
 
 func _host_line(kind: String, event_text: String) -> String:

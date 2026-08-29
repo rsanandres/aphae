@@ -17,7 +17,7 @@ const EXTENSION_THRESHOLD := 75.0  # a near-miss earns one stay of execution
 const MAX_TRACKED_PER_AGENT := 3
 
 # Progress weights, tuned so a committed agent lands a goal in roughly a week.
-const WORK_STEP := 12.0
+const WORK_STEP := 15.0  # 12 needed 9 desk sessions; the office averages ~1 per 90 game-min
 const CREATIVE_STEP := 14.0
 const CREATIVE_PARTNER_STEP := 10.0  # "learn something new from each colleague"
 const SOCIAL_NEW_PARTNER := 25.0
@@ -137,7 +137,10 @@ func assign_for(agent: Node2D) -> void:
 			break
 		if goal_text.strip_edges().is_empty():
 			continue
-		states.append(GoalState.create(agent.agent_name, goal_text, day, DEADLINE_DAYS))
+		# Jitter the deadline: identical spawn-day deadlines made day 10 a
+		# synchronized office-wide mass-failure event.
+		states.append(GoalState.create(agent.agent_name, goal_text, day,
+			DEADLINE_DAYS + (randi() % 5) - 2))
 	if not states.is_empty():
 		_goals[agent.agent_name] = states
 
@@ -200,6 +203,17 @@ func _on_conversation_ended(agent_a: String, agent_b: String) -> void:
 	_credit_conversation(agent_b, agent_a)
 
 
+func social_partner_step() -> float:
+	## Roster-aware: "make a friend of everyone" should mean everyone HERE.
+	## A flat 25 finished day one in a big office and parked at exactly the
+	## extension threshold in a small one.
+	var living := 0
+	for agent in AgentManager.agents:
+		if is_instance_valid(agent) and not agent.is_dead:
+			living += 1
+	return 100.0 / clampf(float(living - 1), 2.0, 6.0)
+
+
 func _credit_conversation(agent_name: String, partner: String) -> void:
 	if agent_name == partner:
 		return
@@ -209,7 +223,7 @@ func _credit_conversation(agent_name: String, partner: String) -> void:
 			GoalState.Kind.SOCIAL:
 				if is_new:
 					goal.partners.append(partner)
-					advance(goal, SOCIAL_NEW_PARTNER, "met %s" % partner)
+					advance(goal, social_partner_step(), "met %s" % partner)
 				else:
 					advance(goal, SOCIAL_REPEAT, "talked with %s again" % partner)
 			GoalState.Kind.CREATIVE:
@@ -301,6 +315,7 @@ func _achieve(goal: GoalState) -> void:
 	achieved_total += 1
 	_apply_resolution(goal, true)
 	EventBus.goal_achieved.emit(goal.agent_name, goal.text, int(goal.kind))
+	_refill(goal.agent_name)
 
 
 func _fail(goal: GoalState) -> void:
@@ -309,6 +324,31 @@ func _fail(goal: GoalState) -> void:
 	failed_total += 1
 	_apply_resolution(goal, false)
 	EventBus.goal_failed.emit(goal.agent_name, goal.text, int(goal.kind))
+	_refill(goal.agent_name)
+
+
+func _refill(agent_name: String) -> void:
+	## A resolved want makes room for a new one — an agent whose goals all
+	## landed by day 4 used to drift wantless for the rest of the run.
+	var agent := AgentManager.get_agent_by_name(agent_name)
+	if agent == null or not is_instance_valid(agent) or agent.is_dead:
+		return
+	var active := 0
+	var existing: Array[String] = []
+	for goal: GoalState in _goals.get(agent_name, []):
+		if goal.is_active():
+			active += 1
+		existing.append(goal.text)
+	if active >= 2:
+		return
+	var pool: Array = PersonalityGenerator.GOALS_POOL.duplicate()
+	pool.shuffle()
+	for candidate in pool:
+		if str(candidate) not in existing:
+			var fresh := GoalState.create(agent_name, str(candidate), TimeManager.day,
+				DEADLINE_DAYS + (randi() % 5) - 2)
+			(_goals.get(agent_name, []) as Array).append(fresh)
+			return
 
 
 func _apply_resolution(goal: GoalState, achieved: bool) -> void:

@@ -80,8 +80,13 @@ func _request_next_line() -> void:
 	var listener := agent_b if _current_turn % 2 == 0 else agent_a
 
 	if not LLMManager.is_available:
-		# Heuristic fallback
+		# Heuristic fallback — with one reroll if the exact line was already
+		# said this conversation (a ~1-in-5 event that reads as a glitch).
 		var line := _heuristic_line(speaker, listener)
+		for entry in _history:
+			if entry["line"] == line:
+				line = _heuristic_line(speaker, listener)
+				break
 		_on_line_received(speaker, listener, line)
 		return
 
@@ -594,7 +599,7 @@ func _get_positive_lines(s_name: String, l_name: String, quirk: String, goal: St
 		"I feel like we make a really good team, {listener}.",
 		"Got any plans this weekend, {listener}? We should hang out!",
 		"That was a brilliant point you made in the meeting, {listener}.",
-		"I noticed {l_quirk} and honestly it's one of my favorite things about you.",
+		"I love that you're someone who {l_quirk}. Don't ever stop.",
 		"You always have such interesting things to say, {listener}. Tell me more.",
 		"I'm working on {goal} and I'd love your input, {listener}.",
 		"Not gonna lie, talking to you is the highlight of my day sometimes.",
@@ -674,21 +679,32 @@ func _get_neutral_lines(_s_name: String, l_name: String, time_greeting: String, 
 
 
 func _memory_driven_line(s_name: String, l_name: String, mem: MemoryEntry) -> String:
-	## Generate a line that references a recent memory.
+	## Reference a recent memory — but only one that survives being SPOKEN.
+	## Splicing raw memory prose produced bubbles like "remember when hugo had
+	## a conversation with dex: hugo said 'i...? That was something." — a
+	## playtester's single worst line in the game. Colons mean transcripts or
+	## quotes (unspeakable); mid-sentence truncation reads as machine output;
+	## and lowercasing mangled proper names. Unusable memory -> return "" and
+	## let the normal pools handle the turn.
+	if mem.type == MemoryEntry.MemoryType.CONVERSATION:
+		return ""
 	var desc: String = mem.description
-	# Truncate if too long
-	if desc.length() > 50:
-		desc = desc.substr(0, 47) + "..."
+	if ":" in desc or desc.length() > 70:
+		return ""
+	# Third-person memories start with the speaker's own name; make them
+	# first-person instead of quoting themselves ("I keep thinking about
+	# Hugo used the couch" -> "...about that time I used the couch").
+	if desc.begins_with(s_name + " "):
+		desc = "that time I " + desc.substr(s_name.length() + 1)
+	desc = desc.trim_suffix(".")
 
 	var templates: Array[String] = [
-		"You know, I keep thinking about %s..." % desc.to_lower(),
-		"Hey %s, remember when %s? That was something." % [l_name, desc.to_lower()],
-		"I can't get it out of my head — %s." % desc.to_lower(),
+		"You know, I keep thinking about %s." % desc,
+		"I can't get it out of my head — %s." % desc,
 		"This reminds me... %s." % desc,
-		"I was just thinking about %s. Wild, right?" % desc.to_lower(),
 	]
 	if mem.emotion != "" and mem.emotion != "neutral":
-		templates.append("I'm still feeling %s about %s." % [mem.emotion, desc.to_lower()])
+		templates.append("I'm still feeling %s about it — %s." % [mem.emotion, desc])
 	return templates[randi() % templates.size()]
 
 

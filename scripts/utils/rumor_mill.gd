@@ -50,7 +50,12 @@ static func _juiciest_thirdparty_memory(speaker: Node2D, listener: Node2D, rel: 
 	var best: MemoryEntry = null
 	var mems: Array = speaker.memory.memories
 	var start: int = maxi(0, mems.size() - 20)
-	for i in range(start, mems.size()):
+	for i in range(mems.size()):
+		# Recent memories are the gossip pool — but secret-thread memories
+		# never age out of it, or a confide gets buried under a day of
+		# mundane observations before it can ever hop.
+		if i < start and not (mems[i] as MemoryEntry).narrative_thread.begins_with("secret_"):
+			continue
 		var m: MemoryEntry = mems[i]
 		if m.importance < MIN_IMPORTANCE:
 			continue
@@ -64,10 +69,14 @@ static func _juiciest_thirdparty_memory(speaker: Node2D, listener: Node2D, rel: 
 				about_third = true
 		if not about_third or about_listener:
 			continue
-		# Secrets only leak to confidants, and hearsay of a secret does not
-		# re-leak through this path (the retelling text marks it secondhand).
+		# Secrets only leak to confidants. Secondhand copies MAY re-leak —
+		# blocking them outright meant every new ear needed its own
+		# independent confide from the holder, and three-ear exposure was
+		# effectively probability zero. Gossip gossips; that is the point.
 		if m.narrative_thread.begins_with("secret_"):
-			if rel.trust <= SECRET_TRUST_GATE or "heard from" in m.description:
+			if rel.trust <= SECRET_TRUST_GATE:
+				continue
+			if "heard from" in m.description and randf() > 0.5:
 				continue
 		if best == null or m.importance > best.importance:
 			best = m

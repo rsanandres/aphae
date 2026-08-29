@@ -223,7 +223,9 @@ func _run() -> void:
 	var log_entries: Array[Dictionary] = ImpactLog.get_entries()
 	_pass(log_entries.size() == 1 and "nudged" in str(log_entries[0]["text"]),
 		"a complied nudge opens an intervention")
-	# A notable event touching the subject inside the window becomes a ripple.
+	# Same-minute events are treated as the intervention echoing itself, so
+	# step the clock past the guard before rippling.
+	TimeManager.game_minutes += 2.0
 	EventBus.narrative_event.emit("%s spilled coffee dramatically." % a.agent_name, [a.agent_name], 5.0)
 	log_entries = ImpactLog.get_entries()
 	_pass((log_entries[0]["ripples"] as Array).size() == 1,
@@ -239,6 +241,7 @@ func _run() -> void:
 		"the attribution window closes")
 	# Ripple cap holds.
 	EventBus.rumor_planted.emit(a.agent_name, "a planted line")
+	TimeManager.game_minutes += 2.0
 	for i in range(5):
 		EventBus.narrative_event.emit("%s ripple %d." % [a.agent_name, i], [a.agent_name], 5.0)
 	_pass((ImpactLog.get_entries()[0]["ripples"] as Array).size() == ImpactLog.MAX_RIPPLES,
@@ -249,6 +252,19 @@ func _run() -> void:
 	_pass(ImpactLog.get_entries().is_empty(), "an empty block clears the log")
 	ImpactLog.load_save_state(impact_state)
 	_pass(ImpactLog.get_entries().size() == 2, "the log survives a save round-trip")
+	# Self-echo guard: a same-minute event is the intervention announcing
+	# itself and must not consume a ripple slot.
+	ImpactLog._entries.clear()
+	EventBus.rumor_planted.emit(a.agent_name, "echo test")
+	EventBus.narrative_event.emit("%s heard something: echo test" % a.agent_name, [a.agent_name], 6.0)
+	_pass((ImpactLog.get_entries()[0]["ripples"] as Array).is_empty(),
+		"a same-minute event does not ripple to its own intervention")
+	# Mundane chatter gets at most one slot.
+	TimeManager.game_minutes += 2.0
+	EventBus.conversation_ended.emit(a.agent_name, "Whoever")
+	EventBus.conversation_ended.emit(a.agent_name, "Someone")
+	_pass((ImpactLog.get_entries()[0]["ripples"] as Array).size() == 1,
+		"talked ripples occupy at most one slot")
 	ImpactLog.auto_enabled = false
 
 

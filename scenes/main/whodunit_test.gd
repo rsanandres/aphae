@@ -115,10 +115,6 @@ func _run() -> void:
 	# Planted hearsay sways a voter — the producer's lever.
 	var before_plant: float = WhodunitDirector._suspicion(voter, bystander)
 	PlayerDirector.plant_rumor(voter, "%s has been acting strange lately." % bystander.agent_name, bystander.agent_name)
-	# plant_rumor's memory has sentiment 0; make it negative like a real smear.
-	for m: MemoryEntry in voter.memory.memories:
-		if bystander.agent_name in m.related_agents and "acting strange" in m.description:
-			m.sentiment = -0.4
 	_check("a planted smear raises suspicion",
 		WhodunitDirector._suspicion(voter, bystander) > before_plant)
 
@@ -191,6 +187,29 @@ func _run() -> void:
 	var mole2_name: String = mole2.agent_name
 	var case2: CaseState = _fresh_case(mole2)
 	_check("a second case opens after the first closes", case2 != null and case2.case_number == 2)
+
+	# --- An evidence-free meeting shrugs instead of lynching ------------------
+	# Genuinely blind: zero the relationships AND strip every memory that can
+	# score as evidence or hearsay (earlier phases left speculation naming old
+	# suspects — which is the mechanic working, not blindness).
+	for x: Node2D in AgentManager.agents:
+		for y: Node2D in AgentManager.agents:
+			if x != y:
+				var rel_xy: RelationshipEntry = x.relationships.get_relationship(y.agent_name)
+				rel_xy.affinity = 0.0
+				rel_xy.trust = 50.0
+		for i in range(x.memory.memories.size() - 1, -1, -1):
+			var wipe: MemoryEntry = x.memory.memories[i]
+			if not wipe.related_agents.is_empty() or wipe.narrative_thread.begins_with("secret_"):
+				x.memory.memories.remove_at(i)
+	ProducerEconomy.influence = 50
+	var blind: Dictionary = WhodunitDirector.call_house_meeting()
+	_check("a blind house meeting is inconclusive, not a lynch",
+		not blind.is_empty() and blind.get("inconclusive", false) and blind["accused"] == "")
+	_check("an inconclusive meeting refunds half the cost",
+		ProducerEconomy.influence == 50 - WhodunitDirector.MEETING_COST + WhodunitDirector.MEETING_COST / 2)
+	_check("an inconclusive meeting counts no wrongful vote", case2.wrongful_votes == 0)
+	_check("the case stays open after a shrug", case2.is_open())
 	var cast_before2: int = AgentManager.agents.size()
 	for i in range(WhodunitDirector.MAX_INCIDENTS):
 		WhodunitDirector.commit_incident()

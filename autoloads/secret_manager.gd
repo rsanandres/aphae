@@ -16,10 +16,10 @@ extends Node
 ## lines (deflections, probes) are flavor on top.
 
 const SECRET_CHANCE := 0.35        # of arriving with a secret at all
-const CONFIDE_TRUST_GATE := 60.0   # you only unburden to someone you trust
+const CONFIDE_TRUST_GATE := 40.0   # a few good talks earn a confide (60 took game-weeks)
 const CONFIDE_CHANCE := 0.25       # per qualifying conversation
 const PROBE_CHANCE := 0.4          # a knower needles the holder
-const PROBE_TRUST_COST := 6.0      # being needled corrodes the pair
+const PROBE_TRUST_COST := 3.0      # being needled corrodes the pair (6 outpaced trust growth and killed the chain)
 const EXPOSURE_COUNT := 3          # this many ears and it is not a secret
 const ADMIT_CHANCE_PER_DAY := 0.3  # booth admission pacing
 

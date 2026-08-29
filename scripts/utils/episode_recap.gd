@@ -20,8 +20,15 @@ static func build() -> String:
 	var lines: PackedStringArray = []
 	lines.append("# Aphae — Episode Recap")
 	lines.append("")
-	lines.append("**Day %d** · %s · %s · %s" % [
-		TimeManager.day,
+	# Brand the byline the way the game brands itself: episodes and grades,
+	# not bare day counts.
+	var byline := "**%s · Day %d**" % [ProducerEconomy.episode_label(), TimeManager.day]
+	if ProducerEconomy.last_episode_score >= 0:
+		byline += " · last episode: Grade %s (score %d)" % [
+			ProducerEconomy.grade_for(ProducerEconomy.last_episode_score),
+			ProducerEconomy.last_episode_score]
+	lines.append(byline)
+	lines.append("%s · %s · %s" % [
 		_plural(cast.size(), "character", "characters"),
 		_plural(storylines.size(), "storyline", "storylines"),
 		_plural(confessionals.size(), "confessional", "confessionals"),
@@ -34,6 +41,9 @@ static func build() -> String:
 		return "\n".join(lines)
 
 	_append_storylines(lines, storylines)
+	_append_mole_case(lines)
+	_append_goals(lines)
+	_append_secrets(lines)
 	_append_confessionals(lines, confessionals)
 	_append_cast(lines, cast)
 
@@ -116,7 +126,8 @@ static func _append_storylines(lines: PackedStringArray, storylines: Array[Story
 	for sl in storylines:
 		var title: String = sl.title if sl.title != "" else "Untitled Story"
 		lines.append("### %s" % title)
-		lines.append("_%s · drama %.1f/10_" % [sl.category, sl.drama_score])
+		lines.append("_%s · drama %.1f/10 · %s_" % [sl.category, sl.drama_score,
+			"ongoing" if sl.is_active else "concluded"])
 		lines.append("")
 		if sl.summary != "":
 			lines.append(sl.summary)
@@ -128,6 +139,62 @@ static func _append_storylines(lines: PackedStringArray, storylines: Array[Story
 			lines.append("")
 			lines.append("**Featuring:** %s" % ", ".join(sl.involved_agents))
 		lines.append("")
+
+
+static func _append_mole_case(lines: PackedStringArray) -> void:
+	## The season's whodunit. A run where the mole was unmasked used to export
+	## identically to one where nothing happened.
+	var case: CaseState = WhodunitDirector.case
+	if case == null or (case.is_open() and case.incidents == 0):
+		return
+	lines.append("## The Mole")
+	lines.append("")
+	if case.is_open():
+		lines.append("_An open case: %s and counting. The culprit walks among the cast._" % 			_plural(case.incidents, "incident", "incidents"))
+	elif case.status == CaseState.Status.CAUGHT:
+		lines.append("**%s** was the mole — %s of sabotage before the house voted them out%s." % [
+			case.mole_name, _plural(case.incidents, "incident", "incidents"),
+			(", after %s pointed the wrong way" % _plural(case.wrongful_votes, "meeting", "meetings")) if case.wrongful_votes > 0 else ""])
+	else:
+		lines.append("**%s** was the mole — and got away with all %s of it." % [
+			case.mole_name, _plural(case.incidents, "incident", "incidents")])
+	lines.append("")
+
+
+static func _append_goals(lines: PackedStringArray) -> void:
+	## Dreams landed and dreams abandoned — including a dead agent's
+	## unfinished business, which PLAN.md always promised this would show.
+	var resolved: PackedStringArray = []
+	for agent_name in GoalManager._goals.keys():
+		for goal: GoalState in GoalManager._goals[agent_name]:
+			if goal.status == GoalState.Status.ACHIEVED:
+				resolved.append("- **%s** made it: %s" % [goal.agent_name, goal.phrase()])
+			elif goal.status == GoalState.Status.FAILED:
+				resolved.append("- **%s** let it go: %s (reached %d%%)" % [
+					goal.agent_name, goal.phrase(), int(goal.progress)])
+	if resolved.is_empty():
+		return
+	lines.append("## Dreams, Kept and Broken")
+	lines.append("")
+	for row in resolved:
+		lines.append(row)
+	lines.append("")
+
+
+static func _append_secrets(lines: PackedStringArray) -> void:
+	## Only what the office already knows. Hidden secrets stay hidden — the
+	## recap is shareable, not an oracle.
+	var out: PackedStringArray = []
+	for secret: SecretState in SecretManager._secrets.values():
+		if secret.exposed:
+			out.append("- Everyone found out **%s** %s." % [secret.agent_name, secret.text])
+	if out.is_empty():
+		return
+	lines.append("## Secrets Out")
+	lines.append("")
+	for row in out:
+		lines.append(row)
+	lines.append("")
 
 
 static func _append_confessionals(lines: PackedStringArray, confessionals: Array[Confessional]) -> void:

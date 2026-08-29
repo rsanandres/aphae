@@ -15,7 +15,7 @@ const EPISODES_PER_SEASON := 5
 const STARTING_INFLUENCE := 30
 const META_PATH := "user://producer.json"
 const SAMPLE_INTERVAL_MINUTES := 30.0
-const TRICKLE_CAP_PER_DAY := 10
+const TRICKLE_CAP_PER_DAY := 15  # 10 exactly equaled the active-play daily spend: engagement taxed to break-even
 
 # Per-save
 var influence: int = STARTING_INFLUENCE

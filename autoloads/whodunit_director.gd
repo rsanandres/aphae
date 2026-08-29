@@ -34,6 +34,7 @@ const VOTE_CASE_MEMORY_CAP := 3
 const VOTE_HEARSAY := 8.0           # negative hearsay naming the suspect (plantable!)
 const VOTE_HEARSAY_CAP := 2
 const VOTE_GRUDGE_SCALE := 0.15     # disliking someone makes them look guilty
+const VOTE_ABSTAIN_UNDER := 5.0     # with less suspicion than this, you shrug
 
 const SABOTAGE_DEEDS := [
 	["unplugged {victim}'s machine mid-save", "A day of work, gone", "the deleted work"],
@@ -199,7 +200,14 @@ func call_house_meeting() -> Dictionary:
 			best = tally[name]
 			accused = name
 	if accused == "":
-		return {}
+		# The house shrugged: nobody had enough suspicion to point. Half the
+		# cost comes back, nobody is scarred, the case continues.
+		ProducerEconomy.grant(MEETING_COST / 2, "inconclusive house meeting")
+		ConfessionalDirector._record("host",
+			"House meeting. A lot of stared-at shoes. Nobody pointed. The producers ate half the catering bill.",
+			null, true)
+		EventBus.house_meeting_held.emit("", false, votes)
+		return {"votes": votes, "accused": "", "was_mole": false, "inconclusive": true}
 
 	var was_mole := accused == case.mole_name
 	EventBus.house_meeting_held.emit(accused, was_mole, votes)
@@ -233,6 +241,11 @@ func _vote_of(voter: Node2D, cast: Array) -> String:
 		if scores[name] > best_score:
 			best_score = scores[name]
 			best_name = name
+	# Nobody credible? Abstain. Without this, all-zero scores resolved by
+	# dictionary insertion order and every blind meeting deterministically
+	# lynched whoever spawned first.
+	if best_score < VOTE_ABSTAIN_UNDER:
+		return ""
 	return best_name
 
 

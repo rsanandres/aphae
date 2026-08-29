@@ -278,7 +278,14 @@ func plant_rumor(agent: Node2D, text: String, about: String = "") -> void:
 	# Importance 6.5: high enough to surface in retrieval and survive
 	# compaction pressure, below the 8+ reserved for things that actually
 	# happened to them.
-	agent.memory.add_memory(MemoryEntry.MemoryType.OBSERVATION, text, 6.5, related)
+	var mem: MemoryEntry = agent.memory.add_memory(MemoryEntry.MemoryType.OBSERVATION, text, 6.5, related)
+	if about != "":
+		# A planted rumour about someone is a smear, and the house-meeting
+		# vote only counts hearsay with negative sentiment — at the default
+		# 0.0 the player's one advertised counterplay scored zero points.
+		# (Caught by a playtester; the harness had hidden it by patching
+		# sentiment manually.)
+		mem.sentiment = -0.4
 	EventBus.rumor_planted.emit(agent.agent_name, text)
 	EventBus.narrative_event.emit(
 		"%s heard something: %s" % [agent.agent_name, text],

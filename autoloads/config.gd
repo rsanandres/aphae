@@ -45,7 +45,7 @@ const CONVERSATION_TURNS := 4  # exchanges per conversation
 const CONVERSATION_LINE_DURATION := 3.0  # seconds to show each speech bubble
 
 # Romance (tunable: these gate how fast organic crushes form)
-const ROMANCE_GROWTH_BASE := 1.5  # romantic_interest per positive conversation
+const ROMANCE_GROWTH_BASE := 3.0  # per positive conversation (1.5 kept the romance dialogue pool unreachable in a session)
 const ROMANCE_CRUSH_THRESHOLD := 40.0  # crossing this sets CRUSHING status
 
 # Expanded mode / scaling

@@ -57,7 +57,7 @@ func _ready() -> void:
 
 	# Subtitle
 	_subtitle_label = Label.new()
-	_subtitle_label.text = "AI Agent Office Simulation"
+	_subtitle_label.text = "Produce the show. The cast is alive."
 	_subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_subtitle_label.add_theme_font_size_override("font_size", 9)
 	_subtitle_label.add_theme_color_override("font_color", Color(0.65, 0.65, 0.72))

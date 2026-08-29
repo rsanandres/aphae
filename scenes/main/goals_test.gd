@@ -98,8 +98,8 @@ func _run() -> void:
 	_check("assignment infers kinds independently",
 		seeded[0].kind == GoalState.Kind.WORK and seeded[1].kind == GoalState.Kind.SOCIAL)
 	_check("goals start at zero", is_zero_approx(seeded[0].progress))
-	_check("deadline is set from today",
-		seeded[0].deadline_day == TimeManager.day + GoalManager.DEADLINE_DAYS)
+	_check("deadline is set from today, jittered so the office never mass-fails in one sweep",
+		absi(seeded[0].deadline_day - (TimeManager.day + GoalManager.DEADLINE_DAYS)) <= 2)
 
 	var capped := _seed(b, ["one", "two", "three", "four", "five"])
 	_check("per-agent cap holds", capped.size() == GoalManager.MAX_TRACKED_PER_AGENT)
@@ -132,18 +132,18 @@ func _run() -> void:
 	var social_goal: GoalState = _seed(a, ["make a genuine friend in the office"])[0]
 	EventBus.conversation_ended.emit(a.agent_name, b.agent_name)
 	_check("a new partner advances a social goal",
-		is_equal_approx(social_goal.progress, GoalManager.SOCIAL_NEW_PARTNER))
+		is_equal_approx(social_goal.progress, GoalManager.social_partner_step()))
 	_check("the partner is remembered", b.agent_name in social_goal.partners)
 	EventBus.conversation_ended.emit(a.agent_name, b.agent_name)
 	_check("a repeat partner is worth less",
 		is_equal_approx(social_goal.progress,
-			GoalManager.SOCIAL_NEW_PARTNER + GoalManager.SOCIAL_REPEAT))
+			GoalManager.social_partner_step() + GoalManager.SOCIAL_REPEAT))
 	_check("a repeat partner is not double-counted",
 		social_goal.partners.size() == 1)
 	EventBus.conversation_ended.emit(a.agent_name, a.agent_name)
 	_check("talking to yourself earns nothing",
 		is_equal_approx(social_goal.progress,
-			GoalManager.SOCIAL_NEW_PARTNER + GoalManager.SOCIAL_REPEAT))
+			GoalManager.social_partner_step() + GoalManager.SOCIAL_REPEAT))
 
 	var learn_goal: GoalState = _seed(c, ["Learn something new from each colleague"])[0]
 	EventBus.conversation_ended.emit(c.agent_name, a.agent_name)
@@ -315,7 +315,8 @@ func _run() -> void:
 	var meter: String = inspector._format_goals()
 	_check("the meter fills in proportion", "===......." in meter)
 	_check("the meter reports the number too", "30%" in meter)
-	_check("the meter reports days left", "(%dd)" % GoalManager.DEADLINE_DAYS in meter)
+	_check("the meter reports days left",
+		"(%dd)" % meter_goal.days_left(TimeManager.day) in meter)
 	GoalManager.advance(meter_goal, 100.0, "test")
 	_check("an achieved goal reads as done", "[done]" in inspector._format_goals())
 	inspector._agent = b
@@ -374,6 +375,19 @@ func _run() -> void:
 	GoalManager._on_agent_removed(a.agent_name)
 	_check("removing an agent drops its goals",
 		GoalManager.get_goals(a.agent_name).is_empty())
+
+	# --- Resolution refills the want ------------------------------------------
+	var refill_goal: GoalState = _seed(a, ["Finish the quarterly report"])[0]
+	GoalManager.advance(refill_goal, 100.0, "test")
+	var post_refill := GoalManager.get_goals(a.agent_name)
+	var active_after := 0
+	for g: GoalState in post_refill:
+		if g.is_active():
+			active_after += 1
+	_check("achieving a goal draws a fresh one from the pool",
+		post_refill.size() == 2 and active_after == 1)
+	_check("the refill is a different want",
+		post_refill[1].text != refill_goal.text and post_refill[1].is_active())
 
 	desk.queue_free()
 	plant.queue_free()

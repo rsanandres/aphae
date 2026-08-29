@@ -39,7 +39,7 @@ func _ready() -> void:
 	EventBus.secret_exposed.connect(func(holder: String, _text: String) -> void:
 		_ripple([holder], "%s's secret went public" % holder))
 	EventBus.conversation_ended.connect(func(a: String, b: String) -> void:
-		_ripple([a, b], "%s and %s talked" % [a, b]))
+		_ripple([a, b], "%s and %s talked" % [a, b], "talk"))
 
 
 func get_entries() -> Array[Dictionary]:
@@ -71,9 +71,11 @@ func _open(text: String, subjects: Array) -> void:
 		_entries.remove_at(0)
 
 
-func _on_nudge_answered(agent_name: String, request: String, complied: bool, _reason: String) -> void:
+func _on_nudge_answered(agent_name: String, request: String, complied: bool, reason: String) -> void:
 	if complied:
 		_open("You nudged %s to %s — they went along with it" % [agent_name, request], [agent_name])
+	elif reason != "":
+		_open("You nudged %s to %s — they shrugged it off: %s" % [agent_name, request, reason], [agent_name])
 	else:
 		_open("You nudged %s to %s — they refused" % [agent_name, request], [agent_name])
 
@@ -82,10 +84,15 @@ func _on_rumor_planted(agent_name: String, text: String) -> void:
 	_open("You planted a rumour with %s: \"%s\"" % [agent_name, text], [agent_name])
 
 
-func _on_house_meeting(accused: String, was_mole: bool, votes: Dictionary) -> void:
+func _on_house_meeting(accused: String, was_mole: bool, _votes: Dictionary) -> void:
+	if accused == "":
+		_open("You called a house meeting — nobody could point a finger", [])
+		return
 	var verdict := "and the house was RIGHT" if was_mole else "and the house was wrong"
+	# Subjects: the accused only. Listing every voter made the whole office a
+	# "subject", so anything anyone did for three hours "rippled" to it.
 	_open("You called a house meeting — the house accused %s, %s" % [accused, verdict],
-		[accused] + votes.keys())
+		[accused])
 
 
 func _on_catalog_purchased(item_id: String) -> void:
@@ -117,17 +124,31 @@ func _on_narrative_event(text: String, agents: Array, importance: float) -> void
 	_ripple(names, text)
 
 
-func _ripple(who: Array, text: String) -> void:
+func _ripple(who: Array, text: String, kind: String = "event") -> void:
 	## Attach to the newest open intervention that touched any of these people.
 	if not auto_enabled or who.is_empty():
 		return
 	var now: float = TimeManager.game_minutes
 	for i in range(_entries.size() - 1, -1, -1):
 		var entry: Dictionary = _entries[i]
+		# Same-minute events are the intervention's own announcement echoing
+		# back ("You planted a rumour…" / "↳ X heard something…"). Skip them.
+		if now - float(entry["opened_minutes"]) < 1.0:
+			continue
 		if now - float(entry["opened_minutes"]) > WINDOW_MINUTES or now < float(entry["opened_minutes"]):
 			continue
 		if (entry["ripples"] as Array).size() >= MAX_RIPPLES:
 			continue
+		# Mundane chatter gets at most ONE slot; without this, "X and Y
+		# talked" filled the cap before anything interesting could attach.
+		if kind == "talk":
+			var has_talk := false
+			for r in (entry["ripples"] as Array):
+				if str(r).ends_with("talked"):
+					has_talk = true
+					break
+			if has_talk:
+				continue
 		var touches := false
 		for name in who:
 			if name in (entry["subjects"] as Array):

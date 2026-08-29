@@ -17,7 +17,10 @@ var _hints := [
 	{"id": "click_agent", "text": "Click an agent to follow them and see their thoughts.", "delay": 10.0},
 	{"id": "right_click", "text": "Right-click anywhere for the menu (speed, settings, save).", "delay": 30.0},
 	{"id": "god_mode", "text": "Press Tab to toggle God Mode and rearrange the office.", "delay": 60.0},
-	{"id": "agent_needs", "text": "Agents have needs (energy, hunger, social) that drive their decisions.", "delay": 120.0},
+	# Playtest finding: the 120s slot taught need-decay plumbing while the
+	# reward loop (Influence, episodes, the Catalog) had no hint at all.
+	{"id": "influence", "text": "Your show earns Influence (the ◆ up top) as episodes wrap. Spend it in the Catalog [B].", "delay": 120.0},
+	{"id": "agent_needs", "text": "Agents have needs (energy, hunger, social) that drive their decisions.", "delay": 200.0},
 ]
 
 
@@ -27,6 +30,11 @@ func _ready() -> void:
 		return
 	EventBus.conversation_started.connect(_on_first_conversation)
 	EventBus.game_ready.connect(_on_game_ready)
+	# Event-triggered hints: the marquee features explain themselves the first
+	# time they appear on screen, instead of never. (Every timed hint above
+	# predates the entire producer layer — a new player was taught click,
+	# right-click, and Tab, and nothing the game is actually about.)
+	EventBus.confessional_recorded.connect(_on_first_confessional)
 
 
 func _on_game_ready() -> void:
@@ -51,7 +59,13 @@ func _process(delta: float) -> void:
 func _on_first_conversation(_a: String, _b: String) -> void:
 	if not _first_conversation_seen and not _shown_hints.has("narrative_log"):
 		_first_conversation_seen = true
-		_show_hint("narrative_log", "Check the Narrative Log (right-click menu) to see what agents are saying and doing.")
+		_show_hint("narrative_log", "Press L (or the Log button) to see what agents are saying and doing.")
+
+
+func _on_first_confessional(_confessional: RefCounted) -> void:
+	if not _shown_hints.has("confessional"):
+		_show_hint("confessional",
+			"An agent just spoke to the camera. Press C for the Confessional Cam — and P to produce the show yourself: nudge, interview, plant a rumour.")
 
 
 func _show_hint(hint_id: String, text: String) -> void:

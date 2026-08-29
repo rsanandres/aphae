@@ -109,7 +109,7 @@ voted off. Accuse an innocent → the office gets meaner, the mole gets bolder
 The player's levers are the producer tools that already existed — interviews,
 planted rumours (negative hearsay naming a suspect sways votes), nudges.
 
-**Harness:** `scenes/main/whodunit_test.tscn` — **39 passed**. It caught a
+**Harness:** `scenes/main/whodunit_test.tscn` — **43 passed**. It caught a
 real design bug before any player saw it: sabotage memories name the VICTIM,
 so the first vote model counted victimhood as guilt and the house reliably
 voted out whoever had been sabotaged. Votes now count only sightings —
@@ -584,7 +584,7 @@ autoload, with a kind, live progress, and a deadline.
 | **Persisted** | Save v6. The restore sits outside the version gate, like confessionals — a pre-v6 save has no goal block and agents re-derive from personality on spawn. |
 | **Achievements** | Four new: Goal Getter, Driven, Unfinished Business, Self-Actualized. 29 → 33. |
 
-**Harness:** `scenes/main/goals_test.tscn` — **73 passed**.
+**Harness:** `scenes/main/goals_test.tscn` — **75 passed**.
 
 **Gotcha this cost:** `ConsequenceEngine._apply_memories` keys memory specs by *role* —
 `affected`, `second`, `witness`. There is no `target` role, and a payload using one is
@@ -609,7 +609,7 @@ to the people you touched attach as ripples (cap 3, newest plausible cause
 wins). Deliberately a heuristic and honest about it — the sim does not track
 true causality, and neither does a TV producer. Writes nothing back into the
 simulation, so it cannot collide with a harness; carries the standard seam
-anyway. Covered in `producer_test` (14 → 28 assertions).
+anyway. Covered in `producer_test` (14 → 30 assertions).
 
 ### 🎛️ Backlog — player agency
 
@@ -693,6 +693,32 @@ smoke-test, and `build/` + `steam_appid.txt` gitignored.
 - Content survey: procedural/LLM text means checking the "user-generated /
   AI content" disclosure box honestly — with the heuristic-only build this
   is canned-lines-only and simpler to answer.
+
+## Playtest program (2026-08-28)
+
+Nine single-feature playtesters (subagents) each spent a session on one
+system and reported ranked findings with math. What was implemented, by
+tester:
+
+| Tester | Top finding | Fix shipped |
+|---|---|---|
+| Mole vote | **plant_rumor wrote sentiment 0.0 against a `< 0.0` hearsay gate — the player's one counterplay scored zero points, and the harness had hidden it by patching sentiment manually** | plant_rumor smears at -0.4 when aimed at someone; harness patch deleted |
+| Mole vote | all-zero suspicion resolved by dict insertion order: every blind meeting deterministically lynched whoever spawned first | voters abstain under 5.0 suspicion; a no-plurality meeting is INCONCLUSIVE — half refund, no scars, case continues |
+| Impact log | 4 of 6 intervention types burned ripple slot 1 restating themselves same-frame; "X and Y talked" filled the rest; meetings listed the whole cast as subjects | same-minute ripple guard; talk ripples capped at one slot; meeting subjects = accused only |
+| Floor dialogue | the memory-splice template produced literal gibberish bubbles (truncated, lowercased transcripts) | unspeakable memories (colons, >70 chars, CONVERSATION type) fall through to normal pools; first-person rewrite; in-conversation repeat reroll |
+| Secrets | first organic confide ≈ 2-3 game-weeks; booth outraced the floor 10x; hearsay could never re-leak so 3-ear exposure was ~probability zero | confide gate 60→40, probe cost 6→3, secondhand re-pass at 0.5x, secret-thread memories never age out of the gossip window |
+| Goals | agents whose goals resolved went wantless forever; every goal shared one deadline → synchronized day-10 mass-fail; SOCIAL trivial at 8 agents, WORK unfinishable | resolution refills from the pool; ±2-day deadline jitter; roster-aware social step (100/living-1 clamped 2..6); WORK_STEP 12→15 |
+| Economy | active daily spend (10◆) exactly equaled the trickle cap (10◆): engagement taxed to break-even; aquarium cost more than the starting bank | trickle cap 15; aquarium 35→25 |
+| Confessional voice | 3-line pools drawn with replacement repeated back-to-back; mid-range personalities got zero flavor; templates discarded the event (romance never named the partner) | per-kind last-line reroll; "even" deadpan bucket; detail-threaded lines for romance/tragedy/rivalry; drama pool grown, worst line replaced |
+| First 5 minutes | not one hint mentioned any post-README feature; the reward loop had no hint at all | event hint on first confessional (C + P), Influence/Catalog hint at 120s, log hint teaches L, menu subtitle sells the fantasy |
+| Recap | the mole case and goals were invisible — PLAN.md's own promise ("what they were three days short of") was never implemented | The Mole / Dreams Kept and Broken / Secrets Out sections; episode+grade byline; storylines marked ongoing/concluded |
+| Dialogue reach | the romance pool (the file's best writing) needed ~27 positive conversations to unlock | ROMANCE_GROWTH_BASE 1.5→3.0 |
+
+**Deferred, recorded honestly:** brains tick on wall-time while deadlines are
+game-days (3x speed = 1/3 the decisions per game-day — a deep scheduler
+change); witness testimony spreading to adjacent voters pre-vote; a cast-fate
+cache so departed agents keep their story in the recap; icon-bar renames
+(320px-era viewport math makes labels risky to widen).
 
 ## Security review (2026-08-28)
 

@@ -70,13 +70,13 @@ Individually:
 ```bash
 G="godot --headless --path . --audio-driver Dummy"
 $G -e --quit-after 5 2>&1 | grep -E 'Parse Error|Compile Error'   # must print NOTHING
-$G res://scenes/main/producer_test.tscn               # 28 passed
+$G res://scenes/main/producer_test.tscn               # 30 passed
 $G res://scenes/main/confessional_test.tscn           # 15 passed
 $G res://scenes/main/events_test.tscn                 # 66 passed
 $G res://scenes/main/economy_test.tscn                # 36 passed
-$G res://scenes/main/goals_test.tscn                  # 73 passed
+$G res://scenes/main/goals_test.tscn                  # 75 passed
 $G res://scenes/main/secrets_test.tscn                # 41 passed
-$G res://scenes/main/whodunit_test.tscn               # 39 passed
+$G res://scenes/main/whodunit_test.tscn               # 43 passed
 $G res://scenes/main/headless_sim.tscn -- --agents=12 --speed=3   # soak; runs forever, kill it
 ```
 

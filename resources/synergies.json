@@ -1,0 +1,323 @@
+[
+ {
+  "id": "breakfast_corner",
+  "name": "Breakfast Corner",
+  "tags": [
+   "caffeine",
+   "sweet"
+  ],
+  "radius": 60,
+  "kind": "use",
+  "effects": {
+   "hunger": 5,
+   "energy": 3
+  },
+  "line": "Coffee within arm's reach of sugar. Someone has built a breakfast corner, and the office is stronger for it."
+ },
+ {
+  "id": "lunch_spot",
+  "name": "Lunch Spot",
+  "tags": [
+   "food",
+   "seat"
+  ],
+  "radius": 55,
+  "kind": "use",
+  "effects": {
+   "social": 4
+  },
+  "line": "Food next to somewhere to sit \u2014 that corner just became where lunch happens."
+ },
+ {
+  "id": "dance_floor",
+  "name": "Dance Floor",
+  "tags": [
+   "music",
+   "party"
+  ],
+  "radius": 70,
+  "kind": "both",
+  "effects": {
+   "social": 4
+  },
+  "aura": {
+   "social": 0.3,
+   "productivity": -0.1
+  },
+  "line": "Music and party lights in the same corner. That's not decor anymore, that's a dance floor."
+ },
+ {
+  "id": "tournament_zone",
+  "name": "Tournament Zone",
+  "tags": [
+   "sport",
+   "sport"
+  ],
+  "radius": 65,
+  "kind": "use",
+  "effects": {
+   "social": 5,
+   "health": 2
+  },
+  "line": "Two ways to compete, zero excuses. A bracket is forming as we speak."
+ },
+ {
+  "id": "arcade_corner",
+  "name": "Arcade Corner",
+  "tags": [
+   "game",
+   "game"
+  ],
+  "radius": 60,
+  "kind": "aura",
+  "aura": {
+   "social": 0.2
+  },
+  "line": "Two games side by side. Winner stays on."
+ },
+ {
+  "id": "green_desk",
+  "name": "Green Desk",
+  "tags": [
+   "plant",
+   "work"
+  ],
+  "radius": 55,
+  "kind": "use",
+  "effects": {
+   "productivity": 3,
+   "health": 2
+  },
+  "line": "A plant beside the desks. Studies say it helps. The plant says nothing."
+ },
+ {
+  "id": "deep_rest",
+  "name": "Deep Rest Nook",
+  "tags": [
+   "calm",
+   "rest"
+  ],
+  "radius": 55,
+  "kind": "use",
+  "effects": {
+   "energy": 6
+  },
+  "line": "Something calm beside somewhere soft. Naps in that corner hit different now."
+ },
+ {
+  "id": "zen_pool",
+  "name": "Zen Pool",
+  "tags": [
+   "water",
+   "calm"
+  ],
+  "radius": 65,
+  "kind": "aura",
+  "aura": {
+   "health": 0.2
+  },
+  "line": "Water sounds and stillness together. The most peaceful three square meters in the building."
+ },
+ {
+  "id": "reading_light",
+  "name": "Reading Light",
+  "tags": [
+   "light",
+   "seat"
+  ],
+  "radius": 50,
+  "kind": "use",
+  "effects": {
+   "energy": 3,
+   "productivity": 2
+  },
+  "line": "Good light over a good chair. Somebody is going to live there."
+ },
+ {
+  "id": "home_gym",
+  "name": "Home Gym",
+  "tags": [
+   "exercise",
+   "exercise"
+  ],
+  "radius": 60,
+  "kind": "use",
+  "effects": {
+   "health": 5
+  },
+  "line": "Two pieces of exercise gear in one spot \u2014 congratulations, the office has a gym now."
+ },
+ {
+  "id": "listening_lounge",
+  "name": "Listening Lounge",
+  "tags": [
+   "music",
+   "seat"
+  ],
+  "radius": 55,
+  "kind": "use",
+  "effects": {
+   "social": 3,
+   "energy": 2
+  },
+  "line": "Music with somewhere to sink into. The lounge has opinions about your playlist."
+ },
+ {
+  "id": "gallery_wall",
+  "name": "Gallery Wall",
+  "tags": [
+   "art",
+   "art"
+  ],
+  "radius": 50,
+  "kind": "aura",
+  "aura": {
+   "social": 0.15
+  },
+  "line": "Two pieces of art within glancing distance. People are pretending to understand both."
+ },
+ {
+  "id": "fireside",
+  "name": "Fireside",
+  "tags": [
+   "cozy",
+   "seat"
+  ],
+  "radius": 55,
+  "kind": "use",
+  "effects": {
+   "energy": 4,
+   "social": 3
+  },
+  "line": "Warmth and a place to sit. Stories will be told there whether anyone plans to or not."
+ },
+ {
+  "id": "health_kick",
+  "name": "Health Kick",
+  "tags": [
+   "healthy",
+   "wellness"
+  ],
+  "radius": 60,
+  "kind": "use",
+  "effects": {
+   "health": 4
+  },
+  "line": "Healthy snacks beside the wellness corner. Somebody's new year is going great."
+ },
+ {
+  "id": "movie_night",
+  "name": "Movie Night",
+  "tags": [
+   "screen",
+   "seat"
+  ],
+  "radius": 55,
+  "kind": "use",
+  "effects": {
+   "social": 4,
+   "energy": 2
+  },
+  "line": "A screen and a seat, aligned. The office has a cinema, population: whoever gets there first."
+ },
+ {
+  "id": "studio_corner",
+  "name": "Studio Corner",
+  "tags": [
+   "creative",
+   "creative"
+  ],
+  "radius": 55,
+  "kind": "use",
+  "effects": {
+   "productivity": 4
+  },
+  "line": "Two creative stations feeding off each other. Ideas are cross-pollinating over there."
+ },
+ {
+  "id": "sacred_corner",
+  "name": "Sacred Corner",
+  "tags": [
+   "ritual",
+   "calm"
+  ],
+  "radius": 55,
+  "kind": "use",
+  "effects": {
+   "health": 3,
+   "energy": 3
+  },
+  "line": "The ritual objects found the quiet spot. Whatever happens there now, it's official."
+ },
+ {
+  "id": "morale_mascot",
+  "name": "Morale Mascot",
+  "tags": [
+   "silly",
+   "work"
+  ],
+  "radius": 50,
+  "kind": "use",
+  "effects": {
+   "productivity": 2,
+   "social": 2
+  },
+  "line": "Something ridiculous is watching over the desks, and honestly, output is up."
+ },
+ {
+  "id": "noise_complaint",
+  "name": "Noise Complaint",
+  "tags": [
+   "music",
+   "quiet"
+  ],
+  "radius": 60,
+  "kind": "use",
+  "effects": {
+   "productivity": -4
+  },
+  "line": "Somebody put the music next to the quiet corner. The quiet corner has filed a complaint."
+ },
+ {
+  "id": "distraction_field",
+  "name": "Distraction Field",
+  "tags": [
+   "party",
+   "work"
+  ],
+  "radius": 60,
+  "kind": "aura",
+  "aura": {
+   "productivity": -0.15
+  },
+  "line": "Party fixtures within sight of the desks. Deadlines are now a spectator sport."
+ },
+ {
+  "id": "temptation",
+  "name": "Temptation",
+  "tags": [
+   "sweet",
+   "exercise"
+  ],
+  "radius": 55,
+  "kind": "use",
+  "effects": {
+   "health": -2
+  },
+  "line": "Sweets stationed right beside the workout gear. This office understands irony."
+ },
+ {
+  "id": "splash_hazard",
+  "name": "Splash Hazard",
+  "tags": [
+   "water",
+   "tech"
+  ],
+  "radius": 50,
+  "kind": "use",
+  "effects": {
+   "energy": -2
+  },
+  "line": "Water feature, meet electronics. Facilities has been notified. Facilities is one guy."
+ }
+]

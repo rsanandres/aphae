@@ -64,6 +64,7 @@ Out of the box the cast runs on a rich personality-driven heuristic brain. If yo
 
 - **Ambient by design** — the office doesn't pause when you click away; it drops to low power and keeps living, then hands you a "While You Were Away" digest. Desktop-pet mode shrinks it to a borderless always-on-top corner of your screen.
 - **39 achievements**, 5 save slots with backups and corruption recovery, auto-save.
+- **Objects that interact** — placement is a design decision: coffee beside donuts becomes a *Breakfast Corner*, a plant by the desks is a *Green Desk*, music plus party lights makes a *Dance Floor* everyone drifts toward — and a jukebox next to the focus booth is a *Noise Complaint*. ~22 tag-based rules across 113 objects; hover any object to see the corners it's part of.
 - **Procedural everything** — sprites, audio, and personalities are generated at runtime. No art or sound assets in the repo.
 
 ## Controls

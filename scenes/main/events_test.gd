@@ -17,6 +17,7 @@ func _ready() -> void:
 	GoalManager.auto_enabled = false
 	WhodunitDirector.auto_enabled = false
 	ImpactLog.auto_enabled = false
+	SynergyManager.auto_enabled = false
 	SecretManager.auto_assign_enabled = false
 	SecretManager.auto_admit_enabled = false
 	_build_world()

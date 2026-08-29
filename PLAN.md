@@ -694,6 +694,31 @@ smoke-test, and `build/` + `steam_appid.txt` gitignored.
   AI content" disclosure box honestly — with the heuristic-only build this
   is canned-lines-only and simpler to answer.
 
+## Object synergies (2026-08-29)
+
+Objects now interact with EACH OTHER. With 113 placeables, pairs are never
+authored: objects carry TAGS (objects.json; `SynergyManager.BESPOKE_TAGS`
+for the original thirteen) and ~22 RULES in `resources/synergies.json` match
+tag pairs within a radius to form ZONES:
+
+- **use** — finishing an interaction with either member grants bonus
+  effects (Breakfast Corner: caffeine+sweet; Green Desk: plant+work).
+- **aura** — a passive per-minute field, like decor (Zen Pool, Dance Floor).
+- **Negative rules exist**: Noise Complaint (music+quiet), Distraction
+  Field (party+work), Temptation (sweet+exercise), Splash Hazard
+  (water+tech). Placement is now a real decision.
+
+Zones rebuild from `object_placed/removed` (the save-loader fires these, so
+they survive load), announce themselves ONCE per pair at importance 3.5,
+show in member tooltips (✦ line), and overlapping zones grant one bonus per
+use, never stacked. **Rules match in file order — keep specific rules
+(sport+sport) above generic ones (game+game) or the generic shadows the
+specific.** That ordering bug was caught by the harness on first run.
+
+A new combo is one rule; a new object joins the whole web with one tag.
+Harness: `scenes/main/synergy_test.tscn` — **19 passed**. Seam:
+`SynergyManager.auto_enabled`, off in every other harness.
+
 ## The object catalog (2026-08-29)
 
 100 new placeable objects landed as DATA, not code: `resources/objects.json`

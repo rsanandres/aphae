@@ -1,6 +1,6 @@
 ---
 name: run-aphae
-description: Run, test, or screenshot the Aphae Godot game. Use for any request to launch the game, run its test harnesses, capture screenshots, verify a UI change, or soak-test the simulation. Covers the headless-vs-windowed split, the isolated sandbox runner, all eight headless harnesses with their expected pass counts, and the traps that cost real time.
+description: Run, test, or screenshot the Aphae Godot game. Use for any request to launch the game, run its test harnesses, capture screenshots, verify a UI change, or soak-test the simulation. Covers the headless-vs-windowed split, the isolated sandbox runner, all nine headless harnesses with their expected pass counts, and the traps that cost real time.
 ---
 
 # Running and testing Aphae
@@ -77,6 +77,7 @@ $G res://scenes/main/economy_test.tscn                # 43 passed
 $G res://scenes/main/goals_test.tscn                  # 75 passed
 $G res://scenes/main/secrets_test.tscn                # 41 passed
 $G res://scenes/main/whodunit_test.tscn               # 43 passed
+$G res://scenes/main/synergy_test.tscn                # 19 passed
 $G res://scenes/main/headless_sim.tscn -- --agents=12 --speed=3   # soak; runs forever, kill it
 ```
 

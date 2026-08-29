@@ -25,6 +25,7 @@ func _ready() -> void:
 	SecretManager.auto_admit_enabled = false
 	WhodunitDirector.auto_enabled = false
 	ImpactLog.auto_enabled = false
+	SynergyManager.auto_enabled = false
 	_build_world()
 	for i in range(5):
 		AgentManager.spawn_procedural_agent(Vector2(50 + i * 30, 90))

@@ -218,4 +218,9 @@ func _update_obj_tooltip() -> void:
 			var name_str: String = NeedType.to_string_name(need).to_lower()
 			effects.append("%s %+.0f" % [name_str, val])
 		text += "\n" + ", ".join(effects)
+	# Active synergies this object is part of (Breakfast Corner, Noise
+	# Complaint...) — the zone system explains itself where you look.
+	var zones: PackedStringArray = SynergyManager.zone_names_for(self)
+	if not zones.is_empty():
+		text += "\n✦ " + ", ".join(zones)
 	lbl.text = text

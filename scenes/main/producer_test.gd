@@ -266,6 +266,7 @@ func _run() -> void:
 	_pass((ImpactLog.get_entries()[0]["ripples"] as Array).size() == 1,
 		"talked ripples occupy at most one slot")
 	ImpactLog.auto_enabled = false
+	SynergyManager.auto_enabled = false
 
 
 func _report() -> void:

@@ -16,7 +16,11 @@
   "effects": {
    "hunger": 12,
    "energy": 15
-  }
+  },
+  "tags": [
+   "food",
+   "caffeine"
+  ]
  },
  {
   "id": "tea_station",
@@ -36,7 +40,12 @@
    "hunger": 10,
    "energy": 8,
    "health": 3
-  }
+  },
+  "tags": [
+   "food",
+   "caffeine",
+   "calm"
+  ]
  },
  {
   "id": "vending_machine",
@@ -54,7 +63,10 @@
   "occupants": 1,
   "effects": {
    "hunger": 15
-  }
+  },
+  "tags": [
+   "food"
+  ]
  },
  {
   "id": "snack_bar",
@@ -73,7 +85,11 @@
   "effects": {
    "hunger": 20,
    "social": 5
-  }
+  },
+  "tags": [
+   "food",
+   "social"
+  ]
  },
  {
   "id": "fruit_bowl",
@@ -92,7 +108,11 @@
   "effects": {
    "hunger": 8,
    "health": 5
-  }
+  },
+  "tags": [
+   "food",
+   "healthy"
+  ]
  },
  {
   "id": "donut_box",
@@ -111,7 +131,11 @@
   "effects": {
    "hunger": 12,
    "health": -2
-  }
+  },
+  "tags": [
+   "food",
+   "sweet"
+  ]
  },
  {
   "id": "instant_noodle_shelf",
@@ -130,7 +154,10 @@
   "effects": {
    "hunger": 18,
    "health": -2
-  }
+  },
+  "tags": [
+   "food"
+  ]
  },
  {
   "id": "smoothie_blender",
@@ -149,7 +176,11 @@
   "effects": {
    "hunger": 10,
    "health": 8
-  }
+  },
+  "tags": [
+   "food",
+   "healthy"
+  ]
  },
  {
   "id": "popcorn_machine",
@@ -168,7 +199,11 @@
   "effects": {
    "hunger": 10,
    "social": 5
-  }
+  },
+  "tags": [
+   "food",
+   "party"
+  ]
  },
  {
   "id": "candy_jar",
@@ -187,7 +222,11 @@
   "effects": {
    "hunger": 5,
    "energy": 5
-  }
+  },
+  "tags": [
+   "food",
+   "sweet"
+  ]
  },
  {
   "id": "soda_fridge",
@@ -206,7 +245,11 @@
   "effects": {
    "hunger": 6,
    "energy": 8
-  }
+  },
+  "tags": [
+   "food",
+   "caffeine"
+  ]
  },
  {
   "id": "pizza_warmer",
@@ -225,7 +268,11 @@
   "effects": {
    "hunger": 30,
    "social": 5
-  }
+  },
+  "tags": [
+   "food",
+   "party"
+  ]
  },
  {
   "id": "salad_bar",
@@ -244,7 +291,11 @@
   "effects": {
    "hunger": 22,
    "health": 8
-  }
+  },
+  "tags": [
+   "food",
+   "healthy"
+  ]
  },
  {
   "id": "ice_cream_freezer",
@@ -263,7 +314,11 @@
   "effects": {
    "hunger": 10,
    "social": 4
-  }
+  },
+  "tags": [
+   "food",
+   "sweet"
+  ]
  },
  {
   "id": "hot_chocolate_pot",
@@ -283,7 +338,11 @@
    "hunger": 10,
    "energy": 5,
    "social": 3
-  }
+  },
+  "tags": [
+   "food",
+   "sweet"
+  ]
  },
  {
   "id": "armchair",
@@ -301,7 +360,11 @@
   "occupants": 1,
   "effects": {
    "energy": 28
-  }
+  },
+  "tags": [
+   "rest",
+   "seat"
+  ]
  },
  {
   "id": "bean_bag",
@@ -320,7 +383,11 @@
   "effects": {
    "energy": 22,
    "social": 3
-  }
+  },
+  "tags": [
+   "rest",
+   "seat"
+  ]
  },
  {
   "id": "hammock",
@@ -338,7 +405,12 @@
   "occupants": 1,
   "effects": {
    "energy": 40
-  }
+  },
+  "tags": [
+   "rest",
+   "seat",
+   "calm"
+  ]
  },
  {
   "id": "massage_chair",
@@ -357,7 +429,12 @@
   "effects": {
    "energy": 25,
    "health": 10
-  }
+  },
+  "tags": [
+   "rest",
+   "seat",
+   "calm"
+  ]
  },
  {
   "id": "nap_pod",
@@ -375,7 +452,12 @@
   "occupants": 1,
   "effects": {
    "energy": 50
-  }
+  },
+  "tags": [
+   "rest",
+   "calm",
+   "quiet"
+  ]
  },
  {
   "id": "window_bench",
@@ -394,7 +476,11 @@
   "effects": {
    "energy": 15,
    "social": 8
-  }
+  },
+  "tags": [
+   "rest",
+   "seat"
+  ]
  },
  {
   "id": "rocking_chair",
@@ -413,7 +499,12 @@
   "effects": {
    "energy": 25,
    "health": 3
-  }
+  },
+  "tags": [
+   "rest",
+   "seat",
+   "calm"
+  ]
  },
  {
   "id": "heated_blanket_couch",
@@ -432,7 +523,12 @@
   "effects": {
    "energy": 35,
    "social": 5
-  }
+  },
+  "tags": [
+   "rest",
+   "seat",
+   "cozy"
+  ]
  },
  {
   "id": "footrest_ottoman",
@@ -450,7 +546,11 @@
   "occupants": 1,
   "effects": {
    "energy": 10
-  }
+  },
+  "tags": [
+   "rest",
+   "seat"
+  ]
  },
  {
   "id": "reading_nook",
@@ -469,7 +569,12 @@
   "effects": {
    "energy": 20,
    "productivity": 8
-  }
+  },
+  "tags": [
+   "rest",
+   "seat",
+   "quiet"
+  ]
  },
  {
   "id": "sun_lounger",
@@ -488,7 +593,11 @@
   "effects": {
    "energy": 30,
    "health": 5
-  }
+  },
+  "tags": [
+   "rest",
+   "seat"
+  ]
  },
  {
   "id": "papasan_chair",
@@ -506,7 +615,11 @@
   "occupants": 1,
   "effects": {
    "energy": 24
-  }
+  },
+  "tags": [
+   "rest",
+   "seat"
+  ]
  },
  {
   "id": "standing_desk",
@@ -526,7 +639,10 @@
    "productivity": 35,
    "health": 5,
    "energy": -8
-  }
+  },
+  "tags": [
+   "work"
+  ]
  },
  {
   "id": "drafting_table",
@@ -545,7 +661,11 @@
   "effects": {
    "productivity": 30,
    "energy": -5
-  }
+  },
+  "tags": [
+   "work",
+   "creative"
+  ]
  },
  {
   "id": "corner_office_desk",
@@ -564,7 +684,10 @@
   "effects": {
    "productivity": 45,
    "energy": -10
-  }
+  },
+  "tags": [
+   "work"
+  ]
  },
  {
   "id": "dual_monitor_rig",
@@ -584,7 +707,11 @@
    "productivity": 40,
    "energy": -8,
    "health": -2
-  }
+  },
+  "tags": [
+   "work",
+   "screen"
+  ]
  },
  {
   "id": "typewriter_desk",
@@ -603,7 +730,11 @@
   "effects": {
    "productivity": 28,
    "social": 3
-  }
+  },
+  "tags": [
+   "work",
+   "creative"
+  ]
  },
  {
   "id": "workbench",
@@ -622,7 +753,11 @@
   "effects": {
    "productivity": 32,
    "energy": -6
-  }
+  },
+  "tags": [
+   "work",
+   "maker"
+  ]
  },
  {
   "id": "filing_cabinet",
@@ -640,7 +775,11 @@
   "occupants": 1,
   "effects": {
    "productivity": 10
-  }
+  },
+  "tags": [
+   "work",
+   "quiet"
+  ]
  },
  {
   "id": "printer_station",
@@ -659,7 +798,10 @@
   "effects": {
    "productivity": 8,
    "social": 5
-  }
+  },
+  "tags": [
+   "work"
+  ]
  },
  {
   "id": "server_rack",
@@ -678,7 +820,11 @@
   "effects": {
    "productivity": 20,
    "energy": -4
-  }
+  },
+  "tags": [
+   "work",
+   "tech"
+  ]
  },
  {
   "id": "brainstorm_wall",
@@ -697,7 +843,12 @@
   "effects": {
    "productivity": 22,
    "social": 10
-  }
+  },
+  "tags": [
+   "work",
+   "creative",
+   "social"
+  ]
  },
  {
   "id": "focus_booth",
@@ -716,7 +867,11 @@
   "effects": {
    "productivity": 38,
    "social": -5
-  }
+  },
+  "tags": [
+   "work",
+   "quiet"
+  ]
  },
  {
   "id": "ergonomic_pod",
@@ -736,7 +891,10 @@
    "productivity": 30,
    "health": 8,
    "energy": -5
-  }
+  },
+  "tags": [
+   "work"
+  ]
  },
  {
   "id": "foosball_table",
@@ -755,7 +913,12 @@
   "effects": {
    "social": 22,
    "energy": -5
-  }
+  },
+  "tags": [
+   "game",
+   "social",
+   "sport"
+  ]
  },
  {
   "id": "ping_pong_table",
@@ -775,7 +938,12 @@
    "social": 22,
    "energy": -8,
    "health": 6
-  }
+  },
+  "tags": [
+   "game",
+   "social",
+   "sport"
+  ]
  },
  {
   "id": "dartboard",
@@ -793,7 +961,12 @@
   "occupants": 2,
   "effects": {
    "social": 12
-  }
+  },
+  "tags": [
+   "game",
+   "social",
+   "sport"
+  ]
  },
  {
   "id": "board_game_shelf",
@@ -812,7 +985,12 @@
   "effects": {
    "social": 25,
    "energy": -3
-  }
+  },
+  "tags": [
+   "game",
+   "social",
+   "quiet"
+  ]
  },
  {
   "id": "pinball_machine",
@@ -831,7 +1009,11 @@
   "effects": {
    "social": 10,
    "energy": -3
-  }
+  },
+  "tags": [
+   "game",
+   "social"
+  ]
  },
  {
   "id": "vr_corner",
@@ -851,7 +1033,12 @@
    "social": 8,
    "energy": -6,
    "productivity": -3
-  }
+  },
+  "tags": [
+   "game",
+   "social",
+   "screen"
+  ]
  },
  {
   "id": "chess_table",
@@ -870,7 +1057,12 @@
   "effects": {
    "social": 15,
    "productivity": 5
-  }
+  },
+  "tags": [
+   "game",
+   "social",
+   "quiet"
+  ]
  },
  {
   "id": "claw_machine",
@@ -889,7 +1081,12 @@
   "effects": {
    "social": 8,
    "hunger": -2
-  }
+  },
+  "tags": [
+   "game",
+   "social",
+   "silly"
+  ]
  },
  {
   "id": "mini_golf_hole",
@@ -908,7 +1105,12 @@
   "effects": {
    "social": 15,
    "energy": -4
-  }
+  },
+  "tags": [
+   "game",
+   "social",
+   "sport"
+  ]
  },
  {
   "id": "lego_station",
@@ -927,7 +1129,12 @@
   "effects": {
    "social": 12,
    "productivity": 8
-  }
+  },
+  "tags": [
+   "game",
+   "social",
+   "creative"
+  ]
  },
  {
   "id": "puzzle_table",
@@ -946,7 +1153,12 @@
   "effects": {
    "social": 12,
    "energy": 5
-  }
+  },
+  "tags": [
+   "game",
+   "social",
+   "quiet"
+  ]
  },
  {
   "id": "jukebox",
@@ -965,7 +1177,13 @@
   "effects": {
    "social": 15,
    "energy": 5
-  }
+  },
+  "tags": [
+   "game",
+   "social",
+   "music",
+   "party"
+  ]
  },
  {
   "id": "air_hockey_table",
@@ -984,7 +1202,12 @@
   "effects": {
    "social": 20,
    "energy": -6
-  }
+  },
+  "tags": [
+   "game",
+   "social",
+   "sport"
+  ]
  },
  {
   "id": "trampoline_spot",
@@ -1004,7 +1227,12 @@
    "energy": -8,
    "health": 10,
    "social": 8
-  }
+  },
+  "tags": [
+   "game",
+   "social",
+   "exercise"
+  ]
  },
  {
   "id": "comic_rack",
@@ -1023,7 +1251,12 @@
   "effects": {
    "energy": 12,
    "social": 5
-  }
+  },
+  "tags": [
+   "game",
+   "social",
+   "quiet"
+  ]
  },
  {
   "id": "fern_giant",
@@ -1043,7 +1276,11 @@
   "passive_radius": 70,
   "passive": {
    "health": 0.2
-  }
+  },
+  "tags": [
+   "decor",
+   "plant"
+  ]
  },
  {
   "id": "bonsai",
@@ -1064,7 +1301,12 @@
   "passive": {
    "health": 0.15,
    "productivity": 0.1
-  }
+  },
+  "tags": [
+   "decor",
+   "plant",
+   "calm"
+  ]
  },
  {
   "id": "cactus_cluster",
@@ -1084,7 +1326,11 @@
   "passive_radius": 50,
   "passive": {
    "health": 0.1
-  }
+  },
+  "tags": [
+   "decor",
+   "plant"
+  ]
  },
  {
   "id": "flower_vase",
@@ -1104,7 +1350,11 @@
   "passive_radius": 60,
   "passive": {
    "social": 0.15
-  }
+  },
+  "tags": [
+   "decor",
+   "plant"
+  ]
  },
  {
   "id": "wall_fountain",
@@ -1125,7 +1375,12 @@
   "passive": {
    "health": 0.2,
    "energy": 0.1
-  }
+  },
+  "tags": [
+   "decor",
+   "water",
+   "calm"
+  ]
  },
  {
   "id": "lava_lamp",
@@ -1145,7 +1400,11 @@
   "passive_radius": 50,
   "passive": {
    "energy": 0.1
-  }
+  },
+  "tags": [
+   "decor",
+   "light"
+  ]
  },
  {
   "id": "neon_sign",
@@ -1165,7 +1424,12 @@
   "passive_radius": 70,
   "passive": {
    "social": 0.2
-  }
+  },
+  "tags": [
+   "decor",
+   "light",
+   "party"
+  ]
  },
  {
   "id": "motivational_poster",
@@ -1185,7 +1449,11 @@
   "passive_radius": 60,
   "passive": {
    "productivity": 0.2
-  }
+  },
+  "tags": [
+   "decor",
+   "art"
+  ]
  },
  {
   "id": "abstract_painting",
@@ -1206,7 +1474,11 @@
   "passive": {
    "social": 0.1,
    "productivity": 0.1
-  }
+  },
+  "tags": [
+   "decor",
+   "art"
+  ]
  },
  {
   "id": "string_lights",
@@ -1227,7 +1499,12 @@
   "passive": {
    "social": 0.15,
    "energy": 0.05
-  }
+  },
+  "tags": [
+   "decor",
+   "light",
+   "cozy"
+  ]
  },
  {
   "id": "disco_ball",
@@ -1248,7 +1525,13 @@
   "passive": {
    "social": 0.3,
    "productivity": -0.1
-  }
+  },
+  "tags": [
+   "decor",
+   "light",
+   "party",
+   "music"
+  ]
  },
  {
   "id": "globe_stand",
@@ -1268,7 +1551,11 @@
   "passive_radius": 50,
   "passive": {
    "productivity": 0.1
-  }
+  },
+  "tags": [
+   "decor",
+   "art"
+  ]
  },
  {
   "id": "sculpture_modern",
@@ -1288,7 +1575,11 @@
   "passive_radius": 60,
   "passive": {
    "social": 0.1
-  }
+  },
+  "tags": [
+   "decor",
+   "art"
+  ]
  },
  {
   "id": "terrarium",
@@ -1308,7 +1599,12 @@
   "passive_radius": 60,
   "passive": {
    "health": 0.15
-  }
+  },
+  "tags": [
+   "decor",
+   "plant",
+   "calm"
+  ]
  },
  {
   "id": "wind_chimes",
@@ -1329,7 +1625,11 @@
   "passive": {
    "energy": 0.1,
    "health": 0.05
-  }
+  },
+  "tags": [
+   "decor",
+   "calm"
+  ]
  },
  {
   "id": "persian_rug",
@@ -1349,7 +1649,11 @@
   "passive_radius": 60,
   "passive": {
    "social": 0.1
-  }
+  },
+  "tags": [
+   "decor",
+   "cozy"
+  ]
  },
  {
   "id": "fireplace_electric",
@@ -1370,7 +1674,12 @@
   "passive": {
    "energy": 0.2,
    "social": 0.15
-  }
+  },
+  "tags": [
+   "decor",
+   "cozy",
+   "light"
+  ]
  },
  {
   "id": "skylight_lamp",
@@ -1391,7 +1700,11 @@
   "passive": {
    "energy": 0.15,
    "health": 0.1
-  }
+  },
+  "tags": [
+   "decor",
+   "light"
+  ]
  },
  {
   "id": "yoga_mat",
@@ -1410,7 +1723,12 @@
   "effects": {
    "health": 15,
    "energy": 10
-  }
+  },
+  "tags": [
+   "wellness",
+   "exercise",
+   "calm"
+  ]
  },
  {
   "id": "treadmill_desk",
@@ -1430,7 +1748,12 @@
    "health": 18,
    "productivity": 15,
    "energy": -12
-  }
+  },
+  "tags": [
+   "wellness",
+   "exercise",
+   "work"
+  ]
  },
  {
   "id": "stationary_bike",
@@ -1449,7 +1772,11 @@
   "effects": {
    "health": 20,
    "energy": -10
-  }
+  },
+  "tags": [
+   "wellness",
+   "exercise"
+  ]
  },
  {
   "id": "punching_bag",
@@ -1469,7 +1796,11 @@
    "health": 12,
    "energy": -8,
    "social": 3
-  }
+  },
+  "tags": [
+   "wellness",
+   "exercise"
+  ]
  },
  {
   "id": "zen_garden",
@@ -1488,7 +1819,12 @@
   "effects": {
    "health": 12,
    "energy": 8
-  }
+  },
+  "tags": [
+   "wellness",
+   "calm",
+   "quiet"
+  ]
  },
  {
   "id": "salt_lamp_station",
@@ -1507,7 +1843,12 @@
   "effects": {
    "health": 8,
    "energy": 8
-  }
+  },
+  "tags": [
+   "wellness",
+   "calm",
+   "light"
+  ]
  },
  {
   "id": "stretching_bar",
@@ -1526,7 +1867,11 @@
   "effects": {
    "health": 10,
    "energy": 5
-  }
+  },
+  "tags": [
+   "wellness",
+   "exercise"
+  ]
  },
  {
   "id": "weights_rack",
@@ -1545,7 +1890,11 @@
   "effects": {
    "health": 18,
    "energy": -12
-  }
+  },
+  "tags": [
+   "wellness",
+   "exercise"
+  ]
  },
  {
   "id": "balance_board",
@@ -1564,7 +1913,11 @@
   "effects": {
    "health": 8,
    "productivity": 3
-  }
+  },
+  "tags": [
+   "wellness",
+   "exercise"
+  ]
  },
  {
   "id": "breathing_corner",
@@ -1584,7 +1937,12 @@
    "health": 12,
    "energy": 10,
    "social": -3
-  }
+  },
+  "tags": [
+   "wellness",
+   "calm",
+   "quiet"
+  ]
  },
  {
   "id": "retro_tv",
@@ -1604,7 +1962,11 @@
    "social": 15,
    "energy": 8,
    "productivity": -5
-  }
+  },
+  "tags": [
+   "tech",
+   "screen"
+  ]
  },
  {
   "id": "gaming_pc",
@@ -1625,7 +1987,11 @@
    "energy": -5,
    "productivity": -8,
    "hunger": -3
-  }
+  },
+  "tags": [
+   "tech",
+   "screen"
+  ]
  },
  {
   "id": "holo_projector",
@@ -1644,7 +2010,11 @@
   "effects": {
    "social": 15,
    "productivity": 10
-  }
+  },
+  "tags": [
+   "tech",
+   "screen"
+  ]
  },
  {
   "id": "three_d_printer",
@@ -1663,7 +2033,11 @@
   "effects": {
    "productivity": 20,
    "social": 5
-  }
+  },
+  "tags": [
+   "tech",
+   "maker"
+  ]
  },
  {
   "id": "robot_vacuum_dock",
@@ -1682,7 +2056,11 @@
   "effects": {
    "productivity": 5,
    "social": 3
-  }
+  },
+  "tags": [
+   "tech",
+   "silly"
+  ]
  },
  {
   "id": "photo_booth",
@@ -1700,7 +2078,12 @@
   "occupants": 2,
   "effects": {
    "social": 20
-  }
+  },
+  "tags": [
+   "tech",
+   "party",
+   "social"
+  ]
  },
  {
   "id": "telescope",
@@ -1720,7 +2103,11 @@
    "energy": 10,
    "productivity": 5,
    "social": -3
-  }
+  },
+  "tags": [
+   "tech",
+   "quiet"
+  ]
  },
  {
   "id": "synth_keyboard",
@@ -1739,7 +2126,12 @@
   "effects": {
    "social": 10,
    "energy": 8
-  }
+  },
+  "tags": [
+   "tech",
+   "music",
+   "creative"
+  ]
  },
  {
   "id": "soldering_bench",
@@ -1758,7 +2150,11 @@
   "effects": {
    "productivity": 25,
    "energy": -6
-  }
+  },
+  "tags": [
+   "tech",
+   "maker"
+  ]
  },
  {
   "id": "drone_pad",
@@ -1777,7 +2173,11 @@
   "effects": {
    "social": 8,
    "productivity": 8
-  }
+  },
+  "tags": [
+   "tech",
+   "maker"
+  ]
  },
  {
   "id": "gong",
@@ -1796,7 +2196,11 @@
   "effects": {
    "social": 10,
    "energy": 5
-  }
+  },
+  "tags": [
+   "weird",
+   "ritual"
+  ]
  },
  {
   "id": "suggestion_box",
@@ -1815,7 +2219,10 @@
   "effects": {
    "social": 5,
    "productivity": 3
-  }
+  },
+  "tags": [
+   "weird"
+  ]
  },
  {
   "id": "taxidermy_duck",
@@ -1835,7 +2242,11 @@
   "passive_radius": 50,
   "passive": {
    "social": 0.1
-  }
+  },
+  "tags": [
+   "weird",
+   "silly"
+  ]
  },
  {
   "id": "crystal_ball",
@@ -1854,7 +2265,11 @@
   "effects": {
    "social": 8,
    "energy": 3
-  }
+  },
+  "tags": [
+   "weird",
+   "ritual"
+  ]
  },
  {
   "id": "office_shrine",
@@ -1873,7 +2288,12 @@
   "effects": {
    "health": 8,
    "social": 5
-  }
+  },
+  "tags": [
+   "weird",
+   "ritual",
+   "calm"
+  ]
  },
  {
   "id": "complaint_shredder",
@@ -1892,7 +2312,11 @@
   "effects": {
    "health": 6,
    "social": 3
-  }
+  },
+  "tags": [
+   "weird",
+   "silly"
+  ]
  },
  {
   "id": "rubber_duck_army",
@@ -1913,7 +2337,11 @@
   "passive": {
    "productivity": 0.15,
    "social": 0.1
-  }
+  },
+  "tags": [
+   "weird",
+   "silly"
+  ]
  },
  {
   "id": "mystery_crate",
@@ -1932,6 +2360,10 @@
   "effects": {
    "social": 6,
    "energy": 3
-  }
+  },
+  "tags": [
+   "weird",
+   "silly"
+  ]
  }
 ]

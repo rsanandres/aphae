@@ -37,6 +37,7 @@ func _ready() -> void:
 	GoalManager.auto_enabled = false
 	WhodunitDirector.auto_enabled = false
 	ImpactLog.auto_enabled = false
+	SynergyManager.auto_enabled = false
 	SecretManager.auto_assign_enabled = false
 	SecretManager.auto_admit_enabled = false
 	DirAccess.make_dir_recursive_absolute(OUT_DIR)

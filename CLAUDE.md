@@ -16,7 +16,7 @@ Aphae — AI Agent Office Simulation. A top-down 2D pixel art game where AI agen
 
 ## Architecture
 
-### Autoloads (26 singletons, load order matters)
+### Autoloads (27 singletons, load order matters)
 - `EventBus` — Global signal bus (~40 signals)
 - `TimeManager` — Game clock (1 real sec = 1 game minute at 1x), pause/1x/2x/3x
 - `Config` — Constants (need decay rates, speeds, thresholds)
@@ -32,6 +32,7 @@ Aphae — AI Agent Office Simulation. A top-down 2D pixel art game where AI agen
 - `SecretManager` — M7 secrets & lies: private truths denied on the floor, confided under trust, spread by the RumorMill, admitted to the camera
 - `WhodunitDirector` — M5 mole cases: a hidden saboteur, evidence in memories, and the house-meeting vote that ends it
 - `ImpactLog` — the "Because of you" log: producer interventions and the ripples attributed to them (view: narrative log's You tab)
+- `SynergyManager` — object-to-object synergies: tag pairs within a radius form zones (use bonuses, passive auras, negative combos) from ~20 rules in `resources/synergies.json`
 - `SaveManager` — Multi-slot (5) save system with `.bak` backup and corruption recovery
 - `GroupManager` — Social group formation and rivalry tracking
 - `Narrator` — Storyline tracking and narrative arc management
@@ -71,7 +72,7 @@ Aphae — AI Agent Office Simulation. A top-down 2D pixel art game where AI agen
 - **Sprites**: 6-frame procedural pixel art (2 idle + 4 walk cycle)
 
 ### Objects (113 placeable types)
-13 bespoke scripts (desk, couch, coffee_machine, water_cooler, whiteboard, bookshelf, plant, radio, bed, karaoke_machine, arcade_cabinet, meditation_pod, aquarium) + **100 data-defined objects** in `resources/objects.json` across 8 categories (food, comfort, work, fun, decor, wellness, tech, weird). One generic class (`scenes/objects/data_object.gd`) serves the whole catalog; sprites come from `SpriteFactory.create_archetype_sprite` (9 parameterized archetypes + per-id seeded accents). `ObjectFactory.create(id)` prefers a bespoke script when one exists. Decor entries (occupants 0) are passive auras, never used directly. Heuristic brains use catalog objects via `_find_need_satisfying` — any nearby available object restoring the urgent need ≥5.
+13 bespoke scripts (desk, couch, coffee_machine, water_cooler, whiteboard, bookshelf, plant, radio, bed, karaoke_machine, arcade_cabinet, meditation_pod, aquarium) + **100 data-defined objects** in `resources/objects.json` across 8 categories (food, comfort, work, fun, decor, wellness, tech, weird). One generic class (`scenes/objects/data_object.gd`) serves the whole catalog; sprites come from `SpriteFactory.create_archetype_sprite` (9 parameterized archetypes + per-id seeded accents). `ObjectFactory.create(id)` prefers a bespoke script when one exists. Decor entries (occupants 0) are passive auras, never used directly. Heuristic brains use catalog objects via `_find_need_satisfying` — any nearby available object restoring the urgent need ≥5. Objects carry `tags`; `SynergyManager` matches tag pairs (bespoke tags live in its `BESPOKE_TAGS`) — rules match in file order, specific before generic.
 
 ### Keyboard Shortcuts
 Space=pause, 1/2/3=speed, Tab=god mode, F5=save, F9=load, F12=screenshot, L=narrative log, R=relationships, C=confessional cam, E=episode recap, Esc=close overlays

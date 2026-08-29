@@ -10,89 +10,58 @@
 
 You're the producer, not the player-character: you rearrange the set, nudge the cast, plant a rumour, and decide what airs. The drama writes itself.
 
-Built with **Godot 4.6** (GDScript). Bundled LLM for offline AI decisions.
+Built with **Godot 4.6** (GDScript). Fully playable offline — no accounts, no services, no assets; even the sprites and audio are generated at runtime.
 
-![Godot 4.6](https://img.shields.io/badge/Godot-4.6-blue) ![GDScript](https://img.shields.io/badge/Language-GDScript-green)
+## Play it
+
+**[⬇ Download the latest release](https://github.com/rsanandres/aphae/releases/latest)** — Windows and Linux. Unzip and run, nothing to install.
+
+**[▶ Play in your browser](https://rsanandres.github.io/aphae/)** *(going live soon)* — the full simulation, no download.
+
+Out of the box the cast runs on a rich personality-driven heuristic brain. If you have [Ollama](https://ollama.ai) running, they get an LLM brain instead — live-written dialogue, confessionals, and inner thoughts in each character's own voice. See [LLM setup](#llm-setup-optional).
 
 ![Confessional Cam](docs/screenshots/02_confessional.png)
 
-*Drama strikes, and an agent cuts away to the confessional booth. Every line is generated live
-from that character's personality and memories — nothing here is scripted.*
+*Drama strikes, and an agent cuts away to the confessional booth. Every line is generated live from that character's personality and memories — nothing here is scripted.*
 
 | | |
 |:--:|:--:|
 | ![The office](docs/screenshots/01_office.png) | ![Producer panel](docs/screenshots/03_producer.png) |
 | Agents living their own lives | Producer panel — nudge, interview, plant a rumour |
+| ![Relationship web](docs/screenshots/04_relationships.png) | ![Confessional feed](docs/screenshots/05_confessional_feed.png) |
+| The relationship web, live | The season's confessional history |
 
 ---
 
-## Features
+## The cast
 
-- **AI-Powered Agents** — Each agent has a unique procedurally generated personality (Big Five traits), appearance, and backstory. An LLM drives their decisions, conversations, and memories. A rich heuristic fallback ensures the game works without any LLM at all.
-- **Emergent Relationships** — Agents form friendships, rivalries, romantic interests, and social groups organically based on personality compatibility and shared experiences.
-- **Deep Memory** — Agents remember past conversations, events, and relationships. Memories influence future decisions and dialogue.
-- **Life Simulation** — Agents age through life stages (young → adult → senior → dying), develop health conditions, and eventually die. Other agents grieve based on relationship closeness.
-- **Drama Director** — A RimWorld-inspired storyteller paces random life events (arguments, promotions, secret admirers, office crises) for narrative satisfaction.
-- **Conversations** — Multi-turn dialogues driven by LLM or heuristic fallback, flavored by personality traits, recent memories, and emotional state.
-- **Confessional Cam** — Reality-TV style talking heads. When drama strikes, an involved agent cuts away to the confessional booth and reacts in first person, in their own voice. A host narrator delivers day recaps as tension builds. Agents *remember* what they said on camera, so a confession or a bit of trash talk colors how they behave afterward. Press **C** for the full confessional history.
-- **Episode Recap** — Press **E** for a shareable Markdown writeup of your run: the top storylines, the best confessional quotes, and the full cast. Export it to a file, or read it on the game-over screen when the office finally falls silent.
-- **Events With Consequences** — 37 data-driven life events that leave lasting marks: arguments breed grudges and avoidance, sabotage plants hidden-actor mysteries, big moments permanently bend personalities a little. Multi-day personal arcs (burnout spirals, secret hobbies, goal pursuits) unfold in stages.
-- **The Mole** — Sometimes the host leans in: *someone in this office is not who they say they are.* One cast member is quietly wrecking things, and the only evidence is what people actually saw, heard secondhand, or admitted to the booth. When you think you know, spend your Influence and call a **house meeting** — everyone votes from what *they* believe, not what you know. Sway them first: plant rumours, run interviews, engineer conversations. Vote out the mole and it's ratings gold. Vote out an innocent and the office turns meaner while the real one gets bolder. Wait too long and they walk out grinning.
-- **Secrets & Lies** — Some of the cast arrive hiding something, and the show is built around the gap between what they say and what's true. On the floor they deflect and deny; in the confessional booth, sooner or later, they admit it — to you, and only you. A secret spreads the only way secrets do: someone trusts someone enough to tell them, and that someone talks. Once enough people know, it stops being a secret, publicly and painfully. You'll know more than the cast does. That's the show.
-- **Goals That Resolve** — Every agent arrives wanting something, and the office is where they find out whether they get it. Goals accrue real progress from what actually happens — a new face at the water cooler, a night finishing work at the desk, a confession that lands, a day that ends with everything in balance — and they carry a deadline. Come up short and they quietly let it go; come *close* and they buy themselves one last push. Landing one bends the personality that earned it and sends them straight to the confessional booth. Open an agent (click them) to see what they're chasing and how far along they are.
-- **A Cast That Breathes** — Organic romance (crushes grow out of good conversations), new hires with first impressions, poaching offers, and departed agents who sometimes walk back in — with their memories and grudges intact.
-- **Ambient by Design** — The office doesn't pause when you click away. It drops to a low-power posture (heuristic brains, stretched think cadence, muted audio) and keeps living; when you come back, a "While You Were Away" digest catches you up on the drama you missed. Shrink it to desktop-pet mode and it lives in a corner of your screen all day.
-- **Seasons & Influence** — Every three days wraps an episode with a ratings score and an Influence payout. Spend it in the Producer's Catalog (**B**): unlockable objects with social physics (karaoke duets, grudge-dissolving meditation pods), interventions (anonymous gifts, leaked memos, documentary crew days), and studio upgrades. Unlocks persist across sandboxes.
-- **Producer Dilemmas** — Occasionally the show pauses and hands YOU the call: leak a cast member's secret or bury it, counter-offer your poached star or film the walkout. The default happens if you let the clock run.
-- **Producer Controls** — Press **P** to stop being a spectator. *Nudge* an agent toward something — and watch them refuse if they're disagreeable or busy, because a nudge is a suggestion, not a command. *Interview* them and get an answer in their own voice, drawn from what they actually remember. Or *plant a rumour*, true or not, and let it colour how they treat someone. Crown a *star of the episode* — the camera follows them, and the spotlight literally buys them the better brain. And everything you do lands in the **You** tab of the log, with what rippled from it: control you can't see the effect of doesn't feel like control.
-- **God Mode** — Place and remove objects, spawn/remove agents, and reshape the office environment.
-- **Desktop Pet Mode** — Shrink the window to a transparent, borderless, always-on-top overlay with 3 agents living on your desktop.
-- **39 Achievements** — Discovery, relationship, community, goal, secret, whodunit, and milestone achievements to track your sandbox's progress.
-- **Save System** — 5 save slots with automatic backups and corruption recovery. Auto-saves every 5 game-days.
-- **Procedural Everything** — Sprites, audio, and personalities are all generated at runtime. No external art or sound assets required.
+- **AI-powered agents** — each has a procedurally generated personality (Big Five traits), appearance, and backstory. An LLM (or the heuristic brain) drives their decisions, conversations, and memories.
+- **Emergent relationships** — friendships, rivalries, crushes, and social groups form organically from personality compatibility and shared experience. Romance grows out of good conversations; confessions get accepted or shot down.
+- **Deep memory** — agents remember conversations, events, and what they said on camera, and it all feeds back into how they behave. Scored retrieval, emotional metadata, narrative threads.
+- **Goals that resolve** — every agent arrives wanting something. Goals accrue real progress from what actually happens — a new face at the water cooler, a night at the desk, a confession that lands — against a deadline. Landing one bends the personality that earned it; a near miss buys one last push; a resolved want makes room for a new one.
+- **A full life** — agents age through life stages, get sick, grieve, and die. New hires arrive with first impressions; the poached and the departed sometimes walk back in with their memories and grudges intact.
 
-## Getting Started
+## The drama
 
-### Play it
+- **Drama Director** — a RimWorld-style storyteller paces 37 data-driven life events (arguments, promotions, secret admirers, crises) for narrative satisfaction, plus multi-day personal arcs that unfold in stages. Events leave lasting marks: grudges, avoidance, permanently bent traits.
+- **Confessional Cam** — when drama strikes, an involved agent cuts to the booth and reacts in first person. A host narrator stitches the season together. Press **C** for the full history.
+- **Secrets & lies** — some of the cast arrive hiding something. On the floor they deflect and deny; in the booth, sooner or later, they admit it — to you, and only you. A secret spreads the only way secrets do: someone trusts someone enough to tell them, and that someone talks. Enough ears and it stops being a secret, publicly and painfully.
+- **The Mole** — sometimes the host leans in: *someone in this office is not who they say they are.* One cast member is quietly wrecking things, and the only evidence is what people saw, heard secondhand, or admitted on camera. Call a **house meeting** and the cast votes from what *they* believe — not what you know. Vote out the mole and it's ratings gold; frame an innocent and the office turns meaner while the real one gets bolder; wait too long and they walk out grinning.
 
-**[▶ Play in your browser](https://rsanandres.github.io/aphae/)** — no download, no install. The web build runs the full simulation on the heuristic brain.
+## You, the producer
 
-**[Download the latest release](https://github.com/rsanandres/aphae/releases/latest)** — Windows and Linux, no install: unzip and run. Everything works offline; if you have [Ollama](https://ollama.ai) running, the cast gets an LLM brain and distinct voices, and without it a rich heuristic brain takes over.
+- **Producer panel** (**P**) — *nudge* an agent (they can refuse — it's a suggestion, not a command), *interview* them in their own voice, *plant a rumour* true or false, or crown a **star of the episode** — the camera follows them and the spotlight literally buys them the better brain.
+- **Seasons & Influence** — every three days wraps an episode with a ratings grade and an Influence payout. Spend it in the **Catalog** (**B**): objects with social physics (karaoke duets, grudge-dissolving meditation pods), interventions, studio upgrades. Unlocks persist across sandboxes.
+- **Producer dilemmas** — occasionally the show pauses and hands you the call: leak a secret or bury it, counter-offer your poached star or film the walkout. The clock decides if you don't.
+- **"Because of you"** — everything you do lands in the **You** tab of the log, with what rippled from it. Control you can't see the effect of doesn't feel like control.
+- **Episode Recap** (**E**) — a shareable writeup of the season: top storylines, the mole verdict, dreams kept and broken, secrets out, the best confessional quotes, the full cast. Exports to Markdown.
+- **God Mode** (**Tab**) — rearrange the set, place objects, spawn and remove cast.
 
-### Requirements
+## The machine
 
-- [Godot 4.6](https://godotengine.org/download) or later
-
-### Run from Editor
-
-```bash
-# Clone the repo
-git clone https://github.com/rsanandres/aphae.git
-cd aphae
-
-# Open in Godot
-godot --editor project.godot
-```
-
-Press **F5** or click Play to launch.
-
-### Run from CLI
-
-```bash
-godot --path /path/to/aphae
-```
-
-### LLM Setup (Optional)
-
-The game works fully without any LLM — agents use a personality-driven heuristic brain with 200+ diverse dialogue lines.
-
-For LLM-enhanced gameplay, install [Ollama](https://ollama.ai) and pull a model:
-
-```bash
-ollama pull smollm2:1.7b
-```
-
-Configure the Ollama endpoint in **Settings > LLM** from the main menu. The game auto-detects Ollama at `localhost:11434`.
+- **Ambient by design** — the office doesn't pause when you click away; it drops to low power and keeps living, then hands you a "While You Were Away" digest. Desktop-pet mode shrinks it to a borderless always-on-top corner of your screen.
+- **39 achievements**, 5 save slots with backups and corruption recovery, auto-save.
+- **Procedural everything** — sprites, audio, and personalities are generated at runtime. No art or sound assets in the repo.
 
 ## Controls
 
@@ -100,64 +69,79 @@ Configure the Ollama endpoint in **Settings > LLM** from the main menu. The game
 |-----|--------|
 | **Space** | Pause / Unpause |
 | **1 / 2 / 3** | Speed 1x / 2x / 3x |
-| **Tab** | Toggle God Mode |
-| **L** | Narrative Log |
-| **R** | Relationships |
+| **Tab** | God Mode |
+| **L** | Narrative Log (Events / Stories / Talk / **You**) |
+| **R** | Relationship web |
 | **C** | Confessional Cam |
 | **E** | Episode Recap |
 | **P** | Producer panel |
 | **B** | Producer's Catalog |
 | **X** | Cut to the drama |
-| **F5** | Quick Save |
-| **F9** | Quick Load |
+| **F5 / F9** | Quick save / load |
 | **F12** | Screenshot |
 | **Esc** | Close overlays |
-| **Scroll** | Zoom in/out |
-| **Middle-click drag** | Pan camera |
-| **Click agent** | Follow / inspect |
+| **Scroll / middle-drag** | Zoom / pan |
+| **Click an agent** | Follow and inspect |
 
 Right-click anywhere for the context menu.
 
-## Architecture
+## Running from source
 
-19 autoload singletons orchestrated through a global **EventBus** (~40 signals):
+Requires [Godot 4.6](https://godotengine.org/download).
 
-```
-EventBus ← TimeManager ← Config ← SettingsManager
-    ↓
-AgentManager → LLMManager → GameManager → ConversationManager
-    ↓
-DramaDirector → EventManager → SaveManager → GroupManager
-    ↓
-Narrator → ConfessionalDirector → PlayerDirector → AudioManager → AchievementManager → TutorialManager → SteamManager
+```bash
+git clone https://github.com/rsanandres/aphae.git
+cd aphae
+godot --editor project.godot   # or: godot --path .
 ```
 
-### Agent Pipeline
+### LLM setup (optional)
 
-```
-Think Tick (5s round-robin)
-    → Brain (LLM or Heuristic)
-        → Decision (idle / use object / talk to agent)
-            → State Machine (IDLE → DECIDING → WALKING → INTERACTING/TALKING)
-                → Needs decay, memory formation, relationship updates
+The game is complete without an LLM — the heuristic brain has hundreds of personality-flavored lines. For live-written dialogue, install [Ollama](https://ollama.ai) and pull a model:
+
+```bash
+ollama pull smollm2:1.7b
 ```
 
-### Key Directories
+Then set the backend in **Settings → LLM** from the main menu (Ollama is auto-detected at `localhost:11434`).
+
+## Development
+
+- **Tests**: eight headless harnesses, 300+ assertions, plus windowed layout/interaction sweeps. One command runs everything the way CI does:
+
+  ```bash
+  GODOT=/path/to/godot bash tools/run_tests.sh
+  ```
+
+- **CI** runs the full suite on every push and PR; harnesses are discovered from disk, a script error fails even a passing run, and failures publish their output to the job summary.
+- **Releases**: pushing a `v*` tag exports, smoke-tests, and publishes Windows + Linux builds as a GitHub Release. Pushes to `main` also build the web version for GitHub Pages.
+- **[PLAN.md](PLAN.md)** is the living design doc and devlog — decisions, playtest findings, and the traps that cost real time. If you're poking at the code, start there.
+
+### Architecture
+
+26 autoload singletons decoupled through a global **EventBus** (~60 signals): time, agents, LLM backends, conversations, the drama/event/arc directors, goals, secrets, the mole case, the narrator and confessional layers, the producer economy, and the impact log.
+
+```
+Think tick (tiered by attention)
+    → Brain (LLM, else heuristic)
+        → Decision (pursue a goal / use object / talk / wander)
+            → State machine (IDLE → DECIDING → WALKING → INTERACTING/TALKING)
+                → Needs decay · memory formation · relationships · goal progress
+```
 
 | Directory | Contents |
 |-----------|----------|
-| `autoloads/` | 19 singleton scripts + LLM backend modules |
-| `scenes/agents/` | Agent scene, needs, brain, memory, relationships, health |
-| `scenes/objects/` | InteractableObject base + 9 office object types |
-| `scenes/conversations/` | Multi-turn LLM/heuristic dialogue system |
-| `scenes/events/` | Drama Director + random life event definitions |
-| `scenes/world/` | Office layout, navigation, day/night tinting |
-| `scenes/ui/` | HUD, menus, settings, save picker, achievements, toasts |
-| `scripts/enums/` | AgentState, NeedType, ActionType, LifeStage |
-| `scripts/data/` | MemoryEntry, PersonalityProfile, RelationshipEntry, HealthState |
-| `scripts/utils/` | SpriteFactory, Palette, PromptBuilder, AudioGenerator |
-| `resources/` | Personality JSONs, prompt templates, event/achievement definitions |
+| `autoloads/` | The 26 singletons + LLM backend modules |
+| `scenes/agents/` | Agent scene: needs, brains, memory, relationships, health |
+| `scenes/objects/` | InteractableObject base + the office object types |
+| `scenes/conversations/` | Multi-turn dialogue, the rumour mill hook |
+| `scenes/events/` | Event manager, arcs, the consequence engine, the mole director's scripts |
+| `scenes/main/` | Game root + the test harnesses |
+| `scenes/ui/` | HUD, panels, menus, toasts |
+| `scripts/data/` | MemoryEntry, PersonalityProfile, GoalState, SecretState, CaseState… |
+| `scripts/utils/` | Sprite/audio/personality generators, PromptBuilder, RumorMill, EpisodeRecap |
+| `resources/` | Personalities, prompts, events, arcs, achievements, the catalog (all data files) |
 
 ## License
 
-All rights reserved. This is a personal project by [@rsanandres](https://github.com/rsanandres).
+All rights reserved. A personal project by [@rsanandres](https://github.com/rsanandres).

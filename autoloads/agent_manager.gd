@@ -26,8 +26,28 @@ var _early_hook_done: bool = false
 var _think_count: int = 0
 
 
+## Cast fates: name -> {fate, day, personality}. The recap credits everyone
+## a storyline or confessional ever featured, but a freed node loses its
+## personality and how it left — the most dramatic cast members were being
+## reduced to a bare name. Snapshot at the moment of exit instead.
+var cast_fates: Dictionary = {}
+
+
 func _ready() -> void:
 	spatial_grid = SpatialGrid.new(Config.SPATIAL_GRID_CELL_SIZE)
+	EventBus.agent_died.connect(func(agent_name: String, cause: String) -> void:
+		_record_fate(agent_name, "died — %s" % cause))
+
+
+func _record_fate(agent_name: String, fate: String) -> void:
+	if cast_fates.has(agent_name):
+		return  # the first exit is the one that counts
+	var agent := get_agent_by_name(agent_name)
+	cast_fates[agent_name] = {
+		"fate": fate,
+		"day": TimeManager.day,
+		"personality": agent.personality.get_personality_summary() 			if agent != null and is_instance_valid(agent) and agent.personality else "",
+	}
 
 
 func register(agent: Node2D) -> void:
@@ -132,6 +152,7 @@ func depart_agent(agent: Node2D, reason: String = "a new opportunity") -> void:
 	for mem in agent.memory.get_recent(50):
 		archive["memories"].append(mem.to_dict())
 	departed_agents.append(archive)
+	_record_fate(agent.agent_name, "left — %s" % reason)
 	# Farewell to camera before the walk-out.
 	ConfessionalDirector.request_farewell(agent, reason)
 	agent.depart(reason)
@@ -219,18 +240,24 @@ func _process(delta: float) -> void:
 		_tier_reclassify_timer = 0.0
 		_reclassify_tiers()
 
+	# Think cadence runs on GAME time, not wall time. It used to accumulate
+	# raw delta, so at 3x speed agents made one third the decisions per
+	# game-day while goals, secrets, and the mole all kept game-day clocks —
+	# pacing that held at 1x mathematically failed at 3x (playtest finding).
+	var sim_delta := delta * TimeManager.current_speed
+
 	# Small population: use simple round-robin like before
 	if agents.size() <= Config.MAX_AGENTS_DESKTOP:
-		_tier_timers[ThinkTier.ACTIVE] += delta
+		_tier_timers[ThinkTier.ACTIVE] += sim_delta
 		if _tier_timers[ThinkTier.ACTIVE] >= Config.AGENT_THINK_INTERVAL:
 			_tier_timers[ThinkTier.ACTIVE] -= Config.AGENT_THINK_INTERVAL
 			_trigger_next_think_simple()
 		return
 
 	# Large population: tiered scheduling
-	_tier_timers[ThinkTier.ACTIVE] += delta
-	_tier_timers[ThinkTier.NORMAL] += delta
-	_tier_timers[ThinkTier.BACKGROUND] += delta
+	_tier_timers[ThinkTier.ACTIVE] += sim_delta
+	_tier_timers[ThinkTier.NORMAL] += sim_delta
+	_tier_timers[ThinkTier.BACKGROUND] += sim_delta
 
 	for tier in [ThinkTier.ACTIVE, ThinkTier.NORMAL, ThinkTier.BACKGROUND]:
 		var interval: float = think_interval_for(tier)

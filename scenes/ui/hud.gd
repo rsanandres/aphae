@@ -88,9 +88,9 @@ func _ready() -> void:
 	_influence_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	status_bar.add_child(_influence_label)
 	EventBus.influence_changed.connect(func(balance: int, _d: int, _r: String) -> void:
-		_influence_label.text = "◆ %d" % balance
+		_influence_label.text = "¤ %d" % balance
 	)
-	_influence_label.text = "◆ %d" % ProducerEconomy.influence
+	_influence_label.text = "¤ %d" % ProducerEconomy.influence
 
 	# Create god mode toolbar
 	_god_toolbar = GodToolbar.new()
@@ -382,9 +382,9 @@ func _update_ratings() -> void:
 	_viewers = lerpf(_viewers, target, 0.03) + randf_range(-1500.0, 1500.0)
 	var text: String
 	if _viewers >= 1000000.0:
-		text = "◉ %.1fM" % (_viewers / 1000000.0)
+		text = "TV %.1fM" % (_viewers / 1000000.0)
 	else:
-		text = "◉ %dK" % int(_viewers / 1000.0)
+		text = "TV %dK" % int(_viewers / 1000.0)
 	_ratings_label.text = text
 	if _viewers >= 800000.0:
 		_ratings_label.add_theme_color_override("font_color", UIPalette.ACCENT_WARM)
@@ -395,7 +395,7 @@ func _update_ratings() -> void:
 func _update_llm_label() -> void:
 	# A dot plus tooltip: the full backend string ("Ollama: Ollama (model)")
 	# ate a third of the status bar and collided with the PAUSED label.
-	llm_label.text = "● AI"
+	llm_label.text = "• AI"
 	llm_label.tooltip_text = LLMManager.get_status_text()
 	llm_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	if LLMManager.is_available:

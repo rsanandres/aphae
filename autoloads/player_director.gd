@@ -286,6 +286,10 @@ func plant_rumor(agent: Node2D, text: String, about: String = "") -> void:
 		# (Caught by a playtester; the harness had hidden it by patching
 		# sentiment manually.)
 		mem.sentiment = -0.4
+		# Threaded so the mole vote can weigh producer plants above idle
+		# gossip (8) but below a real sighting (20) — the lever that turns
+		# booth knowledge into house votes.
+		mem.narrative_thread = "planted_rumor"
 	EventBus.rumor_planted.emit(agent.agent_name, text)
 	EventBus.narrative_event.emit(
 		"%s heard something: %s" % [agent.agent_name, text],

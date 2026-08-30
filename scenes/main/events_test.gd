@@ -234,6 +234,12 @@ func _run() -> void:
 	_check("departure removes the agent", AgentManager.agents.size() == count_predepart - 1)
 	_check("departure does not emit agent_died", died_spy.is_empty())
 	_check("departure archived with memories", not AgentManager.departed_agents.is_empty() and not AgentManager.departed_agents[-1]["memories"].is_empty())
+	# hire is freed by now — use the name captured before the departure
+	# (the freed-node rule this file already follows everywhere else).
+	_check("departure recorded a cast fate",
+		AgentManager.cast_fates.has(hire_name)
+		and "left" in str(AgentManager.cast_fates[hire_name]["fate"])
+		and str(AgentManager.cast_fates[hire_name]["personality"]) != "")
 	_check("stayers tag the departed", a.relationships.get_relationship(hire_name).has_tag("departed"))
 	_check("departure breaks couples to EX", a.relationships.get_relationship(hire_name).relationship_status == RelationshipEntry.Status.EX)
 

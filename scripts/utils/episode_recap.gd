@@ -235,8 +235,17 @@ static func _append_cast(lines: PackedStringArray, cast: Array[String]) -> void:
 			lines.append("- **%s**%s — %s" % [
 				agent_name, status, agent.personality.get_personality_summary()
 			])
+		elif AgentManager.cast_fates.has(agent_name):
+			# Gone, but not forgotten: the fate cache keeps who they were and
+			# how they left.
+			var fate: Dictionary = AgentManager.cast_fates[agent_name]
+			var who := str(fate.get("personality", ""))
+			lines.append("- **%s** — %s _(%s, day %d)_" % [
+				agent_name,
+				who if who != "" else "one of the cast",
+				str(fate.get("fate", "gone")), int(fate.get("day", 0))])
 		else:
-			# Agent is gone (died and was removed); the name still earned a credit.
+			# Agent is gone and predates the fate cache; the name still earned a credit.
 			lines.append("- **%s**" % agent_name)
 	lines.append("")
 

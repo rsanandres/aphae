@@ -106,6 +106,9 @@ func episode_label() -> String:
 	return "S%dE%d" % [season, episode]
 
 
+const OVERNIGHT_BASE := 3
+const OVERNIGHT_CAP := 8
+
 func _on_day_changed(day: int) -> void:
 	_trickle_today = 0
 	if day < episode_start_day:
@@ -115,6 +118,14 @@ func _on_day_changed(day: int) -> void:
 	if day - episode_start_day >= EPISODE_DAYS:
 		_finish_episode()
 		episode_start_day = day
+		return
+	# Overnight ratings: a small payday every day the episode is still
+	# running, scaled by how dramatic the day actually was. The first real
+	# payout used to land 72 real minutes in (playtest finding) — the
+	# producer now sees income every game-day, and drama visibly pays.
+	var avg: float = (_sample_sum / _sample_count) if _sample_count > 0 else 0.0
+	var overnight: int = clampi(OVERNIGHT_BASE + roundi(avg), OVERNIGHT_BASE, OVERNIGHT_CAP)
+	grant(overnight, "overnight ratings")
 
 
 func _finish_episode() -> void:

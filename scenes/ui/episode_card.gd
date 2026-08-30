@@ -67,7 +67,7 @@ func _on_episode_ended(ended_season: int, ended_episode: int, score: int, payout
 		_storyline.text = "The story of the episode: %s" % top[0].title
 	else:
 		_storyline.text = "The story of the episode is still being written."
-	_payout.text = "+%d ◆ Influence" % payout
+	_payout.text = "+%d ¤ Influence" % payout
 	_export_btn.text = "Export episode recap"
 	_export_btn.disabled = false
 	open()

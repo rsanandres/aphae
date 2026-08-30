@@ -63,7 +63,10 @@ func _process(delta: float) -> void:
 		_abort()
 		return
 	if _showing_line:
-		_line_timer -= delta
+		# Conversations advance on game time too — otherwise a chat that
+		# takes 30 real seconds eats 30 game-minutes at 1x but 90 at 3x,
+		# starving both agents of the day.
+		_line_timer -= delta * TimeManager.current_speed
 		if _line_timer <= 0.0:
 			_showing_line = false
 			_current_turn += 1
@@ -213,9 +216,9 @@ func _end_conversation() -> void:
 		var world := agent_a.get_tree().get_first_node_in_group("world")
 		var mid: Vector2 = (agent_a.global_position + agent_b.global_position) / 2.0
 		if delta > 0.0:
-			FloatingText.spawn(world, mid, "♥ +%d" % roundi(delta), Color(1.0, 0.55, 0.7))
+			FloatingText.spawn(world, mid, "<3 +%d" % roundi(delta), Color(1.0, 0.55, 0.7))
 		else:
-			FloatingText.spawn(world, mid, "✕ %d" % roundi(delta), Color(1.0, 0.45, 0.4))
+			FloatingText.spawn(world, mid, "x %d" % roundi(delta), Color(1.0, 0.45, 0.4))
 
 	# Handle confession outcome
 	if _is_confession:
@@ -241,9 +244,9 @@ func _process_confession() -> void:
 	var world := agent_a.get_tree().get_first_node_in_group("world")
 	var mid: Vector2 = (agent_a.global_position + agent_b.global_position) / 2.0
 	if accepted:
-		FloatingText.spawn(world, mid, "♥ ♥ ♥", Color(1.0, 0.55, 0.7))
+		FloatingText.spawn(world, mid, "<3 <3 <3", Color(1.0, 0.55, 0.7))
 	else:
-		FloatingText.spawn(world, mid + Vector2(0, -8), "♥ . . .", Color(0.75, 0.6, 0.65))
+		FloatingText.spawn(world, mid + Vector2(0, -8), "<3 . . .", Color(0.75, 0.6, 0.65))
 	if accepted:
 		var rel_a: RelationshipEntry = agent_a.relationships.get_relationship(agent_b.agent_name)
 		rel_a.relationship_status = RelationshipEntry.Status.DATING

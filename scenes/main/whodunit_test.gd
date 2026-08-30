@@ -118,6 +118,11 @@ func _run() -> void:
 	PlayerDirector.plant_rumor(voter, "%s has been acting strange lately." % bystander.agent_name, bystander.agent_name)
 	_check("a planted smear raises suspicion",
 		WhodunitDirector._suspicion(voter, bystander) > before_plant)
+	_check("a producer plant outweighs idle gossip",
+		WhodunitDirector.VOTE_PLANTED > WhodunitDirector.VOTE_HEARSAY
+		and WhodunitDirector._suspicion(voter, bystander) - before_plant >= WhodunitDirector.VOTE_PLANTED)
+	_check("a plant is still softer than a sighting",
+		WhodunitDirector.VOTE_PLANTED < WhodunitDirector.VOTE_CASE_MEMORY)
 
 	# Grudges look like guilt.
 	var rel_grudge: RelationshipEntry = voter.relationships.get_relationship(victim_pool.agent_name)
@@ -150,6 +155,12 @@ func _run() -> void:
 		if m.emotion == "betrayal" and m.decay_protected:
 			betrayal = true
 	_check("the innocent will not forget", betrayal)
+	# A wrong vote pays information: the host reviews the tapes.
+	var tape_review := false
+	for c: Confessional in ConfessionalDirector.confessionals:
+		if "reviewed the tapes" in c.line:
+			tape_review = true
+	_check("a wrongful vote buys a host tip", tape_review)
 
 	# --- Catching the mole ---------------------------------------------------
 	var resolutions: Array = []

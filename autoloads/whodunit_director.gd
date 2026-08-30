@@ -31,8 +31,10 @@ const MOLE_WON_PENALTY := 15
 const VOTE_KNOWS := 40.0            # they KNOW (confide/rumour chain reached them)
 const VOTE_CASE_MEMORY := 20.0      # a case-thread memory naming the suspect
 const VOTE_CASE_MEMORY_CAP := 3
-const VOTE_HEARSAY := 8.0           # negative hearsay naming the suspect (plantable!)
+const VOTE_HEARSAY := 8.0           # negative hearsay naming the suspect
 const VOTE_HEARSAY_CAP := 2
+const VOTE_PLANTED := 12.0          # a producer-planted rumour: louder than gossip, softer than a sighting
+const VOTE_PLANTED_CAP := 2
 const VOTE_GRUDGE_SCALE := 0.15     # disliking someone makes them look guilty
 const VOTE_ABSTAIN_UNDER := 5.0     # with less suspicion than this, you shrug
 
@@ -258,8 +260,12 @@ func _suspicion(voter: Node2D, suspect: Node2D) -> float:
 	# Case evidence they personally hold that names the suspect.
 	var case_hits := 0
 	var hearsay_hits := 0
+	var planted_hits := 0
 	for m: MemoryEntry in voter.memory.memories:
 		if suspect.agent_name not in m.related_agents:
+			continue
+		if m.narrative_thread == "planted_rumor" and m.sentiment < 0.0:
+			planted_hits += 1
 			continue
 		if m.narrative_thread == case.thread() and m.emotion in ["suspicion", "curiosity"]:
 			# Only SIGHTINGS implicate: the witness glimpse ("suspicion") and
@@ -275,6 +281,7 @@ func _suspicion(voter: Node2D, suspect: Node2D) -> float:
 			hearsay_hits += 1
 	score += VOTE_CASE_MEMORY * mini(case_hits, VOTE_CASE_MEMORY_CAP)
 	score += VOTE_HEARSAY * mini(hearsay_hits, VOTE_HEARSAY_CAP)
+	score += VOTE_PLANTED * mini(planted_hits, VOTE_PLANTED_CAP)
 	# Grudges make people look guilty. Unfair. Very human.
 	var affinity: float = voter.relationships.get_relationship(suspect.agent_name).affinity
 	score += maxf(0.0, -affinity) * VOTE_GRUDGE_SCALE
@@ -324,6 +331,21 @@ func _punish_wrongful(accused: String, votes: Dictionary) -> void:
 	EventBus.narrative_event.emit(
 		"The house turned on %s — and the house was wrong. Somewhere, the real culprit smiled." % accused,
 		[accused], 7.5)
+	# The consolation prize is INFORMATION: a wrong vote that teaches nothing
+	# is a pure gamble; this makes meetings purchasable deduction.
+	var any_sighting := false
+	for agent in _living_cast():
+		for m: MemoryEntry in agent.memory.memories:
+			if m.narrative_thread == case.thread() and m.emotion == "suspicion":
+				any_sighting = true
+				break
+		if any_sighting:
+			break
+	var tip := "Production reviewed the tapes: SOMEBODY in this house saw something. Get people talking." 		if any_sighting else 		"Production reviewed the tapes: no witnesses. Whoever it is, they're careful. Watch who benefits."
+	# _emit, not _record: the meeting verdict just consumed the confessional
+	# cooldown, and _record would silently drop the one line the player paid
+	# for (the cooldown-swallow class, third sighting this codebase).
+	ConfessionalDirector._emit("host", tip, null)
 
 
 func _resolve_mole_won(mole: Node2D) -> void:

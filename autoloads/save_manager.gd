@@ -188,6 +188,7 @@ func _serialize_world() -> Dictionary:
 		"impact": ImpactLog.get_save_state(),
 		"producer_star": PlayerDirector.get_star_save(),
 		"departed_agents": AgentManager.departed_agents.duplicate(true),
+		"cast_fates": AgentManager.cast_fates.duplicate(true),
 		"producer": ProducerEconomy.get_save_state(),
 	}
 
@@ -377,6 +378,7 @@ func _deserialize_world(data: Dictionary) -> void:
 	ImpactLog.load_save_state(data.get("impact", {}))
 	PlayerDirector.load_star_save(data.get("producer_star", {}))
 	AgentManager.departed_agents.clear()
+	AgentManager.cast_fates = data.get("cast_fates", {}).duplicate(true)
 	for entry in data.get("departed_agents", []):
 		if entry is Dictionary:
 			AgentManager.departed_agents.append(entry)

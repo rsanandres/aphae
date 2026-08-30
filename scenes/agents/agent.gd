@@ -99,7 +99,7 @@ func _physics_process(delta: float) -> void:
 			_process_walking(delta)
 		AgentState.Type.INTERACTING:
 			_process_interacting(delta)
-	_animate(delta)
+	_animate(delta * maxf(TimeManager.current_speed, 0.0))
 	_update_need_warning()
 
 
@@ -425,7 +425,9 @@ func _process_walking(delta: float) -> void:
 		return
 	var next_pos := nav_agent.get_next_path_position()
 	var direction := global_position.direction_to(next_pos)
-	velocity = direction * Config.AGENT_MOVE_SPEED
+	# Movement scales with game speed like interactions already do: at 3x an
+	# agent covers 3x ground per real second, so trips-per-game-day hold.
+	velocity = direction * Config.AGENT_MOVE_SPEED * maxf(TimeManager.current_speed, 0.0)
 	move_and_slide()
 	if velocity.x != 0:
 		sprite.flip_h = velocity.x < 0

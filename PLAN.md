@@ -694,6 +694,42 @@ smoke-test, and `build/` + `steam_appid.txt` gitignored.
   AI content" disclosure box honestly — with the heuristic-only build this
   is canned-lines-only and simpler to answer.
 
+## The improvement pass (2026-08-29)
+
+Six items from the standing improvement list, all landed:
+
+1. **Web tofu fixed** — the bundled web font lacks the geometric block, so
+   every player-visible glyph moved to covered characters: influence is
+   `¤`, viewers `TV`, the AI dot `•`, hearts `<3`, the tooltip/ripple
+   markers `»`. Desktop rendered the old ones via system-font fallback;
+   the web (the public demo!) showed boxes.
+2. **The scheduler runs on game time** — think cadence, movement, and
+   conversation pacing all scale by `TimeManager.current_speed` (interactions
+   already did). Before: at 3x, agents made 1/3 the decisions per game-day
+   against unchanged game-day deadlines, so goals/secrets/mole pacing
+   silently broke at speed. 3x now looks and IS 3x.
+3. **Overnight ratings** — every mid-episode day pays 3..8 influence scaled
+   by the day's average drama (`ProducerEconomy.OVERNIGHT_*`). The first
+   payday used to land 72 real minutes in.
+4. **Idle chat frequency** — any idle agent near company may drift into
+   conversation (0.15 + extraversion*0.35, was extraverts-only). One
+   conversation per 90 game-minutes starved secrets, goals, and synergies
+   simultaneously; this lever feeds them all.
+5. **Cast fates** — `AgentManager.cast_fates` snapshots personality + exit
+   (died/left, day) the moment an agent goes; the recap credits the departed
+   properly instead of a bare name. Persisted, gate-free.
+6. **Mole counterplay** — planted rumours are threaded `planted_rumor` and
+   weigh 12 in votes (gossip 8 < plant 12 < sighting 20), so booth knowledge
+   converts into house votes; a wrongful meeting now pays INFORMATION (the
+   host reviews the tapes: witnesses exist / no witnesses). The tip uses
+   `_emit`, not `_record` — the meeting verdict consumes the cooldown and
+   `_record` would silently drop the line the player paid for (third
+   sighting of the cooldown-swallow class; it is always the same bug).
+
+Also collected en route: my own new events_test assertion dereferenced a
+freed node (the exact class this file warns about); the captured-name fix
+took one line. events_test 66->67, whodunit_test 43->46.
+
 ## Object synergies (2026-08-29)
 
 Objects now interact with EACH OTHER. With 113 placeables, pairs are never

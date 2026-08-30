@@ -47,7 +47,7 @@ func _ready() -> void:
 	_balance.add_theme_color_override("font_color", UIPalette.ACCENT_WARM)
 	top.add_child(_balance)
 	EventBus.influence_changed.connect(func(_b: int, _d: int, _r: String) -> void:
-		_balance.text = "◆ %d" % ProducerEconomy.influence
+		_balance.text = "¤ %d" % ProducerEconomy.influence
 		if visible:
 			_rebuild()
 	)
@@ -71,7 +71,7 @@ func _ready() -> void:
 
 
 func _on_opened() -> void:
-	_balance.text = "◆ %d" % ProducerEconomy.influence
+	_balance.text = "¤ %d" % ProducerEconomy.influence
 	_status.text = ""
 	_rebuild()
 
@@ -114,10 +114,10 @@ func _make_row(item: Dictionary) -> Control:
 		buy.text = "Owned"
 		buy.disabled = true
 	elif not unlocked:
-		buy.text = "◆ %d" % price
+		buy.text = "¤ %d" % price
 		buy.disabled = true
 	else:
-		buy.text = "Buy  ◆ %d" % price
+		buy.text = "Buy  ¤ %d" % price
 		buy.disabled = not ProducerEconomy.can_afford(price)
 		var captured := item
 		buy.pressed.connect(func() -> void: _buy(captured))
@@ -228,7 +228,7 @@ func _open_gift_picker(price: int) -> void:
 	_list.add_child(row2)
 
 	var send := Button.new()
-	send.text = "Send it  ◆ %d" % price
+	send.text = "Send it  ¤ %d" % price
 	send.pressed.connect(func() -> void: _send_gift(price))
 	_list.add_child(send)
 

@@ -19,7 +19,7 @@ var _hints := [
 	{"id": "god_mode", "text": "Press Tab to toggle God Mode and rearrange the office.", "delay": 60.0},
 	# Playtest finding: the 120s slot taught need-decay plumbing while the
 	# reward loop (Influence, episodes, the Catalog) had no hint at all.
-	{"id": "influence", "text": "Your show earns Influence (the ◆ up top) as episodes wrap. Spend it in the Catalog [B].", "delay": 120.0},
+	{"id": "influence", "text": "Your show earns Influence (the ¤ up top) as episodes wrap. Spend it in the Catalog [B].", "delay": 120.0},
 	{"id": "agent_needs", "text": "Agents have needs (energy, hunger, social) that drive their decisions.", "delay": 200.0},
 ]
 

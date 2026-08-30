@@ -222,5 +222,5 @@ func _update_obj_tooltip() -> void:
 	# Complaint...) — the zone system explains itself where you look.
 	var zones: PackedStringArray = SynergyManager.zone_names_for(self)
 	if not zones.is_empty():
-		text += "\n✦ " + ", ".join(zones)
+		text += "\n» " + ", ".join(zones)
 	lbl.text = text

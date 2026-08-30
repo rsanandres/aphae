@@ -299,7 +299,7 @@ func _rebuild_relationships() -> void:
 		icon.add_theme_font_size_override("font_size", 9)
 		match rel.relationship_status:
 			RelationshipEntry.Status.DATING, RelationshipEntry.Status.PARTNERS:
-				icon.text = "♥"
+				icon.text = "<3"
 				icon.add_theme_color_override("font_color", Color(1.0, 0.4, 0.5))
 			RelationshipEntry.Status.CRUSHING:
 				icon.text = "~"

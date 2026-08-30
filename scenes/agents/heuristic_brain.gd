@@ -91,8 +91,10 @@ func _personality_idle_decision(personality: PersonalityProfile, nearby_objects:
 
 	var roll := randf()
 
-	# High extraversion → seek social interaction even when not needy
-	if personality.extraversion > 0.6 and not nearby_agents.is_empty() and roll < personality.extraversion * 0.5:
+	# Anyone idle near company may drift into a chat — the office averaged
+	# one conversation per 90 game-minutes, which starved every social
+	# system (secrets, goals, synergies) at once. Extraverts still lead.
+	if not nearby_agents.is_empty() and roll < 0.15 + personality.extraversion * 0.35:
 		var valid_agents: Array = nearby_agents.filter(func(a: Node2D) -> bool: return not a.is_dead)
 		if not valid_agents.is_empty():
 			# Prefer agents with high affinity

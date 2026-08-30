@@ -87,7 +87,7 @@ func _build_ui() -> void:
 
 	# --- Interview ---
 	var ask_lbl := Label.new()
-	ask_lbl.text = "Ask them something  ◆%d" % COST_INTERVIEW
+	ask_lbl.text = "Ask them something  ¤%d" % COST_INTERVIEW
 	ask_lbl.add_theme_color_override("font_color", UIPalette.ACCENT_COOL)
 	outer.add_child(ask_lbl)
 
@@ -114,7 +114,7 @@ func _build_ui() -> void:
 
 	# --- Rumor ---
 	var rumor_lbl := Label.new()
-	rumor_lbl.text = "Plant a rumour  ◆%d" % COST_RUMOR
+	rumor_lbl.text = "Plant a rumour  ¤%d" % COST_RUMOR
 	rumor_lbl.add_theme_color_override("font_color", UIPalette.ACCENT_NEG)
 	outer.add_child(rumor_lbl)
 
@@ -134,7 +134,7 @@ func _build_ui() -> void:
 	plant.pressed.connect(_do_rumor)
 	outer.add_child(plant)
 
-	var star := _small_button("Make the star  ◆%d" % COST_STAR)
+	var star := _small_button("Make the star  ¤%d" % COST_STAR)
 	star.tooltip_text = "The camera follows them and their brain never leaves the ACTIVE tier. Click again to clear."
 	star.pressed.connect(_do_star)
 	outer.add_child(star)
@@ -143,7 +143,7 @@ func _build_ui() -> void:
 
 	# --- The Mole (M5): the one show-wide action on this panel ---
 	var meeting_lbl := Label.new()
-	meeting_lbl.text = "The house  ◆%d" % WhodunitDirector.MEETING_COST
+	meeting_lbl.text = "The house  ¤%d" % WhodunitDirector.MEETING_COST
 	meeting_lbl.theme_type_variation = "DimLabel"
 	outer.add_child(meeting_lbl)
 
@@ -220,7 +220,7 @@ func _do_nudge(kind: String) -> void:
 	# Costs live here, not in PlayerDirector — the director API stays free
 	# for tests and internal callers; only the panel charges the producer.
 	if not ProducerEconomy.spend(COST_NUDGE, "nudge"):
-		_result.text = "Not enough Influence (◆%d needed)." % COST_NUDGE
+		_result.text = "Not enough Influence (¤%d needed)." % COST_NUDGE
 		_result.add_theme_color_override("font_color", UIPalette.ACCENT_NEG)
 		return
 	PlayerDirector.nudge(_agent, kind)
@@ -233,7 +233,7 @@ func _do_interview() -> void:
 	if q == "":
 		return
 	if not ProducerEconomy.spend(COST_INTERVIEW, "interview"):
-		_answer.text = "Not enough Influence (◆%d needed)." % COST_INTERVIEW
+		_answer.text = "Not enough Influence (¤%d needed)." % COST_INTERVIEW
 		return
 	_answer.text = "..."
 	PlayerDirector.interview(_agent, q)
@@ -250,7 +250,7 @@ func _do_rumor() -> void:
 	if _rumor_target.item_count > 0:
 		subject = _rumor_target.get_item_text(_rumor_target.selected)
 	if not ProducerEconomy.spend(COST_RUMOR, "rumor"):
-		_result.text = "Not enough Influence (◆%d needed)." % COST_RUMOR
+		_result.text = "Not enough Influence (¤%d needed)." % COST_RUMOR
 		_result.add_theme_color_override("font_color", UIPalette.ACCENT_NEG)
 		return
 	PlayerDirector.plant_rumor(_agent, text, subject)

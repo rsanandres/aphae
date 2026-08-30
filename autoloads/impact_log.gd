@@ -156,7 +156,7 @@ func _ripple(who: Array, text: String, kind: String = "event") -> void:
 				break
 		if not touches:
 			continue
-		var line := "↳ " + text
+		var line := "» " + text
 		if line not in (entry["ripples"] as Array):
 			(entry["ripples"] as Array).append(line)
 		return  # one intervention per ripple: the newest plausible cause

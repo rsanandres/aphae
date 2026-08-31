@@ -818,6 +818,40 @@ the pilot-wrap hint firing with a real ¤83 payout).
   documented as the weak-machine option). Owners with an explicit
   `ollama_model` in settings.cfg are unaffected.
 
+## The voice pipeline, step 1 (2026-08-31, Roadmap Track B groundwork)
+
+The panel's one-pipe rule, started: string pools externalize to
+`resources/dialogue/<domain>.json` (kind → bucket → lines), read through
+`DialoguePools` (`scripts/utils/dialogue_pools.gd`):
+
+- `fill(domain, kind, bucket, tokens)` interpolates `{tokens}` and DROPS
+  any line whose token is missing/empty — pools mix plain and
+  detail-threaded lines safely.
+- `lint(domain, expected)` is the coverage check; the consumer declares
+  its contract (`ConfessionalDirector.POOL_EXPECTATIONS`) and the harness
+  asserts no holes, so a pool edit cannot strand a personality bucket.
+
+**Confessional is the pattern-setting migration**: `_heuristic_line` is
+now bucket-selection + token-filling only; every line lives in
+`confessional.json` (buckets: base / anxious / catty / bold / even /
+partner / lost / enemy). Behavior preserved, one improvement: a secret
+draw without its detail now falls back to "No comment..." instead of
+emitting "I . There. I said it."
+
+**The write side is `tools/generate_dialogue.py`** — owner-run, local
+Ollama, never CI: grows every bucket with few-shot prompts against the
+existing lines, validates tokens (a generated line may only use tokens
+its bucket already demonstrates), dedupes, appends in place; `--lint`
+checks coverage with no model. Conversation/secrets/goals pools migrate
+through this same pipe next — do NOT build them a separate mechanism.
+
+**Gotcha:** a new `class_name` is invisible to direct scene runs until an
+import refreshes `.godot/global_script_class_cache.cfg` — run
+`godot --headless --import` (run_tests.sh's import step does) or every
+dependent script fails to compile and the harness hangs silently.
+
+confessional_test 15 → 19.
+
 ## The improvement pass (2026-08-29)
 
 Six items from the standing improvement list, all landed:

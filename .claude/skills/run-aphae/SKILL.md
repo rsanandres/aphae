@@ -71,7 +71,7 @@ Individually:
 G="godot --headless --path . --audio-driver Dummy"
 $G -e --quit-after 5 2>&1 | grep -E 'Parse Error|Compile Error'   # must print NOTHING
 $G res://scenes/main/producer_test.tscn               # 33 passed
-$G res://scenes/main/confessional_test.tscn           # 15 passed
+$G res://scenes/main/confessional_test.tscn           # 19 passed
 $G res://scenes/main/events_test.tscn                 # 67 passed
 $G res://scenes/main/economy_test.tscn                # 58 passed
 $G res://scenes/main/premiere_test.tscn               # 13 passed

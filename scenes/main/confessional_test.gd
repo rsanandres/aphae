@@ -274,6 +274,22 @@ func _run() -> void:
 				host_leaked = true
 	_results.append(("PASS  " if not host_leaked else "FAIL  ") + "host recap creates no agent memory")
 
+	# --- The voice pipeline: pools cover what the code draws ------------------
+	print("[TEST] 14. dialogue pools")
+	var holes := DialoguePools.lint("confessional", ConfessionalDirector.POOL_EXPECTATIONS)
+	_results.append(("PASS  " if holes.is_empty() else "FAIL  ") +
+		"the confessional pool covers every drawn bucket" +
+		("" if holes.is_empty() else " (%s)" % ", ".join(holes)))
+	var secret_line: String = ConfessionalDirector._heuristic_line("secret", speaker, "collects rare staplers")
+	_results.append(("PASS  " if "collects rare staplers" in secret_line else "FAIL  ") +
+		"a heuristic secret line carries its detail verbatim")
+	var intro_line: String = ConfessionalDirector._heuristic_line("intro", speaker)
+	_results.append(("PASS  " if speaker.agent_name in intro_line else "FAIL  ") +
+		"a heuristic intro names the speaker")
+	var unknown_kind_line: String = ConfessionalDirector._heuristic_line("meteor_strike", speaker)
+	_results.append(("PASS  " if unknown_kind_line != "" else "FAIL  ") +
+		"an unknown kind falls back to the drama pool")
+
 
 func _fingerprint() -> Array[String]:
 	## Stable identity of the current confessional list, for round-trip comparison.

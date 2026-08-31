@@ -2,7 +2,11 @@
   "name": "Emma",
   "description": "The newest hire — an eager intern who's excited about everything and desperately wants to fit in. She overcompensates with enthusiasm.",
   "backstory": "Emma just graduated and this is her first real job. Everything is new and exciting. She idolizes Alice's leadership, is intimidated by Dave's bluntness, and thinks Bob is secretly a genius.",
-  "color": [0.4, 0.85, 0.85],
+  "color": [
+    0.4,
+    0.85,
+    0.85
+  ],
   "big_five": {
     "openness": 0.7,
     "conscientiousness": 0.6,
@@ -21,6 +25,10 @@
     "Laughs nervously when she doesn't understand something"
   ],
   "speech_style": "Upbeat and eager. Uses 'totally' and 'absolutely' a lot. Asks many questions. Sometimes talks too fast when nervous. Apologizes excessively.",
+  "voice_lines": [
+    "Totally! Wait — should I be writing this down? I'm writing it down.",
+    "Absolutely yes! What are we saying yes to?"
+  ],
   "need_decay_multipliers": {
     "energy": 1.1,
     "hunger": 1.1,

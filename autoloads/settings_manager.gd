@@ -18,7 +18,7 @@ var desktop_pet_mode: bool = false
 # LLM
 var llm_backend: String = "auto"  # "auto", "bundled", "ollama", "heuristic"
 var ollama_url: String = "http://localhost:11434"
-var ollama_model: String = "smollm2:1.7b"
+var ollama_model: String = "gemma3:4b"
 
 # Game
 var default_speed: int = 1
@@ -88,7 +88,7 @@ func load_settings() -> void:
 	# LLM
 	llm_backend = cfg.get_value("llm", "backend", "auto")
 	ollama_url = cfg.get_value("llm", "ollama_url", "http://localhost:11434")
-	ollama_model = cfg.get_value("llm", "ollama_model", "smollm2:1.7b")
+	ollama_model = cfg.get_value("llm", "ollama_model", "gemma3:4b")
 
 	# Game
 	default_speed = cfg.get_value("game", "default_speed", 1)

@@ -109,6 +109,9 @@ func _request_next_line() -> void:
 		"affinity": "%.0f" % rel.affinity,
 		"history": history_text,
 		"mood": speaker.personality.get_mood(speaker.needs.get_all_values()) if speaker.personality else "neutral",
+		# Few-shot register lines for the preset cast; resolves to "" for
+		# procedural agents so the template block simply disappears.
+		"voice_block": speaker.personality.get_voice_block() if speaker.personality else "",
 		# Both resolve to "" for agents with nothing to hide or no rumor heard,
 		# so the placeholders always disappear from the template.
 		"secret_line": SecretManager.denial_prompt_line(speaker.agent_name),
@@ -136,6 +139,7 @@ func _request_next_line() -> void:
 			else:
 				_on_line_received(speaker, listener, _heuristic_line(speaker, listener)),
 		LLMManager.Priority.HIGH,
+		{"temperature": 0.9},  # dialogue wants sparkle; decisions run cooler
 	)
 
 

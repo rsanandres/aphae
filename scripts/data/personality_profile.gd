@@ -17,6 +17,9 @@ var goals: Array[String] = []
 var quirks: Array[String] = []
 var speech_style: String = ""
 var backstory: String = ""
+# Optional few-shot lines in this character's register, for prompts. Empty
+# for procedural agents — the voice block simply drops out of the template.
+var voice_lines: Array[String] = []
 
 # Need decay rate multipliers (personality affects how fast needs drain)
 var need_decay_multipliers: Dictionary = {}
@@ -61,6 +64,9 @@ static func load_from_json(path: String) -> PersonalityProfile:
 	for q in quirks_raw:
 		profile.quirks.append(str(q))
 
+	for v in data.get("voice_lines", []):
+		profile.voice_lines.append(str(v))
+
 	profile.need_decay_multipliers = data.get("need_decay_multipliers", {})
 
 	return profile
@@ -82,6 +88,7 @@ func to_dict() -> Dictionary:
 		},
 		"goals": goals.duplicate(),
 		"quirks": quirks.duplicate(),
+		"voice_lines": voice_lines.duplicate(),
 		"need_decay_multipliers": need_decay_multipliers.duplicate(),
 	}
 
@@ -115,8 +122,57 @@ static func from_dict(data: Dictionary) -> PersonalityProfile:
 	for q in quirks_raw:
 		profile.quirks.append(str(q))
 
+	for v in data.get("voice_lines", []):
+		profile.voice_lines.append(str(v))
+
 	profile.need_decay_multipliers = data.get("need_decay_multipliers", {})
 	return profile
+
+
+func get_trait_lines() -> String:
+	## Big Five verbalized for prompts, mid-range included. Small models act
+	## on words, not scales — "Openness: 0.63" steers nothing at all.
+	var lines: PackedStringArray = []
+	lines.append(_trait_line(openness,
+		"You chase new ideas and wander off on tangents.",
+		"You will try a new idea once it has earned it.",
+		"You like the proven way and distrust novelty."))
+	lines.append(_trait_line(conscientiousness,
+		"You are meticulous; loose ends genuinely bother you.",
+		"You keep things roughly in order, most days.",
+		"You improvise, procrastinate, and wing it."))
+	lines.append(_trait_line(extraversion,
+		"You seek people out and think out loud.",
+		"You enjoy company in doses, then need quiet.",
+		"You keep to yourself and crowds drain you."))
+	lines.append(_trait_line(agreeableness,
+		"You smooth conflicts over and give ground easily.",
+		"You are fair with people but no pushover.",
+		"You are blunt, competitive, and slow to yield."))
+	lines.append(_trait_line(neuroticism,
+		"You worry quickly and feel every setback hard.",
+		"You wobble under pressure but recover fast.",
+		"Almost nothing rattles you."))
+	return "\n".join(lines)
+
+
+static func _trait_line(value: float, high: String, mid: String, low: String) -> String:
+	if value > 0.65:
+		return "- " + high
+	if value < 0.35:
+		return "- " + low
+	return "- " + mid
+
+
+func get_voice_block() -> String:
+	## Few-shot register examples for dialogue prompts; "" when unauthored so
+	## the block vanishes from the template instead of leaving a bare header.
+	if voice_lines.is_empty():
+		return ""
+	var out := "Lines in your voice (the register, never to be repeated verbatim):\n"
+	for line in voice_lines:
+		out += "- \"%s\"\n" % line
+	return out
 
 
 func get_personality_summary() -> String:

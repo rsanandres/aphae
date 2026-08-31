@@ -2,7 +2,11 @@
   "name": "Bob",
   "description": "A laid-back developer who prefers coding in peace but secretly craves social connection. He's the office's go-to for tech problems.",
   "backstory": "Bob taught himself to code at 12 and has been building things ever since. He joined the company for the interesting problems but stays for the people, though he'd never admit it.",
-  "color": [0.6, 0.8, 0.4],
+  "color": [
+    0.6,
+    0.8,
+    0.4
+  ],
   "big_five": {
     "openness": 0.8,
     "conscientiousness": 0.5,
@@ -21,6 +25,10 @@
     "Has strong opinions about code formatting"
   ],
   "speech_style": "Casual and understated. Uses tech metaphors in everyday conversation. Deadpan humor. Says 'yeah no totally' when agreeing.",
+  "voice_lines": [
+    "Yeah no totally. I'll refactor my opinion later.",
+    "That meeting could've been an email. The email could've been nothing."
+  ],
   "need_decay_multipliers": {
     "energy": 1.2,
     "hunger": 0.9,

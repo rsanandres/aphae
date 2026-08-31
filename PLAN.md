@@ -792,6 +792,32 @@ The icon-bar button is "Build" now, and the tutorial teaches Influence at
 economy_test 46 → 58; verified in a panel_check capture (which also caught
 the pilot-wrap hint firing with a real ¤83 payout).
 
+## Honest words + honest prompts (2026-08-31, Roadmap Now #6)
+
+- **The README no longer overclaims.** "Nothing here is scripted" became a
+  line the heuristic path can defend; the harness count was stale too
+  (eight → nine, 300+ → 370+).
+- **Big Five verbalized.** `system.txt` drops the raw 0-1 numbers for
+  `PersonalityProfile.get_trait_lines()` — one behavioral sentence per
+  trait, mid-range included (the old summary skipped 0.3-0.7 entirely).
+- **Few-shot voice.** The five preset personalities carry `voice_lines`
+  (two register examples each, in their JSON); `conversation.txt` gets a
+  `{voice_block}` that resolves to "" for procedural agents so no header
+  dangles. `get_voice_block()` builds it.
+- **Anti-repeat.** system.txt and conversation.txt now instruct against
+  reusing lines ("New words only — never repeat a line from the
+  conversation above").
+- **Per-task temperature.** `LLMManager.request_chat`'s dead `metadata`
+  param became `options`, threaded to the Ollama backend as per-request
+  sampling overrides: decisions 0.4, dialogue and confessionals 0.9,
+  everything else the configured 0.7. Bundled backend accepts and ignores
+  it (sampling is load-time there).
+- **Default model rec: gemma3:4b** (validated in this repo's own
+  environment table) replaces never-validated smollm2:1.7b in
+  settings_manager, the Ollama backend, and the README (smollm2 stays
+  documented as the weak-machine option). Owners with an explicit
+  `ollama_model` in settings.cfg are unaffected.
+
 ## The improvement pass (2026-08-29)
 
 Six items from the standing improvement list, all landed:

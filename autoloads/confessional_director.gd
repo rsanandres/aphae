@@ -217,7 +217,7 @@ func _request_llm(kind: String, event_text: String, speaker: Node2D) -> void:
 		if line == "":
 			line = _heuristic_line(captured_kind, captured_speaker)
 		_emit(captured_kind, line, captured_speaker)
-	, LLMManager.Priority.LOW)
+	, LLMManager.Priority.LOW, {"temperature": 0.9})
 
 
 func _emit(kind: String, line: String, speaker: Node2D) -> void:

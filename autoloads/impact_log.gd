@@ -42,6 +42,25 @@ func _ready() -> void:
 		_ripple([a, b], "%s and %s talked" % [a, b], "talk"))
 
 
+func is_attributed(who: Array) -> bool:
+	## Read-only: is any of these people currently inside an intervention's
+	## attribution window? Mirrors _ripple's rules — a same-minute event is
+	## the intervention's own echo, not a consequence of it. ProducerEconomy
+	## scores produced beats through this; it must never mutate the log.
+	if who.is_empty():
+		return false
+	var now: float = TimeManager.game_minutes
+	for i in range(_entries.size() - 1, -1, -1):
+		var entry: Dictionary = _entries[i]
+		var age: float = now - float(entry["opened_minutes"])
+		if age < 1.0 or age > WINDOW_MINUTES:
+			continue
+		for name in who:
+			if str(name) in (entry["subjects"] as Array):
+				return true
+	return false
+
+
 func get_entries() -> Array[Dictionary]:
 	## Newest first, for the log view.
 	var out: Array[Dictionary] = []

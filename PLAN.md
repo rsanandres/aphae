@@ -712,6 +712,18 @@ driver — every harness and CI run had been consuming hints into the real
 **Harness:** `scenes/main/premiere_test.tscn` — **13 passed** (CI discovers
 it automatically). economy_test grew 3 pilot-length assertions (43 → 46).
 
+## Produced beats (2026-08-31, Roadmap Now #2)
+
+The producer verb finally moves the ratings. `ProducerEconomy`'s beat
+counter (narrative events ≥ 5.0) now asks `ImpactLog.is_attributed(agents)`
+— a new read-only query over the existing attribution windows — and an
+attributed beat counts DOUBLE and emits `produced_beat`, which the event
+notification feed renders as "Viewers loved that". Fixes the verified
+absurdity that a nudge announces itself at 3.5 and could never clear the
+5.0 beat bar: the intervention itself still isn't a beat, but the drama it
+causes inside its 180-minute window now pays twice. One read-only hook;
+ImpactLog still writes nothing into the simulation. producer_test 30 → 33.
+
 ## The improvement pass (2026-08-29)
 
 Six items from the standing improvement list, all landed:

@@ -53,15 +53,28 @@ func _ready() -> void:
 	_load_meta()
 	EventBus.day_changed.connect(_on_day_changed)
 	EventBus.time_tick.connect(_on_time_tick)
-	EventBus.narrative_event.connect(func(_t: String, _a: Array, importance: float) -> void:
-		if importance >= 7.0:
-			_trickle(2, "big moment")
-		_beats += 1 if importance >= 5.0 else 0
-	)
+	EventBus.narrative_event.connect(_on_narrative_event)
 	EventBus.romance_started.connect(func(_a: String, _b: String) -> void: _trickle(3, "romance"))
 	EventBus.confession_made.connect(func(_a: String, _b: String, _ok: bool) -> void: _trickle(3, "confession"))
 	EventBus.agent_died.connect(func(_n: String, _c: String) -> void: _trickle(5, "tragedy"))
 	EventBus.event_triggered.connect(func(_id: String, _n: Array) -> void: _trickle(1, "event"))
+
+
+func _on_narrative_event(text: String, agents: Array, importance: float) -> void:
+	if importance >= 7.0:
+		_trickle(2, "big moment")
+	if importance < 5.0:
+		return
+	# Produced beats: a beat that lands inside one of the producer's open
+	# attribution windows (ImpactLog) counts double and says so. Before this,
+	# a nudge announced itself at 3.5 and could never clear the 5.0 beat bar —
+	# producing the show was mechanically worthless to the ratings. Read-only
+	# against the log; nothing here writes back into the simulation.
+	if ImpactLog.is_attributed(agents):
+		_beats += 2
+		EventBus.produced_beat.emit(text)
+	else:
+		_beats += 1
 
 
 # --- Currency ----------------------------------------------------------------

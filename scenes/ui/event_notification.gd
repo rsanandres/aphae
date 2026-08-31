@@ -32,6 +32,7 @@ func _ready() -> void:
 	EventBus.group_rivalry_detected.connect(_on_rivalry)
 	EventBus.event_triggered.connect(_on_event)
 	EventBus.agent_life_stage_changed.connect(_on_life_stage)
+	EventBus.produced_beat.connect(_on_produced_beat)
 
 
 func _add_notification(text: String, color: Color) -> void:
@@ -93,6 +94,11 @@ func _on_event(event_id: String, _affected_agents: Array) -> void:
 	# Format event ID to readable name
 	var readable := event_id.replace("_", " ").capitalize()
 	_add_notification("Event: %s" % readable, Color(0.8, 0.75, 0.5))
+
+
+func _on_produced_beat(_text: String) -> void:
+	# Ratings gold: the producer's intervention just paid off on screen.
+	_add_notification("Viewers loved that — your beat counts double", Color(1.0, 0.85, 0.4))
 
 
 func _on_life_stage(agent_name: String, stage: int) -> void:

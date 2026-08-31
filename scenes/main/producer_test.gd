@@ -265,6 +265,21 @@ func _run() -> void:
 	EventBus.conversation_ended.emit(a.agent_name, "Someone")
 	_pass((ImpactLog.get_entries()[0]["ripples"] as Array).size() == 1,
 		"talked ripples occupy at most one slot")
+
+	print("[TEST] 10. produced beats")
+	# The window from the echo-test rumour is still open and the clock is past
+	# the same-minute guard, so a is attributable right now.
+	var produced: Array = []
+	EventBus.produced_beat.connect(func(text: String) -> void: produced.append(text))
+	ProducerEconomy._beats = 0
+	EventBus.narrative_event.emit("%s started a shouting match." % a.agent_name, [a.agent_name], 5.5)
+	_pass(ProducerEconomy._beats == 2 and produced.size() == 1,
+		"an attributed beat counts double and announces itself")
+	EventBus.narrative_event.emit("Somebody uninvolved won an award.", ["Nobody Real"], 5.5)
+	_pass(ProducerEconomy._beats == 3 and produced.size() == 1,
+		"an unattributed beat counts once, quietly")
+	EventBus.narrative_event.emit("%s muttered something." % a.agent_name, [a.agent_name], 4.0)
+	_pass(ProducerEconomy._beats == 3, "a sub-threshold event is not a beat at all")
 	ImpactLog.auto_enabled = false
 	SynergyManager.auto_enabled = false
 

@@ -653,7 +653,7 @@ func _setup_icon_bar() -> void:
 	bar.add_child(sep2)
 
 	_add_panel_btn(bar, "Shop", "Producer's Catalog [B]", "catalog", _catalog_panel)
-	_add_icon_btn(bar, "God", "God Mode [Tab]", func() -> void: _toggle_god_mode())
+	_add_icon_btn(bar, "Build", "Set Design [Tab] — place objects for Influence; Creative toggle inside", func() -> void: _toggle_god_mode())
 	_add_icon_btn(bar, "Awards", "Achievements", func() -> void: _toggle_achievements())
 	_add_icon_btn(bar, "Set", "Settings", func() -> void: _toggle_settings())
 

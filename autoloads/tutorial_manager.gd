@@ -16,10 +16,11 @@ var _hints := [
 	{"id": "welcome", "text": "Welcome to Aphae! Watch your AI agents live, work, and form relationships in this tiny office.", "delay": 1.0},
 	{"id": "click_agent", "text": "Click an agent to follow them and see their thoughts.", "delay": 10.0},
 	{"id": "right_click", "text": "Right-click anywhere for the menu (speed, settings, save).", "delay": 30.0},
-	{"id": "god_mode", "text": "Press Tab to toggle God Mode and rearrange the office.", "delay": 60.0},
-	# Playtest finding: the 120s slot taught need-decay plumbing while the
-	# reward loop (Influence, episodes, the Catalog) had no hint at all.
-	{"id": "influence", "text": "Your show earns Influence (the ¤ up top) as episodes wrap. Spend it in the Catalog [B].", "delay": 120.0},
+	# The economy hint comes BEFORE the build hint (roadmap Now #5): teach
+	# what Influence is, then the thing that spends it — never a free-stuff
+	# key first and the price tag after.
+	{"id": "influence", "text": "Your show earns Influence (the ¤ up top) as episodes wrap. Spend it in the Catalog [B].", "delay": 60.0},
+	{"id": "god_mode", "text": "Press Tab for Set Design — placing objects costs Influence, and where you put them shapes the drama.", "delay": 120.0},
 	{"id": "agent_needs", "text": "Agents have needs (energy, hunger, social) that drive their decisions.", "delay": 200.0},
 ]
 

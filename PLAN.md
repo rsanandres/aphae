@@ -769,6 +769,29 @@ call sites unchanged); confide scaling lives inside `_maybe_confide` at the
 holder/confidant midpoint. Seam off → all multipliers 1.0, asserted.
 synergy_test 19 → 26.
 
+## The economy gate: Set Design vs Creative (2026-08-31, Roadmap Now #5)
+
+Tab no longer voids the economy. The toolbar has two postures:
+
+- **SET DESIGN (default)**: the placement palette routes through Influence.
+  Buttons show prices ("Bean Bag ¤8"); placement spends on click, same
+  pay-on-placement contract as the Catalog. Non-catalog objects price and
+  unlock by CATEGORY (`ProducerEconomy.CATEGORY_PRICE` /
+  `CATEGORY_UNLOCK_EPISODES`: food/comfort/decor/classic from the start,
+  work/fun at 1 lifetime episode, wellness/tech at 2, weird at 4 — meta, so
+  veterans start open); a catalog entry's own price and gates always win
+  (asserted: meditation_pod stays locked at 4 episodes). The cheat tabs
+  (Agents, Events) do not exist in this posture.
+- **CREATIVE**: everything free and visible — and
+  `ProducerEconomy.creative_used` marks the save PERMANENTLY on first
+  toggle (persisted with the producer block, gate-free keys). A labeled
+  choice, not a hidden key.
+
+The icon-bar button is "Build" now, and the tutorial teaches Influence at
+60s BEFORE Set Design at 120s — the price tag precedes the toy box.
+economy_test 46 → 58; verified in a panel_check capture (which also caught
+the pilot-wrap hint firing with a real ¤83 payout).
+
 ## The improvement pass (2026-08-29)
 
 Six items from the standing improvement list, all landed:

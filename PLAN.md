@@ -724,6 +724,28 @@ absurdity that a nudge announces itself at 3.5 and could never clear the
 causes inside its 180-minute window now pays twice. One read-only hook;
 ImpactLog still writes nothing into the simulation. producer_test 30 → 33.
 
+## Broadcast chrome + hard cuts (2026-08-31, Roadmap Now #3)
+
+`scenes/ui/broadcast_overlay.gd` (created by main.gd, windowed only): a
+blinking `• LIVE` bug tucked under the status bar (it reads HOLD on pause),
+a translucent `APHAE-1` channel bug bottom-right, and a shader vignette on
+its own CanvasLayer (1) so it darkens the world but never the UI. Cuts are
+television now: `BroadcastDirector._do_cut` snaps position, calls the
+camera's `reset_smoothing()` + a new `punch()` (land 8% tight, settle in
+0.22s), and emits `broadcast_cut`, which the overlay answers with a
+one-frame flash. Desktop-pet mode hides the chrome (`set_shown`).
+
+Verified on gui_check captures under xvfb (this container renders windowed
+via Mesa/llvmpipe — `xvfb-run -a godot --rendering-method gl_compatibility
+--rendering-driver opengl3` works where true headless gives blank PNGs).
+Two findings: a DAY/time stamp under LIVE duplicated the status bar and was
+cut; the dot is `•` not `●` because the web font has no geometric block.
+
+**Not done from this roadmap item:** the pixel font swap. UITheme is wired
+for it (one line in `_build()`), but the repo ships no font asset — picking
+and licensing one (needs the geometric/box glyphs the web build lacks) is
+an owner decision, not a code change.
+
 ## The improvement pass (2026-08-29)
 
 Six items from the standing improvement list, all landed:

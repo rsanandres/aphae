@@ -105,6 +105,18 @@ func _apply_zoom(level: float) -> void:
 	zoom = Vector2(_zoom_level, _zoom_level)
 
 
+func punch() -> void:
+	## Hard-cut accent: land a hair tight and settle out. Purely cosmetic —
+	## _zoom_level is untouched, so the next zoom action overrides cleanly.
+	if _fit_mode:
+		return
+	var target := _zoom_level
+	zoom = Vector2(target * 1.08, target * 1.08)
+	var tween := create_tween()
+	tween.tween_property(self, "zoom", Vector2(target, target), 0.22) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+
 func _on_agent_selected(agent: Node2D) -> void:
 	if not _fit_mode:
 		_follow_agent = agent

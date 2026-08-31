@@ -7,6 +7,7 @@ var _dragging: bool = false
 var _drag_offset: Vector2 = Vector2.ZERO
 var expanded_mode: bool = true  # Default to expanded
 var _camera_panning: bool = false
+var _broadcast_overlay: BroadcastOverlay = null
 
 @onready var _camera: Camera2D = $GameCamera
 
@@ -22,6 +23,12 @@ func _ready() -> void:
 	var director := BroadcastDirector.new()
 	director.setup(_camera)
 	add_child(director)
+
+	# Broadcast chrome: LIVE bug, day/time stamp, channel bug, vignette —
+	# plus the flash that sells a hard cut.
+	_broadcast_overlay = BroadcastOverlay.new()
+	add_child(_broadcast_overlay)
+	EventBus.broadcast_cut.connect(func() -> void: _broadcast_overlay.flash())
 
 	EventBus.game_ready.emit()
 
@@ -172,6 +179,8 @@ func set_expanded_mode(enable: bool) -> void:
 	if expanded_mode == enable:
 		return
 	expanded_mode = enable
+	if _broadcast_overlay:
+		_broadcast_overlay.set_shown(enable)  # the pet corner has no room for chrome
 	var win := get_window()
 	if enable:
 		win.transparent = false

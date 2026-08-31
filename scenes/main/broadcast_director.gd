@@ -108,8 +108,14 @@ func _do_cut() -> void:
 	_on_wide_shot = false
 	if _poi_agent and is_instance_valid(_poi_agent):
 		_camera.follow(_poi_agent)
+		_camera.position = _poi_agent.global_position
 	else:
 		_camera.focus_position(_poi_pos)
+	# Television cuts, it doesn't glide: kill the smoothing tail, land tight,
+	# and let the overlay pop a one-frame flash.
+	_camera.reset_smoothing()
+	_camera.punch()
+	EventBus.broadcast_cut.emit()
 
 
 func _now() -> float:

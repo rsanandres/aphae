@@ -25,6 +25,11 @@ var _hints := [
 
 
 func _ready() -> void:
+	# Headless runs have no player and no hint overlay; connecting anyway made
+	# every harness and CI run consume hints into the REAL tutorial_state.json.
+	if DisplayServer.get_name() == "headless":
+		set_process(false)
+		return
 	_load_state()
 	if _hints_disabled:
 		return
@@ -35,6 +40,9 @@ func _ready() -> void:
 	# predates the entire producer layer — a new player was taught click,
 	# right-click, and Tab, and nothing the game is actually about.)
 	EventBus.confessional_recorded.connect(_on_first_confessional)
+	# The pilot wrap is the whole loop's payoff — point the payout at the
+	# Catalog while it is fresh, or the economy stays invisible for days.
+	EventBus.episode_ended.connect(_on_episode_ended)
 
 
 func _on_game_ready() -> void:
@@ -66,6 +74,12 @@ func _on_first_confessional(_confessional: RefCounted) -> void:
 	if not _shown_hints.has("confessional"):
 		_show_hint("confessional",
 			"An agent just spoke to the camera. Press C for the Confessional Cam — and P to produce the show yourself: nudge, interview, plant a rumour.")
+
+
+func _on_episode_ended(_season: int, _episode: int, _score: int, payout: int) -> void:
+	if not _shown_hints.has("pilot_wrap"):
+		_show_hint("pilot_wrap",
+			"That's a wrap — and ¤%d just hit your balance. Open the Catalog [B]: what you place shapes what happens next episode." % payout)
 
 
 func _show_hint(hint_id: String, text: String) -> void:

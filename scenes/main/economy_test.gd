@@ -70,7 +70,7 @@ func _run() -> void:
 		EventBus.time_tick.emit(480.0 + m)
 	TimeManager.game_minutes = 3.0 * 1440.0 + 480.0  # day 4
 	EventBus.day_changed.emit(TimeManager.day)
-	_check("episode ends after EPISODE_DAYS", ended.size() == 1)
+	_check("episode ends when its days elapse", ended.size() == 1)
 	_check("payout floor holds (>= 20)", ended.size() == 1 and ended[0]["payout"] >= 20)
 	_check("payout landed in the balance", ProducerEconomy.influence > start_influence)
 	_check("episode counter advanced", ProducerEconomy.episode == 2)
@@ -80,6 +80,16 @@ func _run() -> void:
 	TimeManager.game_minutes = 480.0  # back to day 1
 	EventBus.day_changed.emit(TimeManager.day)
 	_check("backward day jump re-anchors silently", ended.size() == ended_before)
+
+	# --- The pilot (S1E1) wraps after a single day; later episodes take three ---
+	TimeManager.game_minutes = 480.0  # day 1
+	ProducerEconomy.load_save_state({})  # back to S1E1
+	var pilot_ended_before: int = ended.size()
+	_check("the pilot is one day long", ProducerEconomy.episode_length_days() == ProducerEconomy.PILOT_DAYS)
+	TimeManager.game_minutes = 1440.0 + 480.0  # day 2
+	EventBus.day_changed.emit(TimeManager.day)
+	_check("the pilot wraps after one day", ended.size() == pilot_ended_before + 1)
+	_check("post-pilot episodes are full length", ProducerEconomy.episode_length_days() == ProducerEconomy.EPISODE_DAYS)
 
 	# --- Score bounds ---
 	_check("grade thresholds", ProducerEconomy.grade_for(85) == "S" and ProducerEconomy.grade_for(60) == "A" \

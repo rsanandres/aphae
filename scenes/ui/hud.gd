@@ -75,7 +75,7 @@ func _ready() -> void:
 	_episode_label = Label.new()
 	_episode_label.add_theme_font_size_override("font_size", 10)
 	_episode_label.add_theme_color_override("font_color", UIPalette.TEXT_DIM)
-	_episode_label.tooltip_text = "Season and episode. Every %d days is an episode; drama sets its score." % ProducerEconomy.EPISODE_DAYS
+	_episode_label.tooltip_text = "Season and episode. The pilot wraps in %d day, later episodes in %d; drama sets the score." % [ProducerEconomy.PILOT_DAYS, ProducerEconomy.EPISODE_DAYS]
 	_episode_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	status_bar.add_child(_episode_label)
 	var sep6 := VSeparator.new()
@@ -372,7 +372,7 @@ func _update_drama() -> void:
 
 func _update_episode_label() -> void:
 	if _episode_label:
-		_episode_label.text = "%s · d%d/%d" % [ProducerEconomy.episode_label(), ProducerEconomy.days_into_episode(), ProducerEconomy.EPISODE_DAYS]
+		_episode_label.text = "%s · d%d/%d" % [ProducerEconomy.episode_label(), ProducerEconomy.days_into_episode(), ProducerEconomy.episode_length_days()]
 
 
 func _update_ratings() -> void:

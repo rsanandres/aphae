@@ -67,12 +67,20 @@ func _ready() -> void:
 		call_deferred("_try_load_save")
 	SaveManager.skip_auto_load = false
 
-	# Cold open: on a brand-new sandbox the cast introduces itself to camera,
-	# so the first minutes have personality instead of silent wandering.
+	# The premiere: on a brand-new sandbox an authored first session runs —
+	# cast intros to camera, a seeded secret admitted to the booth by
+	# mid-morning, an event before noon, the mole case open by day 3-4.
+	# Loaded saves get none of this; their story is already running.
 	if fresh_sandbox:
-		get_tree().create_timer(4.0).timeout.connect(func() -> void:
-			ConfessionalDirector.request_cast_intros()
-		)
+		var premiere := PremiereDirector.new()
+		add_child(premiere)
+		call_deferred("_start_premiere", premiere)
+
+
+func _start_premiere(premiere: PremiereDirector) -> void:
+	# Deferred so the world scene's agents have spawned before the secret seed
+	# looks for a cast.
+	premiere.start()
 
 
 func _try_load_save() -> void:

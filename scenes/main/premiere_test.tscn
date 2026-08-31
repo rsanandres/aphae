@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cpremieretest1"]
+
+[ext_resource type="Script" path="res://scenes/main/premiere_test.gd" id="1_prem"]
+
+[node name="PremiereTest" type="Node2D"]
+script = ExtResource("1_prem")

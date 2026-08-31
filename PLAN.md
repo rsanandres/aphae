@@ -681,6 +681,37 @@ smoke-test, and `build/` + `steam_appid.txt` gitignored.
   AI content" disclosure box honestly — with the heuristic-only build this
   is canned-lines-only and simpler to answer.
 
+## The Premiere package (2026-08-31, Roadmap Now #1)
+
+The first hour now proves the game instead of hoping. Two pieces:
+
+**The 1-day pilot.** `ProducerEconomy.episode_length_days()` returns
+`PILOT_DAYS` (1) for S1E1 and `EPISODE_DAYS` (3) after — derived from
+season/episode position, so it survives save/load with zero new state. Day 1
+runs 8:00→midnight = 960 game-minutes = 16 real minutes at 1x, so the full
+drama → grade → payout → Catalog loop lands well inside the roadmap's
+30-minute acceptance window. The pilot wrap fires a pointed hint
+(`TutorialManager` on `episode_ended`, id `pilot_wrap`) sending the payout
+at the Catalog.
+
+**The premiere curve.** `scenes/main/premiere_director.gd` — deliberately
+NOT an autoload: `main.gd` creates it only on a fresh sandbox, so it cannot
+exist in a harness and needs no `auto_*` seam. Beats, each deferring to the
+organic path and only forcing what the dice failed to deliver:
+cast intros at +4s (moved from `main.gd`); a guaranteed secret (organic
+holder kept if the 35% spawn roll delivered) admitted to the booth at 10:00
+day 1; a forced light event at 11:00 day 1 if nothing organic fired; the
+mole case opened day 3 (retried day 4). The director frees itself after
+day 4. Not persisted — a mid-day-1 save keeps the 1-day pilot but loses
+un-fired nudges, accepted as a first-session experience.
+
+Also: `TutorialManager` now no-ops entirely under the headless display
+driver — every harness and CI run had been consuming hints into the real
+`user://tutorial_state.json`.
+
+**Harness:** `scenes/main/premiere_test.tscn` — **13 passed** (CI discovers
+it automatically). economy_test grew 3 pilot-length assertions (43 → 46).
+
 ## The improvement pass (2026-08-29)
 
 Six items from the standing improvement list, all landed:

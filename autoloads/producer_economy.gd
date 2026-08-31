@@ -11,6 +11,7 @@ extends Node
 ##    (which emit day_changed by hand) can never pollute real progression.
 
 const EPISODE_DAYS := 3
+const PILOT_DAYS := 1  # S1E1 wraps after one game-day: the full drama → grade → payout → Catalog loop lands in the first sitting
 const EPISODES_PER_SEASON := 5
 const STARTING_INFLUENCE := 30
 const META_PATH := "user://producer.json"
@@ -98,8 +99,14 @@ func _trickle(amount: int, reason: String) -> void:
 
 # --- Episode machinery -------------------------------------------------------
 
+func episode_length_days() -> int:
+	## The pilot is one day; every later episode is three. Derived from the
+	## season/episode position, so it survives save/load with no extra state.
+	return PILOT_DAYS if season == 1 and episode == 1 else EPISODE_DAYS
+
+
 func days_into_episode() -> int:
-	return clampi(TimeManager.day - episode_start_day + 1, 1, EPISODE_DAYS)
+	return clampi(TimeManager.day - episode_start_day + 1, 1, episode_length_days())
 
 
 func episode_label() -> String:
@@ -115,7 +122,7 @@ func _on_day_changed(day: int) -> void:
 		# Loaded an older save or a harness jumped backward — re-anchor.
 		episode_start_day = day
 		return
-	if day - episode_start_day >= EPISODE_DAYS:
+	if day - episode_start_day >= episode_length_days():
 		_finish_episode()
 		episode_start_day = day
 		return

@@ -164,7 +164,11 @@ func _maybe_confide(holder: Node2D, confidant: Node2D) -> void:
 	if secret == null or not secret.is_hidden() or confidant.agent_name in secret.known_by:
 		return
 	var rel: RelationshipEntry = holder.relationships.get_relationship(confidant.agent_name)
-	if rel.trust <= CONFIDE_TRUST_GATE or randf() > CONFIDE_CHANCE:
+	# The right corner loosens tongues: a SynergyManager zone with a confide
+	# modifier scales the roll at the pair's midpoint (set design as a verb).
+	var mid: Vector2 = (holder.global_position + confidant.global_position) / 2.0
+	var chance: float = CONFIDE_CHANCE * SynergyManager.social_multiplier(mid, "confide")
+	if rel.trust <= CONFIDE_TRUST_GATE or randf() > chance:
 		return
 	secret.known_by.append(confidant.agent_name)
 	# The confidant's memory is ABOUT the holder — a third party from anyone

@@ -81,6 +81,58 @@ func zone_names_for(obj: Node2D) -> PackedStringArray:
 	return out
 
 
+func zone_labels_for(obj: Node2D) -> PackedStringArray:
+	## Tooltip labels WITH the social modifier spelled out. A hidden 1.6x on
+	## a rare roll is invisible; a stated promise ("gossip +60%") is a plan
+	## the player builds toward — the panel's condition for this feature.
+	var out := PackedStringArray()
+	for zone in _zones:
+		if zone["a"] != obj and zone["b"] != obj:
+			continue
+		var rule: Dictionary = zone["rule"]
+		var label := str(rule.get("name", ""))
+		var suffix := _social_suffix(rule.get("social", {}))
+		if suffix != "":
+			label += " (%s)" % suffix
+		if label not in out:
+			out.append(label)
+	return out
+
+
+const _SOCIAL_WORDS := {"gossip": "gossip", "confide": "secrets", "romance": "romance"}
+
+static func _social_suffix(social: Dictionary) -> String:
+	var parts: Array[String] = []
+	for channel in ["gossip", "confide", "romance"]:
+		if not social.has(channel):
+			continue
+		var pct := roundi((float(social[channel]) - 1.0) * 100.0)
+		if pct != 0:
+			parts.append("%s %+d%%" % [_SOCIAL_WORDS[channel], pct])
+	return ", ".join(parts)
+
+
+func social_multiplier(pos: Vector2, channel: String) -> float:
+	## The strongest social-roll modifier covering pos for one channel:
+	## "gossip" (RumorMill), "confide" (SecretManager), "romance" (growth).
+	## 1.0 when no zone applies. Strongest = furthest from 1.0, so a future
+	## suppressing corner (0.7x) is not shadowed by a mild boost.
+	if not auto_enabled:
+		return 1.0
+	var best := 1.0
+	for zone in _zones:
+		var rule: Dictionary = zone["rule"]
+		var social: Dictionary = rule.get("social", {})
+		if not social.has(channel):
+			continue
+		if (zone["center"] as Vector2).distance_to(pos) > float(rule.get("radius", 60.0)):
+			continue
+		var mult := float(social[channel])
+		if absf(mult - 1.0) > absf(best - 1.0):
+			best = mult
+	return best
+
+
 static func tags_of(obj: Node2D) -> Array:
 	if not is_instance_valid(obj) or not obj is InteractableObject:
 		return []

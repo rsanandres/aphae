@@ -746,6 +746,29 @@ for it (one line in `_build()`), but the repo ships no font asset — picking
 and licensing one (needs the geometric/box glyphs the web build lacks) is
 an owner decision, not a code change.
 
+## Zones shape drama (2026-08-31, Roadmap Now #4)
+
+Placement is set design now, not Sims residue. Synergy rules may carry a
+`social` block — per-channel multipliers on the conversation-wrap rolls:
+`gossip` (RumorMill pass), `confide` (SecretManager), `romance` (interest
+growth). `SynergyManager.social_multiplier(pos, channel)` returns the
+strongest modifier covering the pair's midpoint (furthest from 1.0 wins, so
+future suppressing corners aren't shadowed; no stacking). Blocks shipped on
+dance_floor, lunch_spot, fireside, zen_pool, plus a new `gossip_circle`
+rule (social+social, kind `social` — a kind with no use/aura effects):
+two hangout spots within 60px make gossip +60%, confides +20%.
+
+**The panel's condition is honored: the modifier is PRINTED on the label.**
+`zone_labels_for()` renders "Gossip Circle (gossip +60%, secrets +20%)" and
+the object tooltip uses it — a hidden 1.6x on a rare roll is invisible; a
+stated promise is a plan the player builds toward.
+
+Plumbing: `RumorMill.maybe_pass(..., chance_scale)` and
+`update_romance(..., growth_scale)` grew optional trailing args (all old
+call sites unchanged); confide scaling lives inside `_maybe_confide` at the
+holder/confidant midpoint. Seam off → all multipliers 1.0, asserted.
+synergy_test 19 → 26.
+
 ## The improvement pass (2026-08-29)
 
 Six items from the standing improvement list, all landed:

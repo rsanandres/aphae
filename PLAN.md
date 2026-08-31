@@ -5,7 +5,7 @@ this file before touching anything. It records decisions, environment setup, and
 are expensive to rediscover — several entries here exist because someone already lost an hour
 to them.
 
-**Status:** M0–M5, M7, M8, V, E, P, A, and G shipped — every phase of the build order is done · **Branch:** `main` (CI on every push; releases by `v*` tag) · **Open:** backlog items and M6 (mobile) only
+**Status:** M0–M5, M7, M8, V, E, P, A, and G shipped — every phase of the build order is done · **Branch:** `main` (CI on every push; releases by `v*` tag) · **Open:** backlog items only (M6/mobile was cut 2026-08-31)
 **Strategy:** the forward roadmap lives in [docs/ROADMAP.md](docs/ROADMAP.md) (2026-08-30 panel synthesis); this file stays the working engineering record.
 **Maintainer:** this file is owned and kept current. Amend it when you learn something; do not
 let it drift. Two claims in it have already been proven false and corrected — a stale doc is
@@ -130,9 +130,6 @@ Three achievements (39 total: Gotcha, Kangaroo Court, The Perfect Crime).
 Save v8. Seam: `WhodunitDirector.auto_enabled`, off in every harness.
 
 ### Unscheduled
-
-**M6 — mobile port.** A real project in its own right; the interaction model, not the port, is
-the cost. See its section for the blocker list.
 
 **Before claiming anything:** run `git status`. A modified file is someone's in-flight work.
 
@@ -375,25 +372,14 @@ Hidden-role game: the Drama Director assigns one agent a secret subversive goal;
 accuse, and vote using the existing conversation/relationship systems. Much stronger now that
 Confessional Cam exists — agents lie to camera about their secret role.
 
-### 📱 M6 — Mobile port (stretch)
+### ❌ M6 — Mobile port (cut, 2026-08-31)
 
-Feasible, but a real project — the interaction model, not the port, is the cost.
-
-**In favor:** pure GDScript (78 files, ~12.7k LOC), no native deps beyond optional addons;
-`stretch/mode="canvas_items"` with `aspect="expand"` already scales; 320×214 pixel art suits
-small screens; Godot exports to Android/iOS natively.
-
-**Blockers:**
-
-| Blocker | Detail |
-|---|---|
-| No touch input | Zero `InputEventScreenTouch`/`ScreenDrag`. All interaction is keyboard + right-click menu |
-| No platform checks | Zero `OS.get_name()` / `OS.has_feature()` anywhere |
-| Renderer | `rendering_method` unset → `forward_plus`. Mobile wants `mobile` / `gl_compatibility` |
-| UI scale | Font sizes 9–10px; panels sized in absolute px |
-| Export presets | Only Windows / Linux / macOS configured |
-| Desktop-only features | Per-pixel transparency and desktop-pet mode are meaningless on mobile |
-| LLM | Ollama impossible on-device; GDLlama 1.7B is slow/hot → heuristic-only |
+**Cut by owner decision — not deferred, removed.** It was always last, never started,
+and the roadmap already listed it under "Deliberately NOT doing." The cost was the
+interaction model (touch input, platform checks, renderer, UI scale, export presets,
+desktop-only features, on-device LLM), not the port itself. If it ever comes back,
+treat it as a fresh project and re-derive the blocker list — the codebase will have
+moved.
 
 ### ✅ M7 — Secrets & lies (done, 2026-08-28)
 
@@ -679,7 +665,7 @@ smoke-test, and `build/` + `steam_appid.txt` gitignored.
    (lifetime meta) syncing across machines is a FEATURE here, not a risk.
 6. **Steam Deck (later)** — 640x360 viewport scales cleanly to 1280x800, but
    the interaction model is mouse-first. Playable-with-touch is realistic;
-   Verified needs controller work. Park with M6.
+   Verified needs controller work. Unscheduled (was parked with M6, which is cut).
 
 ### Steamworks side (owner's checklist, no code)
 

@@ -23,6 +23,18 @@ func _ready() -> void:
 	SynergyManager.auto_enabled = false
 	SecretManager.auto_assign_enabled = false
 	SecretManager.auto_admit_enabled = false
+	# The rest of the standard neutralization block. This harness was the one
+	# holdout without it, and test 8's manual day_changed(3) paid for that at
+	# ~flake rate on CI: an organic event roll (or a spontaneous arc) landed a
+	# 6.0 narrative event first, the director recorded a "drama" quip, and its
+	# 8s cooldown silently swallowed the host recap under test — the
+	# cooldown-swallow class, again. One deliberate exception: TimeManager is
+	# NOT paused here, because the director's cooldown only decays while the
+	# clock runs and _cool() depends on that.
+	for definition in EventManager.get_available_events():
+		definition.probability = 0.0
+	ArcManager.auto_start_enabled = false
+	SaveManager._last_auto_save_day = 999999
 	EventBus.confessional_recorded.connect(_on_confessional)
 	_build_world()
 	_spawn(4)

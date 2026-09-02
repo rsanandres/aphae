@@ -681,6 +681,25 @@ smoke-test, and `build/` + `steam_appid.txt` gitignored.
   AI content" disclosure box honestly — with the heuristic-only build this
   is canned-lines-only and simpler to answer.
 
+## The host-recap flake, fourth sighting of the cooldown-swallow (2026-09-02)
+
+CI's `tests` workflow went red on main — including on the docs-only
+roadmap commit, so it predated all feature work. confessional_test was
+the ONE harness missing the standard neutralization block: its manual
+`day_changed(3)` (test 8) let EventManager roll organic events and
+ArcManager start spontaneous arcs, and EventManager's handler connects
+first (autoload order), so a fired event's 6.0 narrative recorded a
+"drama" quip whose 8s cooldown silently swallowed the host recap under
+test. `fired=true kind_ok=false` — the cooldown-swallow class, again.
+
+Reproduced deterministically: a sandbox copy with event probabilities
+x10 fails the old file with the exact CI signature and passes the fixed
+one 3/3 under the same odds. Fix: zero probabilities +
+`ArcManager.auto_start_enabled = false` + the autosave guard in
+confessional_test. **Deliberate exception: this harness must NOT set
+`TimeManager.is_paused = true`** — ConfessionalDirector._process only
+decays the cooldown while the clock runs, and `_cool()` depends on it.
+
 ## The Premiere package (2026-08-31, Roadmap Now #1)
 
 The first hour now proves the game instead of hoping. Two pieces:

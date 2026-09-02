@@ -75,7 +75,7 @@ func _ready() -> void:
 	_episode_label = Label.new()
 	_episode_label.add_theme_font_size_override("font_size", 10)
 	_episode_label.add_theme_color_override("font_color", UIPalette.TEXT_DIM)
-	_episode_label.tooltip_text = "Season and episode. Every %d days is an episode; drama sets its score." % ProducerEconomy.EPISODE_DAYS
+	_episode_label.tooltip_text = "Season and episode. The pilot wraps in %d day, later episodes in %d; drama sets the score." % [ProducerEconomy.PILOT_DAYS, ProducerEconomy.EPISODE_DAYS]
 	_episode_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	status_bar.add_child(_episode_label)
 	var sep6 := VSeparator.new()
@@ -372,7 +372,7 @@ func _update_drama() -> void:
 
 func _update_episode_label() -> void:
 	if _episode_label:
-		_episode_label.text = "%s · d%d/%d" % [ProducerEconomy.episode_label(), ProducerEconomy.days_into_episode(), ProducerEconomy.EPISODE_DAYS]
+		_episode_label.text = "%s · d%d/%d" % [ProducerEconomy.episode_label(), ProducerEconomy.days_into_episode(), ProducerEconomy.episode_length_days()]
 
 
 func _update_ratings() -> void:
@@ -653,7 +653,7 @@ func _setup_icon_bar() -> void:
 	bar.add_child(sep2)
 
 	_add_panel_btn(bar, "Shop", "Producer's Catalog [B]", "catalog", _catalog_panel)
-	_add_icon_btn(bar, "God", "God Mode [Tab]", func() -> void: _toggle_god_mode())
+	_add_icon_btn(bar, "Build", "Set Design [Tab] — place objects for Influence; Creative toggle inside", func() -> void: _toggle_god_mode())
 	_add_icon_btn(bar, "Awards", "Achievements", func() -> void: _toggle_achievements())
 	_add_icon_btn(bar, "Set", "Settings", func() -> void: _toggle_settings())
 

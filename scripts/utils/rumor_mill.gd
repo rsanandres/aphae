@@ -8,14 +8,16 @@ const SECRET_TRUST_GATE := 60.0  # you only whisper secrets to people you trust
 const MIN_IMPORTANCE := 5.0
 
 
-static func maybe_pass(speaker: Node2D, listener: Node2D) -> bool:
+static func maybe_pass(speaker: Node2D, listener: Node2D, chance_scale: float = 1.0) -> bool:
 	## One roll: the speaker may pass their juiciest recent memory about a
 	## third party to the listener, secondhand and slightly warped.
-	## Returns true when something was passed.
+	## chance_scale is the location's social modifier (SynergyManager zones —
+	## gossip flows faster around the right furniture). Returns true when
+	## something was passed.
 	if not is_instance_valid(speaker) or not is_instance_valid(listener):
 		return false
 	var rel: RelationshipEntry = speaker.relationships.get_relationship(listener.agent_name)
-	var chance: float = BASE_CHANCE * clampf(rel.trust / 60.0, 0.3, 1.2)
+	var chance: float = BASE_CHANCE * clampf(rel.trust / 60.0, 0.3, 1.2) * chance_scale
 	if randf() > chance:
 		return false
 

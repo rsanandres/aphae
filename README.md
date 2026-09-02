@@ -25,7 +25,7 @@ Out of the box the cast runs on a rich personality-driven heuristic brain. If yo
 
 ![Confessional Cam](docs/screenshots/02_confessional.png)
 
-*Drama strikes, and an agent cuts away to the confessional booth. Every line is generated live from that character's personality and memories — nothing here is scripted.*
+*Drama strikes, and an agent cuts away to the confessional booth. With a local model connected, every line is written live from that character's personality and memories; without one, a personality-aware fallback keeps the show on the air.*
 
 | | |
 |:--:|:--:|
@@ -104,14 +104,16 @@ godot --editor project.godot   # or: godot --path .
 The game is complete without an LLM — the heuristic brain has hundreds of personality-flavored lines. For live-written dialogue, install [Ollama](https://ollama.ai) and pull a model:
 
 ```bash
-ollama pull smollm2:1.7b
+ollama pull gemma3:4b
 ```
+
+A 4B-class model is the sweet spot — distinct voices per personality, fast enough on a laptop. On a weaker machine `ollama pull smollm2:1.7b` works too, with flatter voices.
 
 Then set the backend in **Settings → LLM** from the main menu (Ollama is auto-detected at `localhost:11434`).
 
 ## Development
 
-- **Tests**: eight headless harnesses, 300+ assertions, plus windowed layout/interaction sweeps. One command runs everything the way CI does:
+- **Tests**: nine headless harnesses, 370+ assertions, plus windowed layout/interaction sweeps. One command runs everything the way CI does:
 
   ```bash
   GODOT=/path/to/godot bash tools/run_tests.sh

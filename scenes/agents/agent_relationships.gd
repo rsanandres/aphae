@@ -44,7 +44,7 @@ func update_after_interaction(other_name: String, context: String, positive: boo
 	EventBus.relationship_changed.emit(_agent.agent_name, other_name, rel)
 
 
-func update_romance(other_name: String, positive: bool = true) -> void:
+func update_romance(other_name: String, positive: bool = true, growth_scale: float = 1.0) -> void:
 	## Grow romantic interest after a good conversation. Until this existed,
 	## romantic_interest was never incremented anywhere in the codebase, so
 	## confessions (which require > 40) could never organically succeed.
@@ -68,6 +68,9 @@ func update_romance(other_name: String, positive: bool = true) -> void:
 		growth += (_agent.personality.openness - 0.5) * 0.4
 	if growth <= 0.0:
 		return
+	# The location's social modifier (SynergyManager zones): romance kindles
+	# faster in the right corner of the office.
+	growth *= growth_scale
 	rel.romantic_interest = clampf(rel.romantic_interest + growth, 0.0, 100.0)
 	rel.last_romantic_event_day = TimeManager.day
 	if rel.romantic_interest > Config.ROMANCE_CRUSH_THRESHOLD \

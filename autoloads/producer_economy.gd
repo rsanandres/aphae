@@ -11,6 +11,7 @@ extends Node
 ##    (which emit day_changed by hand) can never pollute real progression.
 
 const EPISODE_DAYS := 3
+const PILOT_DAYS := 1  # S1E1 wraps after one game-day: the full drama → grade → payout → Catalog loop lands in the first sitting
 const EPISODES_PER_SEASON := 5
 const STARTING_INFLUENCE := 30
 const META_PATH := "user://producer.json"
@@ -21,6 +22,11 @@ const TRICKLE_CAP_PER_DAY := 15  # 10 exactly equaled the active-play daily spen
 var influence: int = STARTING_INFLUENCE
 var season: int = 1
 var episode: int = 1
+# Creative mode: the labeled economy bypass. Turning it on ever marks the
+# save for good (creative_used) — show scores and free placement don't mix
+# silently. Show mode routes ALL placement through Influence instead.
+var creative_mode: bool = false
+var creative_used: bool = false
 var episode_start_day: int = 1
 var purchased_upgrades: Array = []
 var boosts: Dictionary = {}  # e.g. {"doc_day_until": game_minutes}
@@ -52,15 +58,28 @@ func _ready() -> void:
 	_load_meta()
 	EventBus.day_changed.connect(_on_day_changed)
 	EventBus.time_tick.connect(_on_time_tick)
-	EventBus.narrative_event.connect(func(_t: String, _a: Array, importance: float) -> void:
-		if importance >= 7.0:
-			_trickle(2, "big moment")
-		_beats += 1 if importance >= 5.0 else 0
-	)
+	EventBus.narrative_event.connect(_on_narrative_event)
 	EventBus.romance_started.connect(func(_a: String, _b: String) -> void: _trickle(3, "romance"))
 	EventBus.confession_made.connect(func(_a: String, _b: String, _ok: bool) -> void: _trickle(3, "confession"))
 	EventBus.agent_died.connect(func(_n: String, _c: String) -> void: _trickle(5, "tragedy"))
 	EventBus.event_triggered.connect(func(_id: String, _n: Array) -> void: _trickle(1, "event"))
+
+
+func _on_narrative_event(text: String, agents: Array, importance: float) -> void:
+	if importance >= 7.0:
+		_trickle(2, "big moment")
+	if importance < 5.0:
+		return
+	# Produced beats: a beat that lands inside one of the producer's open
+	# attribution windows (ImpactLog) counts double and says so. Before this,
+	# a nudge announced itself at 3.5 and could never clear the 5.0 beat bar —
+	# producing the show was mechanically worthless to the ratings. Read-only
+	# against the log; nothing here writes back into the simulation.
+	if ImpactLog.is_attributed(agents):
+		_beats += 2
+		EventBus.produced_beat.emit(text)
+	else:
+		_beats += 1
 
 
 # --- Currency ----------------------------------------------------------------
@@ -98,8 +117,14 @@ func _trickle(amount: int, reason: String) -> void:
 
 # --- Episode machinery -------------------------------------------------------
 
+func episode_length_days() -> int:
+	## The pilot is one day; every later episode is three. Derived from the
+	## season/episode position, so it survives save/load with no extra state.
+	return PILOT_DAYS if season == 1 and episode == 1 else EPISODE_DAYS
+
+
 func days_into_episode() -> int:
-	return clampi(TimeManager.day - episode_start_day + 1, 1, EPISODE_DAYS)
+	return clampi(TimeManager.day - episode_start_day + 1, 1, episode_length_days())
 
 
 func episode_label() -> String:
@@ -115,7 +140,7 @@ func _on_day_changed(day: int) -> void:
 		# Loaded an older save or a harness jumped backward — re-anchor.
 		episode_start_day = day
 		return
-	if day - episode_start_day >= EPISODE_DAYS:
+	if day - episode_start_day >= episode_length_days():
 		_finish_episode()
 		episode_start_day = day
 		return
@@ -191,6 +216,57 @@ static func grade_for(score: int) -> String:
 	elif score >= 20:
 		return "C"
 	return "D"
+
+
+# --- Creative mode and show-mode placement -----------------------------------
+
+## Non-catalog placeables price and unlock by CATEGORY; a catalog entry's own
+## price/unlock gates always win (specific over generic). "classic" is the
+## bespoke thirteen. Tiers are lifetime episodes — cross-save meta, so a
+## veteran's fresh save starts with their toolbox open.
+const CATEGORY_PRICE := {
+	"classic": 10, "food": 10, "comfort": 12, "decor": 6,
+	"work": 14, "fun": 18, "wellness": 16, "tech": 18, "weird": 22,
+}
+const CATEGORY_UNLOCK_EPISODES := {
+	"classic": 0, "food": 0, "comfort": 0, "decor": 0,
+	"work": 1, "fun": 1, "wellness": 2, "tech": 2, "weird": 4,
+}
+
+
+func set_creative_mode(on: bool) -> void:
+	creative_mode = on
+	if on:
+		creative_used = true
+	EventBus.creative_mode_changed.emit(on)
+
+
+func placement_price(object_id: String) -> int:
+	var item := get_item(object_id)
+	if not item.is_empty():
+		return int(item.get("price", 10))
+	return int(CATEGORY_PRICE.get(_category_of(object_id), 12))
+
+
+func is_placement_unlocked(object_id: String) -> bool:
+	var item := get_item(object_id)
+	if not item.is_empty():
+		return is_item_unlocked(object_id)
+	return lifetime_episodes >= int(CATEGORY_UNLOCK_EPISODES.get(_category_of(object_id), 0))
+
+
+func placement_unlock_text(object_id: String) -> String:
+	var item := get_item(object_id)
+	if not item.is_empty():
+		return unlock_description(object_id)
+	var needed := int(CATEGORY_UNLOCK_EPISODES.get(_category_of(object_id), 0))
+	return "Locked — complete %d episode%s" % [needed, "" if needed == 1 else "s"]
+
+
+static func _category_of(object_id: String) -> String:
+	if SynergyManager.BESPOKE_TAGS.has(object_id):
+		return "classic"
+	return str(DataObject.get_def(object_id).get("category", "decor"))
 
 
 # --- Catalog -----------------------------------------------------------------
@@ -282,6 +358,8 @@ func get_save_state() -> Dictionary:
 		"purchased_upgrades": purchased_upgrades.duplicate(),
 		"boosts": boosts.duplicate(),
 		"last_episode_score": last_episode_score,
+		"creative_mode": creative_mode,
+		"creative_used": creative_used,
 		"sample_sum": _sample_sum,
 		"sample_count": _sample_count,
 		"peak_drama": _peak_drama,
@@ -297,6 +375,8 @@ func load_save_state(data: Dictionary) -> void:
 	purchased_upgrades = data.get("purchased_upgrades", []).duplicate()
 	boosts = data.get("boosts", {}).duplicate()
 	last_episode_score = int(data.get("last_episode_score", -1))
+	creative_mode = bool(data.get("creative_mode", false))
+	creative_used = bool(data.get("creative_used", false))
 	_sample_sum = float(data.get("sample_sum", 0.0))
 	_sample_count = int(data.get("sample_count", 0))
 	_peak_drama = float(data.get("peak_drama", 0.0))

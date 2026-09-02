@@ -149,8 +149,30 @@ func _run() -> void:
 	_check("removing a member dissolves the zone",
 		not "Breakfast Corner" in SynergyManager.zone_names_for(espresso))
 
+	# --- Social zones shape drama --------------------------------------------
+	var cooler := _place("water_cooler", Vector2(300, 60))
+	var arcade := _place("arcade_cabinet", Vector2(340, 60))
+	SynergyManager.rebuild()
+	_check("two hangouts form the Gossip Circle",
+		"Gossip Circle" in SynergyManager.zone_names_for(cooler))
+	var circle_center := Vector2(320, 60)
+	_check("the gossip roll is boosted inside",
+		is_equal_approx(SynergyManager.social_multiplier(circle_center, "gossip"), 1.6))
+	_check("confide rides along at its own strength",
+		is_equal_approx(SynergyManager.social_multiplier(circle_center, "confide"), 1.2))
+	_check("an unlisted channel is untouched",
+		is_equal_approx(SynergyManager.social_multiplier(circle_center, "romance"), 1.0))
+	_check("outside the radius the floor is normal",
+		is_equal_approx(SynergyManager.social_multiplier(Vector2(600, 300), "gossip"), 1.0))
+	# The panel's condition: the modifier is PRINTED on the zone label — a
+	# hidden 1.6x on a rare roll is invisible; a stated promise is a plan.
+	_check("the tooltip label states the promise",
+		"Gossip Circle (gossip +60%, secrets +20%)" in SynergyManager.zone_labels_for(cooler))
+
 	# --- The seam -------------------------------------------------------------
 	SynergyManager.auto_enabled = false
+	_check("the seam silences social modifiers",
+		is_equal_approx(SynergyManager.social_multiplier(circle_center, "gossip"), 1.0))
 	agent.needs.set_value(NeedType.Type.PRODUCTIVITY, 50.0)
 	EventBus.agent_action_completed.emit(agent, ActionType.Type.GO_TO_OBJECT, booth)
 	_check("the seam silences use bonuses",
@@ -161,7 +183,7 @@ func _run() -> void:
 		is_equal_approx(agent.needs.get_value(NeedType.Type.HEALTH), 50.0))
 	SynergyManager.auto_enabled = true
 
-	for leftover: Node2D in [espresso, coffee, pingpong, foosball, jukebox, booth, fountain, zen]:
+	for leftover: Node2D in [espresso, coffee, pingpong, foosball, jukebox, booth, fountain, zen, cooler, arcade]:
 		if is_instance_valid(leftover):
 			_world.remove_object(leftover)
 

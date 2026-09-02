@@ -67,13 +67,10 @@ func _request_llm_decision(needs: AgentNeeds, nearby_objects: Array, nearby_agen
 	var system_prompt := PromptBuilder.build("system", {
 		"name": personality.agent_name if personality else _agent.agent_name,
 		"description": personality.description if personality else "",
-		"openness": personality.openness if personality else 0.5,
-		"conscientiousness": personality.conscientiousness if personality else 0.5,
-		"extraversion": personality.extraversion if personality else 0.5,
-		"agreeableness": personality.agreeableness if personality else 0.5,
-		"neuroticism": personality.neuroticism if personality else 0.5,
-		"speech_style": personality.speech_style if personality else "",
-		"quirks": ", ".join(personality.quirks) if personality else "",
+		# Verbalized Big Five: raw 0-1 numbers steered small models nowhere.
+		"trait_lines": personality.get_trait_lines() if personality else "- You are hard to predict.",
+		"speech_style": personality.speech_style if personality else "casual",
+		"quirks": ", ".join(personality.quirks) if personality else "(none)",
 	})
 
 	var health_val: float = needs_values.get(NeedType.Type.HEALTH, 100.0)
@@ -111,6 +108,7 @@ func _request_llm_decision(needs: AgentNeeds, nearby_objects: Array, nearby_agen
 		_decision_format,
 		_on_llm_response.bind(nearby_objects, nearby_agents),
 		LLMManager.Priority.NORMAL,
+		{"temperature": 0.4},  # decisions want judgment, not sparkle
 	)
 
 

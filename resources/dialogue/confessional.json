@@ -1,0 +1,83 @@
+{
+  "_readme": "Confessional heuristic pools, externalized (voice pipeline step 1). Keys: kind -> bucket -> lines. Buckets: base (always), anxious/catty/bold (personality gates), even (mid-range deadpan), partner/lost/enemy (only when the event text yields that token). Tokens in {braces} are filled at draw time; a line whose token is unavailable is skipped for that draw. Grow these pools with tools/generate_dialogue.py against a local model.",
+  "secret": {
+    "base": [
+      "Camera only? Fine. I {detail}. There. I said it.",
+      "Okay. Deep breath. The truth is... I {detail}. Cut that. Actually, keep it.",
+      "Nobody out there knows this, but I {detail}. And honestly? Relief."
+    ],
+    "anxious": ["If this ever airs I'm finished, but — I {detail}. Oh no."],
+    "catty": ["Yes, I {detail}. And I'd do it again. Next question."],
+    "bold": ["Since we're being honest: I {detail}. Stay tuned."]
+  },
+  "farewell": {
+    "base": [
+      "That's a wrap on me. Try not to fall apart without me.",
+      "I came, I worked, I left. Somebody water the plant.",
+      "No regrets. Well. A few. But you don't get to hear them."
+    ],
+    "bold": ["This office couldn't hold me. Nothing personal."],
+    "anxious": ["I just hope leaving isn't a huge mistake. It might be. Bye."],
+    "catty": ["Finally. You know who you are, and you know what you did."]
+  },
+  "intro": {
+    "base": [
+      "I'm {name} — {desc}. Remember the name.",
+      "They call me {name}. I'm {desc}, and I'm not here to blend in.",
+      "{name}. {desc_cap}. That's the whole pitch."
+    ],
+    "bold": ["I'm {name}, and let's be honest — this office just got interesting."],
+    "anxious": ["Hi, um, {name}. I really hope this goes well. It probably won't."],
+    "catty": ["I'm {name}. I already have opinions about everyone here."]
+  },
+  "romance": {
+    "base": [
+      "Honestly? I did not see that coming. But I'm not mad about it.",
+      "People are gonna talk. Let them talk.",
+      "Is it real? Ask me again in three days."
+    ],
+    "anxious": ["I've replayed it a hundred times. What if it all falls apart?"],
+    "bold": ["I make things happen. This place needed a little heat."],
+    "even": ["We're keeping it professional. At work. Mostly."],
+    "partner": [
+      "{partner}. Yeah. I know exactly what I'm doing. ...No I don't.",
+      "Whatever happens with {partner}, the cameras got it first. Great."
+    ]
+  },
+  "tragedy": {
+    "base": [
+      "You never think it'll actually happen. And then it does.",
+      "We weren't close, but... the office feels different now.",
+      "I keep expecting them to walk back in."
+    ],
+    "anxious": ["I can't stop thinking about it. Who's next?"],
+    "even": ["Somebody should water their plant. I'll do it. It's fine."],
+    "lost": [
+      "{lost} deserved better than this place gave them.",
+      "I had a joke ready for {lost} this morning. Guess I'll keep it."
+    ]
+  },
+  "rivalry": {
+    "base": [
+      "They started it. We're just going to finish it.",
+      "May the best team win. It'll be us.",
+      "There's us, and there's them. Pick a side."
+    ],
+    "catty": ["Bless their hearts. They really think they stand a chance."],
+    "bold": ["Bring it. I've been waiting for a reason."],
+    "even": ["I don't do drama. I do winning quietly."],
+    "enemy": ["{enemy}? Never heard of them. Kidding. We're going to bury them."]
+  },
+  "drama": {
+    "base": [
+      "You can't make this stuff up. Except, well, here we are.",
+      "I'm just here to do my job. The chaos finds me.",
+      "I have seen things at this water cooler. Things.",
+      "HR is going to LOVE this week's footage.",
+      "Don't look at me. I was at my desk. Allegedly."
+    ],
+    "catty": ["I'm not saying I told you so. But I told you so."],
+    "anxious": ["My stomach's been in knots all day. Something's off."],
+    "even": ["On a scale of one to office meltdown? Solid seven."]
+  }
+}

@@ -62,7 +62,9 @@ func check_health() -> void:
 	pass
 
 
-func request_chat(messages: Array, format: Dictionary, callback: Callable, _priority: int = 0) -> void:
+func request_chat(messages: Array, format: Dictionary, callback: Callable, _priority: int = 0, _options: Dictionary = {}) -> void:
+	# _options (per-task sampling overrides) is accepted for signature parity
+	# with the Ollama backend; GDLlama's sampling is configured at load time.
 	if not is_available:
 		callback.call(false, {}, "Bundled model not loaded")
 		return

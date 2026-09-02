@@ -78,14 +78,17 @@ func _process(delta: float) -> void:
 			_check_backends()
 
 
-func request_chat(messages: Array, format: Dictionary, callback: Callable, priority: int = Priority.NORMAL, metadata: Dictionary = {}) -> void:
+func request_chat(messages: Array, format: Dictionary, callback: Callable, priority: int = Priority.NORMAL, options: Dictionary = {}) -> void:
+	## options carries per-task sampling overrides ({"temperature": 0.4} for
+	## decisions, 0.9 for dialogue); the backend's configured values fill in
+	## whatever a call site does not override.
 	if not is_available or _active_backend == null:
 		# Queue locally, drain as failures if no backend comes up
 		callback.call(false, {}, "No LLM backend available")
 		return
 
 	# Priority insertion into backend queue
-	_active_backend.request_chat(messages, format, callback, priority)
+	_active_backend.request_chat(messages, format, callback, priority, options)
 
 
 func get_queue_size() -> int:

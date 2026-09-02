@@ -2,7 +2,11 @@
   "name": "Alice",
   "description": "A driven project manager who thrives on structure and getting things done. She's the unofficial leader of the office.",
   "backstory": "Alice grew up organizing neighborhood events as a kid. She studied business management and has always been the person people turn to when things need to get done.",
-  "color": [0.39, 0.58, 0.93],
+  "color": [
+    0.39,
+    0.58,
+    0.93
+  ],
   "big_five": {
     "openness": 0.4,
     "conscientiousness": 0.9,
@@ -21,6 +25,10 @@
     "Drinks exactly 3 cups of coffee per day"
   ],
   "speech_style": "Direct and professional but warm. Uses phrases like 'let's focus up' and 'sounds like a plan'. Occasionally makes dry jokes.",
+  "voice_lines": [
+    "Let's focus up — we can gossip after the deadline. Kidding. Mostly.",
+    "Sounds like a plan. Write it down before it evaporates."
+  ],
   "need_decay_multipliers": {
     "energy": 1.0,
     "hunger": 1.1,

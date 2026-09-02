@@ -10,7 +10,7 @@ const POOL_SIZE := 3
 
 var backend_name: String = "local"
 var url: String = "http://localhost:11434"
-var model: String = "smollm2:1.7b"
+var model: String = "gemma3:4b"
 var temperature: float = 0.7
 var num_predict: int = 150
 var is_available: bool = false
@@ -33,7 +33,7 @@ func _ready() -> void:
 func configure(config: Dictionary) -> void:
 	backend_name = config.get("name", "local")
 	url = config.get("url", "http://localhost:11434")
-	model = config.get("model", "smollm2:1.7b")
+	model = config.get("model", "gemma3:4b")
 	temperature = config.get("temperature", 0.7)
 	num_predict = config.get("num_predict", 150)
 
@@ -54,11 +54,12 @@ func check_health() -> void:
 	check_http.request(url, [], HTTPClient.METHOD_GET)
 
 
-func request_chat(messages: Array, format: Dictionary, callback: Callable, _priority: int = 0) -> void:
+func request_chat(messages: Array, format: Dictionary, callback: Callable, _priority: int = 0, options: Dictionary = {}) -> void:
 	_queue.append({
 		"messages": messages,
 		"format": format,
 		"callback": callback,
+		"options": options,
 	})
 	_process_next()
 
@@ -82,14 +83,17 @@ func _process_next() -> void:
 	_pool_busy[pool_idx] = true
 	var http: HTTPRequest = _pool[pool_idx]
 	var entry: Dictionary = _queue.pop_front()
+	# Per-task overrides win over the configured defaults: a decision call
+	# runs cool (0.4) while a dialogue call runs hot (0.9) on the same backend.
+	var overrides: Dictionary = entry.get("options", {})
 	var body := {
 		"model": model,
 		"messages": entry["messages"],
 		"stream": false,
 		"keep_alive": "30m",
 		"options": {
-			"temperature": temperature,
-			"num_predict": num_predict,
+			"temperature": float(overrides.get("temperature", temperature)),
+			"num_predict": int(overrides.get("num_predict", num_predict)),
 		},
 	}
 	if not entry["format"].is_empty():

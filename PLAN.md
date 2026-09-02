@@ -5,7 +5,7 @@ this file before touching anything. It records decisions, environment setup, and
 are expensive to rediscover — several entries here exist because someone already lost an hour
 to them.
 
-**Status:** M0–M5, M7, M8, V, E, P, A, and G shipped — every phase of the build order is done · **Branch:** `main` (CI on every push; releases by `v*` tag) · **Open:** backlog items and M6 (mobile) only
+**Status:** M0–M5, M7, M8, V, E, P, A, and G shipped — every phase of the build order is done · **Branch:** `main` (CI on every push; releases by `v*` tag) · **Open:** backlog items only (M6/mobile was cut 2026-08-31)
 **Strategy:** the forward roadmap lives in [docs/ROADMAP.md](docs/ROADMAP.md) (2026-08-30 panel synthesis); this file stays the working engineering record.
 **Maintainer:** this file is owned and kept current. Amend it when you learn something; do not
 let it drift. Two claims in it have already been proven false and corrected — a stale doc is
@@ -130,9 +130,6 @@ Three achievements (39 total: Gotcha, Kangaroo Court, The Perfect Crime).
 Save v8. Seam: `WhodunitDirector.auto_enabled`, off in every harness.
 
 ### Unscheduled
-
-**M6 — mobile port.** A real project in its own right; the interaction model, not the port, is
-the cost. See its section for the blocker list.
 
 **Before claiming anything:** run `git status`. A modified file is someone's in-flight work.
 
@@ -375,25 +372,14 @@ Hidden-role game: the Drama Director assigns one agent a secret subversive goal;
 accuse, and vote using the existing conversation/relationship systems. Much stronger now that
 Confessional Cam exists — agents lie to camera about their secret role.
 
-### 📱 M6 — Mobile port (stretch)
+### ❌ M6 — Mobile port (cut, 2026-08-31)
 
-Feasible, but a real project — the interaction model, not the port, is the cost.
-
-**In favor:** pure GDScript (78 files, ~12.7k LOC), no native deps beyond optional addons;
-`stretch/mode="canvas_items"` with `aspect="expand"` already scales; 320×214 pixel art suits
-small screens; Godot exports to Android/iOS natively.
-
-**Blockers:**
-
-| Blocker | Detail |
-|---|---|
-| No touch input | Zero `InputEventScreenTouch`/`ScreenDrag`. All interaction is keyboard + right-click menu |
-| No platform checks | Zero `OS.get_name()` / `OS.has_feature()` anywhere |
-| Renderer | `rendering_method` unset → `forward_plus`. Mobile wants `mobile` / `gl_compatibility` |
-| UI scale | Font sizes 9–10px; panels sized in absolute px |
-| Export presets | Only Windows / Linux / macOS configured |
-| Desktop-only features | Per-pixel transparency and desktop-pet mode are meaningless on mobile |
-| LLM | Ollama impossible on-device; GDLlama 1.7B is slow/hot → heuristic-only |
+**Cut by owner decision — not deferred, removed.** It was always last, never started,
+and the roadmap already listed it under "Deliberately NOT doing." The cost was the
+interaction model (touch input, platform checks, renderer, UI scale, export presets,
+desktop-only features, on-device LLM), not the port itself. If it ever comes back,
+treat it as a fresh project and re-derive the blocker list — the codebase will have
+moved.
 
 ### ✅ M7 — Secrets & lies (done, 2026-08-28)
 
@@ -679,7 +665,7 @@ smoke-test, and `build/` + `steam_appid.txt` gitignored.
    (lifetime meta) syncing across machines is a FEATURE here, not a risk.
 6. **Steam Deck (later)** — 640x360 viewport scales cleanly to 1280x800, but
    the interaction model is mouse-first. Playable-with-touch is realistic;
-   Verified needs controller work. Park with M6.
+   Verified needs controller work. Unscheduled (was parked with M6, which is cut).
 
 ### Steamworks side (owner's checklist, no code)
 
@@ -694,6 +680,177 @@ smoke-test, and `build/` + `steam_appid.txt` gitignored.
 - Content survey: procedural/LLM text means checking the "user-generated /
   AI content" disclosure box honestly — with the heuristic-only build this
   is canned-lines-only and simpler to answer.
+
+## The Premiere package (2026-08-31, Roadmap Now #1)
+
+The first hour now proves the game instead of hoping. Two pieces:
+
+**The 1-day pilot.** `ProducerEconomy.episode_length_days()` returns
+`PILOT_DAYS` (1) for S1E1 and `EPISODE_DAYS` (3) after — derived from
+season/episode position, so it survives save/load with zero new state. Day 1
+runs 8:00→midnight = 960 game-minutes = 16 real minutes at 1x, so the full
+drama → grade → payout → Catalog loop lands well inside the roadmap's
+30-minute acceptance window. The pilot wrap fires a pointed hint
+(`TutorialManager` on `episode_ended`, id `pilot_wrap`) sending the payout
+at the Catalog.
+
+**The premiere curve.** `scenes/main/premiere_director.gd` — deliberately
+NOT an autoload: `main.gd` creates it only on a fresh sandbox, so it cannot
+exist in a harness and needs no `auto_*` seam. Beats, each deferring to the
+organic path and only forcing what the dice failed to deliver:
+cast intros at +4s (moved from `main.gd`); a guaranteed secret (organic
+holder kept if the 35% spawn roll delivered) admitted to the booth at 10:00
+day 1; a forced light event at 11:00 day 1 if nothing organic fired; the
+mole case opened day 3 (retried day 4). The director frees itself after
+day 4. Not persisted — a mid-day-1 save keeps the 1-day pilot but loses
+un-fired nudges, accepted as a first-session experience.
+
+Also: `TutorialManager` now no-ops entirely under the headless display
+driver — every harness and CI run had been consuming hints into the real
+`user://tutorial_state.json`.
+
+**Harness:** `scenes/main/premiere_test.tscn` — **13 passed** (CI discovers
+it automatically). economy_test grew 3 pilot-length assertions (43 → 46).
+
+## Produced beats (2026-08-31, Roadmap Now #2)
+
+The producer verb finally moves the ratings. `ProducerEconomy`'s beat
+counter (narrative events ≥ 5.0) now asks `ImpactLog.is_attributed(agents)`
+— a new read-only query over the existing attribution windows — and an
+attributed beat counts DOUBLE and emits `produced_beat`, which the event
+notification feed renders as "Viewers loved that". Fixes the verified
+absurdity that a nudge announces itself at 3.5 and could never clear the
+5.0 beat bar: the intervention itself still isn't a beat, but the drama it
+causes inside its 180-minute window now pays twice. One read-only hook;
+ImpactLog still writes nothing into the simulation. producer_test 30 → 33.
+
+## Broadcast chrome + hard cuts (2026-08-31, Roadmap Now #3)
+
+`scenes/ui/broadcast_overlay.gd` (created by main.gd, windowed only): a
+blinking `• LIVE` bug tucked under the status bar (it reads HOLD on pause),
+a translucent `APHAE-1` channel bug bottom-right, and a shader vignette on
+its own CanvasLayer (1) so it darkens the world but never the UI. Cuts are
+television now: `BroadcastDirector._do_cut` snaps position, calls the
+camera's `reset_smoothing()` + a new `punch()` (land 8% tight, settle in
+0.22s), and emits `broadcast_cut`, which the overlay answers with a
+one-frame flash. Desktop-pet mode hides the chrome (`set_shown`).
+
+Verified on gui_check captures under xvfb (this container renders windowed
+via Mesa/llvmpipe — `xvfb-run -a godot --rendering-method gl_compatibility
+--rendering-driver opengl3` works where true headless gives blank PNGs).
+Two findings: a DAY/time stamp under LIVE duplicated the status bar and was
+cut; the dot is `•` not `●` because the web font has no geometric block.
+
+**Not done from this roadmap item:** the pixel font swap. UITheme is wired
+for it (one line in `_build()`), but the repo ships no font asset — picking
+and licensing one (needs the geometric/box glyphs the web build lacks) is
+an owner decision, not a code change.
+
+## Zones shape drama (2026-08-31, Roadmap Now #4)
+
+Placement is set design now, not Sims residue. Synergy rules may carry a
+`social` block — per-channel multipliers on the conversation-wrap rolls:
+`gossip` (RumorMill pass), `confide` (SecretManager), `romance` (interest
+growth). `SynergyManager.social_multiplier(pos, channel)` returns the
+strongest modifier covering the pair's midpoint (furthest from 1.0 wins, so
+future suppressing corners aren't shadowed; no stacking). Blocks shipped on
+dance_floor, lunch_spot, fireside, zen_pool, plus a new `gossip_circle`
+rule (social+social, kind `social` — a kind with no use/aura effects):
+two hangout spots within 60px make gossip +60%, confides +20%.
+
+**The panel's condition is honored: the modifier is PRINTED on the label.**
+`zone_labels_for()` renders "Gossip Circle (gossip +60%, secrets +20%)" and
+the object tooltip uses it — a hidden 1.6x on a rare roll is invisible; a
+stated promise is a plan the player builds toward.
+
+Plumbing: `RumorMill.maybe_pass(..., chance_scale)` and
+`update_romance(..., growth_scale)` grew optional trailing args (all old
+call sites unchanged); confide scaling lives inside `_maybe_confide` at the
+holder/confidant midpoint. Seam off → all multipliers 1.0, asserted.
+synergy_test 19 → 26.
+
+## The economy gate: Set Design vs Creative (2026-08-31, Roadmap Now #5)
+
+Tab no longer voids the economy. The toolbar has two postures:
+
+- **SET DESIGN (default)**: the placement palette routes through Influence.
+  Buttons show prices ("Bean Bag ¤8"); placement spends on click, same
+  pay-on-placement contract as the Catalog. Non-catalog objects price and
+  unlock by CATEGORY (`ProducerEconomy.CATEGORY_PRICE` /
+  `CATEGORY_UNLOCK_EPISODES`: food/comfort/decor/classic from the start,
+  work/fun at 1 lifetime episode, wellness/tech at 2, weird at 4 — meta, so
+  veterans start open); a catalog entry's own price and gates always win
+  (asserted: meditation_pod stays locked at 4 episodes). The cheat tabs
+  (Agents, Events) do not exist in this posture.
+- **CREATIVE**: everything free and visible — and
+  `ProducerEconomy.creative_used` marks the save PERMANENTLY on first
+  toggle (persisted with the producer block, gate-free keys). A labeled
+  choice, not a hidden key.
+
+The icon-bar button is "Build" now, and the tutorial teaches Influence at
+60s BEFORE Set Design at 120s — the price tag precedes the toy box.
+economy_test 46 → 58; verified in a panel_check capture (which also caught
+the pilot-wrap hint firing with a real ¤83 payout).
+
+## Honest words + honest prompts (2026-08-31, Roadmap Now #6)
+
+- **The README no longer overclaims.** "Nothing here is scripted" became a
+  line the heuristic path can defend; the harness count was stale too
+  (eight → nine, 300+ → 370+).
+- **Big Five verbalized.** `system.txt` drops the raw 0-1 numbers for
+  `PersonalityProfile.get_trait_lines()` — one behavioral sentence per
+  trait, mid-range included (the old summary skipped 0.3-0.7 entirely).
+- **Few-shot voice.** The five preset personalities carry `voice_lines`
+  (two register examples each, in their JSON); `conversation.txt` gets a
+  `{voice_block}` that resolves to "" for procedural agents so no header
+  dangles. `get_voice_block()` builds it.
+- **Anti-repeat.** system.txt and conversation.txt now instruct against
+  reusing lines ("New words only — never repeat a line from the
+  conversation above").
+- **Per-task temperature.** `LLMManager.request_chat`'s dead `metadata`
+  param became `options`, threaded to the Ollama backend as per-request
+  sampling overrides: decisions 0.4, dialogue and confessionals 0.9,
+  everything else the configured 0.7. Bundled backend accepts and ignores
+  it (sampling is load-time there).
+- **Default model rec: gemma3:4b** (validated in this repo's own
+  environment table) replaces never-validated smollm2:1.7b in
+  settings_manager, the Ollama backend, and the README (smollm2 stays
+  documented as the weak-machine option). Owners with an explicit
+  `ollama_model` in settings.cfg are unaffected.
+
+## The voice pipeline, step 1 (2026-08-31, Roadmap Track B groundwork)
+
+The panel's one-pipe rule, started: string pools externalize to
+`resources/dialogue/<domain>.json` (kind → bucket → lines), read through
+`DialoguePools` (`scripts/utils/dialogue_pools.gd`):
+
+- `fill(domain, kind, bucket, tokens)` interpolates `{tokens}` and DROPS
+  any line whose token is missing/empty — pools mix plain and
+  detail-threaded lines safely.
+- `lint(domain, expected)` is the coverage check; the consumer declares
+  its contract (`ConfessionalDirector.POOL_EXPECTATIONS`) and the harness
+  asserts no holes, so a pool edit cannot strand a personality bucket.
+
+**Confessional is the pattern-setting migration**: `_heuristic_line` is
+now bucket-selection + token-filling only; every line lives in
+`confessional.json` (buckets: base / anxious / catty / bold / even /
+partner / lost / enemy). Behavior preserved, one improvement: a secret
+draw without its detail now falls back to "No comment..." instead of
+emitting "I . There. I said it."
+
+**The write side is `tools/generate_dialogue.py`** — owner-run, local
+Ollama, never CI: grows every bucket with few-shot prompts against the
+existing lines, validates tokens (a generated line may only use tokens
+its bucket already demonstrates), dedupes, appends in place; `--lint`
+checks coverage with no model. Conversation/secrets/goals pools migrate
+through this same pipe next — do NOT build them a separate mechanism.
+
+**Gotcha:** a new `class_name` is invisible to direct scene runs until an
+import refreshes `.godot/global_script_class_cache.cfg` — run
+`godot --headless --import` (run_tests.sh's import step does) or every
+dependent script fails to compile and the harness hangs silently.
+
+confessional_test 15 → 19.
 
 ## The improvement pass (2026-08-29)
 

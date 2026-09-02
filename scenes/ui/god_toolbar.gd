@@ -1,6 +1,12 @@
 class_name GodToolbar
 extends CanvasLayer
-## God mode toolbar: object palette, agent controls, event triggers, groups, stories.
+## The Tab toolbar, two postures (Roadmap Now #5 — the economy gate):
+##  - SET DESIGN (default): the placement palette runs through Influence.
+##    Objects carry prices, categories unlock progressively on lifetime
+##    episodes, and the cheat tabs (spawn agents, trigger events) are gone.
+##  - CREATIVE: everything free, everything visible — and the save is
+##    flagged for good the first time it's switched on. A labeled choice,
+##    not a hidden key that voids the economy.
 
 var _enabled: bool = false
 var _toolbar: HBoxContainer
@@ -13,6 +19,10 @@ var _inspect_mode: bool = false
 var _placing_object_type: String = ""
 var _panel_bg: PanelContainer
 var _agent_count_label: Label
+var _agents_btn: Button
+var _events_btn: Button
+var _creative_btn: Button
+var _mode_label: Label
 
 
 func _ready() -> void:
@@ -21,6 +31,7 @@ func _ready() -> void:
 	_build_panels()
 	visible = false
 	EventBus.god_mode_toggled.connect(_on_god_mode_toggled)
+	EventBus.creative_mode_changed.connect(func(_on: bool) -> void: _refresh_mode())
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -57,11 +68,14 @@ func _build_toolbar() -> void:
 	add_child(_toolbar)
 
 	_add_toolbar_button("Objects", _toggle_object_panel)
-	_add_toolbar_button("Agents", _toggle_agent_panel)
-	_add_toolbar_button("Events", _toggle_event_panel)
+	_agents_btn = _add_toolbar_button("Agents", _toggle_agent_panel)
+	_events_btn = _add_toolbar_button("Events", _toggle_event_panel)
 	_add_toolbar_button("Groups", _toggle_groups_panel)
 	_add_toolbar_button("Stories", _toggle_stories_panel)
 	_add_toolbar_button("Inspect", _toggle_inspect)
+	_creative_btn = _add_toolbar_button("Creative: off", _toggle_creative)
+	_creative_btn.custom_minimum_size = Vector2(64, 14)
+	_creative_btn.tooltip_text = "Free placement, spawns, and events — flags this save as Creative permanently."
 
 	# Agent count
 	_agent_count_label = Label.new()
@@ -70,12 +84,11 @@ func _build_toolbar() -> void:
 	_agent_count_label.add_theme_color_override("font_color", Color(0.7, 0.9, 0.7))
 	_toolbar.add_child(_agent_count_label)
 
-	# God mode label
-	var lbl := Label.new()
-	lbl.text = "GOD MODE"
-	lbl.add_theme_font_size_override("font_size", 9)
-	lbl.add_theme_color_override("font_color", Color(1.0, 0.8, 0.3, 0.9))
-	_toolbar.add_child(lbl)
+	# Mode label: SET DESIGN or CREATIVE MODE
+	_mode_label = Label.new()
+	_mode_label.add_theme_font_size_override("font_size", 9)
+	_toolbar.add_child(_mode_label)
+	_refresh_mode()
 
 
 func _build_panels() -> void:
@@ -119,13 +132,31 @@ func _build_panels() -> void:
 	panel_vbox.add_child(_stories_panel)
 
 
-func _add_toolbar_button(text: String, callback: Callable) -> void:
+func _add_toolbar_button(text: String, callback: Callable) -> Button:
 	var btn := Button.new()
 	btn.text = text
 	btn.custom_minimum_size = Vector2(40, 14)
 	btn.add_theme_font_size_override("font_size", 9)
 	btn.pressed.connect(callback)
 	_toolbar.add_child(btn)
+	return btn
+
+
+func _toggle_creative() -> void:
+	ProducerEconomy.set_creative_mode(not ProducerEconomy.creative_mode)
+	_hide_all_panels()
+	_placing_object_type = ""
+
+
+func _refresh_mode() -> void:
+	var creative := ProducerEconomy.creative_mode
+	# The cheat tabs exist only in Creative; Set Design is set design.
+	_agents_btn.visible = creative
+	_events_btn.visible = creative
+	_creative_btn.text = "Creative: %s" % ("ON" if creative else "off")
+	_mode_label.text = "CREATIVE MODE" if creative else "SET DESIGN"
+	_mode_label.add_theme_color_override("font_color",
+		Color(1.0, 0.8, 0.3, 0.9) if creative else Color(0.6, 0.8, 1.0, 0.9))
 
 
 func _toggle_object_panel() -> void:
@@ -218,7 +249,16 @@ func _rebuild_object_panel() -> void:
 		for t in groups[cat]:
 			var btn := Button.new()
 			var def := DataObject.get_def(t)
-			btn.text = str(def.get("name", str(t).replace("_", " ").capitalize()))
+			var display := str(def.get("name", str(t).replace("_", " ").capitalize()))
+			if ProducerEconomy.creative_mode:
+				btn.text = display
+			elif not ProducerEconomy.is_placement_unlocked(str(t)):
+				btn.text = display
+				btn.disabled = true
+				btn.tooltip_text = ProducerEconomy.placement_unlock_text(str(t))
+			else:
+				# Show mode: the price IS the interface — placement spends it.
+				btn.text = "%s ¤%d" % [display, ProducerEconomy.placement_price(str(t))]
 			btn.clip_text = true
 			btn.custom_minimum_size = Vector2(72, 0)
 			btn.add_theme_font_size_override("font_size", 8)
@@ -376,6 +416,17 @@ func _place_object_at(pos: Vector2) -> void:
 	var world := get_tree().get_first_node_in_group("world")
 	if not world:
 		return
+	# Show mode pays on placement, same contract as the Catalog. Creative
+	# places free — and the save already wears the flag for it.
+	if not ProducerEconomy.creative_mode:
+		if not ProducerEconomy.is_placement_unlocked(_placing_object_type):
+			_placing_object_type = ""
+			return
+		var price := ProducerEconomy.placement_price(_placing_object_type)
+		if not ProducerEconomy.spend(price, "place_" + _placing_object_type):
+			EventBus.narrative_event.emit("Not enough Influence for that (¤%d)." % price, [], 1.0)
+			_placing_object_type = ""
+			return
 	var obj := _create_object(_placing_object_type)
 	if obj:
 		# pos is a SCREEN coordinate; the world lives behind a zoom-2 camera.

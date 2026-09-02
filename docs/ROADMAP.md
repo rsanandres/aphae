@@ -61,7 +61,7 @@ Everything here is felt in a first session. Sequence matters: 1–2 fix what the
 - **Event volume chasing (37→80 as a goal in itself)** — chains and chatter defend the illusion; raw incident count is RimWorld's game, not ours. Growth stays subordinate to the voice pipeline.
 - **WebLLM this month** — highest-variance integration in the set; it waits for the analytics and the prompt/backend groundwork.
 - **More marketing surface than one clip cadence** — an evenings-and-weekends solo dev cannot also run weekly devlogs and community seeding. One channel, measured.
-- **Mobile (M6)** — still the only unshipped phase, still last.
+- **Mobile (M6)** — cut entirely (owner decision, 2026-08-31). No longer deferred; removed from the plan.
 
 ---
 

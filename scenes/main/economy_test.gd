@@ -70,7 +70,7 @@ func _run() -> void:
 		EventBus.time_tick.emit(480.0 + m)
 	TimeManager.game_minutes = 3.0 * 1440.0 + 480.0  # day 4
 	EventBus.day_changed.emit(TimeManager.day)
-	_check("episode ends after EPISODE_DAYS", ended.size() == 1)
+	_check("episode ends when its days elapse", ended.size() == 1)
 	_check("payout floor holds (>= 20)", ended.size() == 1 and ended[0]["payout"] >= 20)
 	_check("payout landed in the balance", ProducerEconomy.influence > start_influence)
 	_check("episode counter advanced", ProducerEconomy.episode == 2)
@@ -80,6 +80,16 @@ func _run() -> void:
 	TimeManager.game_minutes = 480.0  # back to day 1
 	EventBus.day_changed.emit(TimeManager.day)
 	_check("backward day jump re-anchors silently", ended.size() == ended_before)
+
+	# --- The pilot (S1E1) wraps after a single day; later episodes take three ---
+	TimeManager.game_minutes = 480.0  # day 1
+	ProducerEconomy.load_save_state({})  # back to S1E1
+	var pilot_ended_before: int = ended.size()
+	_check("the pilot is one day long", ProducerEconomy.episode_length_days() == ProducerEconomy.PILOT_DAYS)
+	TimeManager.game_minutes = 1440.0 + 480.0  # day 2
+	EventBus.day_changed.emit(TimeManager.day)
+	_check("the pilot wraps after one day", ended.size() == pilot_ended_before + 1)
+	_check("post-pilot episodes are full length", ProducerEconomy.episode_length_days() == ProducerEconomy.EPISODE_DAYS)
 
 	# --- Score bounds ---
 	_check("grade thresholds", ProducerEconomy.grade_for(85) == "S" and ProducerEconomy.grade_for(60) == "A" \
@@ -101,6 +111,47 @@ func _run() -> void:
 	ProducerEconomy.best_episode_score = 60
 	_check("score gate opens documentary_day", ProducerEconomy.is_item_unlocked("documentary_day"))
 	_check("unlock text names the requirement", "episodes" in ProducerEconomy.unlock_description("better_cameras"))
+
+	# --- Show-mode placement pricing and progressive unlocks (Now #5) --------
+	_check("a catalog price wins over the category price",
+		ProducerEconomy.placement_price("espresso_machine") == 12)
+	_check("a non-catalog object prices by category",
+		ProducerEconomy.placement_price("donut_box") == ProducerEconomy.CATEGORY_PRICE["food"])
+	_check("bespoke objects price as classics",
+		ProducerEconomy.placement_price("desk") == ProducerEconomy.CATEGORY_PRICE["classic"])
+	ProducerEconomy.lifetime_episodes = 0
+	ProducerEconomy.best_episode_score = 0
+	_check("starter categories are open from episode zero",
+		ProducerEconomy.is_placement_unlocked("donut_box"))
+	var weird_locked_at_zero := true
+	for def in DataObject.get_ids_by_category().get("weird", []):
+		if ProducerEconomy.is_placement_unlocked(str(def)):
+			weird_locked_at_zero = false
+	_check("every weird object is locked at zero episodes", weird_locked_at_zero)
+	ProducerEconomy.lifetime_episodes = 4
+	var weird_open_at_four := true
+	for def in DataObject.get_ids_by_category().get("weird", []):
+		var item: Dictionary = ProducerEconomy.get_item(str(def))
+		if item.is_empty() and not ProducerEconomy.is_placement_unlocked(str(def)):
+			weird_open_at_four = false
+	_check("the weird shelf opens at four episodes", weird_open_at_four)
+	_check("a catalog gate overrides the category tier",
+		not ProducerEconomy.is_placement_unlocked("meditation_pod"))
+	_check("unlock text exists for category-locked objects",
+		"episode" in ProducerEconomy.placement_unlock_text("donut_box"))
+
+	# --- Creative mode flags the save for good -------------------------------
+	ProducerEconomy.creative_mode = false
+	ProducerEconomy.creative_used = false
+	ProducerEconomy.set_creative_mode(true)
+	_check("creative on marks the save", ProducerEconomy.creative_mode and ProducerEconomy.creative_used)
+	ProducerEconomy.set_creative_mode(false)
+	_check("creative off keeps the mark", not ProducerEconomy.creative_mode and ProducerEconomy.creative_used)
+	var creative_snapshot: Dictionary = ProducerEconomy.get_save_state()
+	ProducerEconomy.load_save_state({})
+	_check("a fresh save is unmarked", not ProducerEconomy.creative_used)
+	ProducerEconomy.load_save_state(creative_snapshot)
+	_check("the creative mark survives a round-trip", ProducerEconomy.creative_used)
 
 	# --- Boost expiry ---
 	TimeManager.game_minutes = 480.0

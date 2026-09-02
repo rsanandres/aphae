@@ -75,3 +75,22 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # itch.io mirror (Roadmap Track C): the same web build, pushed via
+      # butler. Scaffolding until the owner creates the itch project and adds
+      # the BUTLER_API_KEY repo secret — until then this step skips cleanly
+      # and says so. Setup checklist: docs/ITCH.md.
+      - name: Mirror to itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          ITCH_TARGET: ${{ vars.ITCH_TARGET }}
+        run: |
+          if [ -z "$BUTLER_API_KEY" ]; then
+            echo "BUTLER_API_KEY secret not set — skipping the itch.io mirror (see docs/ITCH.md to enable)"
+            exit 0
+          fi
+          curl -sSL -o /tmp/butler.zip "https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default"
+          unzip -q /tmp/butler.zip -d /tmp/butler
+          chmod +x /tmp/butler/butler
+          /tmp/butler/butler push build/web "${ITCH_TARGET:-rsanandres/aphae}:web" \
+            --userversion "${GITHUB_SHA::8}"

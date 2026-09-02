@@ -109,6 +109,9 @@ func _request_next_line() -> void:
 		"affinity": "%.0f" % rel.affinity,
 		"history": history_text,
 		"mood": speaker.personality.get_mood(speaker.needs.get_all_values()) if speaker.personality else "neutral",
+		# Few-shot register lines for the preset cast; resolves to "" for
+		# procedural agents so the template block simply disappears.
+		"voice_block": speaker.personality.get_voice_block() if speaker.personality else "",
 		# Both resolve to "" for agents with nothing to hide or no rumor heard,
 		# so the placeholders always disappear from the template.
 		"secret_line": SecretManager.denial_prompt_line(speaker.agent_name),
@@ -136,6 +139,7 @@ func _request_next_line() -> void:
 			else:
 				_on_line_received(speaker, listener, _heuristic_line(speaker, listener)),
 		LLMManager.Priority.HIGH,
+		{"temperature": 0.9},  # dialogue wants sparkle; decisions run cooler
 	)
 
 
@@ -190,14 +194,21 @@ func _end_conversation() -> void:
 	agent_a.relationships.update_after_interaction(agent_b.agent_name, convo_summary, true)
 	agent_b.relationships.update_after_interaction(agent_a.agent_name, convo_summary, true)
 
+	# WHERE the conversation happened matters: SynergyManager zones with a
+	# social block scale the romance/gossip rolls at the pair's midpoint.
+	# (Confide scaling lives inside SecretManager itself.)
+	var zone_mid: Vector2 = (agent_a.global_position + agent_b.global_position) / 2.0
+	var romance_scale: float = SynergyManager.social_multiplier(zone_mid, "romance")
+	var gossip_scale: float = SynergyManager.social_multiplier(zone_mid, "gossip")
+
 	# Good conversations slowly kindle romance (compatibility-weighted)
-	agent_a.relationships.update_romance(agent_b.agent_name, true)
-	agent_b.relationships.update_romance(agent_a.agent_name, true)
+	agent_a.relationships.update_romance(agent_b.agent_name, true, romance_scale)
+	agent_b.relationships.update_romance(agent_a.agent_name, true, romance_scale)
 
 	# Gossip travels: each side may pass on something juicy about a third
 	# party, secondhand and slightly warped (RumorMill).
-	RumorMill.maybe_pass(agent_a, agent_b)
-	RumorMill.maybe_pass(agent_b, agent_a)
+	RumorMill.maybe_pass(agent_a, agent_b, gossip_scale)
+	RumorMill.maybe_pass(agent_b, agent_a, gossip_scale)
 
 	# Secrets move too: a holder may confide in someone trusted, and someone
 	# who already knows may needle the holder. Mechanics only — the spoken

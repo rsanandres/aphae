@@ -217,7 +217,7 @@ func _request_llm(kind: String, event_text: String, speaker: Node2D) -> void:
 		if line == "":
 			line = _heuristic_line(captured_kind, captured_speaker)
 		_emit(captured_kind, line, captured_speaker)
-	, LLMManager.Priority.LOW)
+	, LLMManager.Priority.LOW, {"temperature": 0.9})
 
 
 func _emit(kind: String, line: String, speaker: Node2D) -> void:
@@ -305,6 +305,22 @@ func _clean(raw: String) -> String:
 
 # --- Heuristic fallback ----------------------------------------------------
 ## Personality-flavored canned lines so the feature is fun with the LLM off.
+## The lines themselves live in resources/dialogue/confessional.json (the
+## voice pipeline); this function only picks buckets and fills tokens.
+
+## Coverage contract for the pool file — what this code draws. The harness
+## lints the JSON against this, so a pool edit cannot silently strand a
+## personality bucket. Growing a pool needs no change here; removing a
+## bucket does.
+const POOL_EXPECTATIONS := {
+	"secret": {"base": 3, "anxious": 1, "catty": 1, "bold": 1},
+	"farewell": {"base": 3, "anxious": 1, "catty": 1, "bold": 1},
+	"intro": {"base": 3, "anxious": 1, "catty": 1, "bold": 1},
+	"romance": {"base": 3, "anxious": 1, "bold": 1, "even": 1, "partner": 2},
+	"tragedy": {"base": 3, "anxious": 1, "even": 1, "lost": 2},
+	"rivalry": {"base": 3, "catty": 1, "bold": 1, "even": 1, "enemy": 1},
+	"drama": {"base": 5, "catty": 1, "anxious": 1, "even": 1},
+}
 
 var _last_heuristic: Dictionary = {}  # kind -> last line emitted
 
@@ -315,115 +331,47 @@ func _heuristic_line(kind: String, speaker: Node2D, detail: String = "") -> Stri
 	var anxious := p != null and p.neuroticism > 0.6
 	var bold := p != null and p.extraversion > 0.6
 	# Mid-range personalities hit none of the gates above and were stuck with
-	# the 3 generic lines forever. The middle of the bell curve gets deadpan.
+	# the generic lines forever. The middle of the bell curve gets deadpan.
 	var even := p != null and not (catty or anxious or bold)
+	var pool_kind := kind if DialoguePools.domain_data("confessional").has(kind) else "drama"
+
+	# Tokens the pool lines may thread. A line whose token is empty here is
+	# skipped by fill() — the secret kind, for example, only speaks when it
+	# can carry its specifics, because the admission is the player's only
+	# organic way to learn the truth without an LLM.
+	var desc: String = p.description if p and p.description != "" else "hard to sum up"
+	var tokens := {
+		"name": speaker.agent_name,
+		"detail": detail,
+		"desc": desc,
+		"desc_cap": desc.capitalize(),
+	}
+	if kind == "romance":
+		if detail.begins_with("You and "):
+			tokens["partner"] = detail.substr(8).get_slice(" ", 0)
+		elif "confessed your feelings to " in detail:
+			tokens["partner"] = detail.get_slice("confessed your feelings to ", 1).get_slice(" ", 0)
+	elif kind == "tragedy":
+		var lost := detail.get_slice(" ", 0)
+		if lost.length() > 1 and lost[0] == lost[0].to_upper() and not detail.begins_with("You"):
+			tokens["lost"] = lost
+	elif kind == "rivalry" and "at war with " in detail:
+		tokens["enemy"] = detail.get_slice("at war with ", 1).trim_suffix(".")
 
 	var options: Array[String] = []
-	match kind:
-		"secret":
-			# The one kind that must carry its specifics: the admission is the
-			# player's only organic way to learn the truth without an LLM.
-			options = [
-				"Camera only? Fine. I %s. There. I said it." % detail,
-				"Okay. Deep breath. The truth is... I %s. Cut that. Actually, keep it." % detail,
-				"Nobody out there knows this, but I %s. And honestly? Relief." % detail,
-			]
-			if anxious:
-				options.append("If this ever airs I'm finished, but — I %s. Oh no." % detail)
-			if catty:
-				options.append("Yes, I %s. And I'd do it again. Next question." % detail)
-			if bold:
-				options.append("Since we're being honest: I %s. Stay tuned." % detail)
-		"farewell":
-			options = [
-				"That's a wrap on me. Try not to fall apart without me.",
-				"I came, I worked, I left. Somebody water the plant.",
-				"No regrets. Well. A few. But you don't get to hear them.",
-			]
-			if bold:
-				options.append("This office couldn't hold me. Nothing personal.")
-			if anxious:
-				options.append("I just hope leaving isn't a huge mistake. It might be. Bye.")
-			if catty:
-				options.append("Finally. You know who you are, and you know what you did.")
-		"intro":
-			var desc: String = p.description if p and p.description != "" else "hard to sum up"
-			options = [
-				"I'm %s — %s. Remember the name." % [speaker.agent_name, desc],
-				"They call me %s. I'm %s, and I'm not here to blend in." % [speaker.agent_name, desc],
-				"%s. %s. That's the whole pitch." % [speaker.agent_name, desc.capitalize()],
-			]
-			if bold:
-				options.append("I'm %s, and let's be honest — this office just got interesting." % speaker.agent_name)
-			if anxious:
-				options.append("Hi, um, %s. I really hope this goes well. It probably won't." % speaker.agent_name)
-			if catty:
-				options.append("I'm %s. I already have opinions about everyone here." % speaker.agent_name)
-		"romance":
-			options = [
-				"Honestly? I did not see that coming. But I'm not mad about it.",
-				"People are gonna talk. Let them talk.",
-				"Is it real? Ask me again in three days.",
-			]
-			if anxious:
-				options.append("I've replayed it a hundred times. What if it all falls apart?")
-			if bold:
-				options.append("I make things happen. This place needed a little heat.")
-			if even:
-				options.append("We're keeping it professional. At work. Mostly.")
-			# Name the partner when the event text carries one — a romance
-			# quip that names nobody wastes the whole cutaway.
-			var partner := ""
-			if detail.begins_with("You and "):
-				partner = detail.substr(8).get_slice(" ", 0)
-			elif "confessed your feelings to " in detail:
-				partner = detail.get_slice("confessed your feelings to ", 1).get_slice(" ", 0)
-			if partner != "":
-				options.append("%s. Yeah. I know exactly what I'm doing. ...No I don't." % partner)
-				options.append("Whatever happens with %s, the cameras got it first. Great." % partner)
-		"tragedy":
-			options = [
-				"You never think it'll actually happen. And then it does.",
-				"We weren't close, but... the office feels different now.",
-				"I keep expecting them to walk back in.",
-			]
-			if anxious:
-				options.append("I can't stop thinking about it. Who's next?")
-			if even:
-				options.append("Somebody should water their plant. I'll do it. It's fine.")
-			var lost := detail.get_slice(" ", 0)
-			if lost.length() > 1 and lost[0] == lost[0].to_upper() and not detail.begins_with("You"):
-				options.append("%s deserved better than this place gave them." % lost)
-				options.append("I had a joke ready for %s this morning. Guess I'll keep it." % lost)
-		"rivalry":
-			options = [
-				"They started it. We're just going to finish it.",
-				"May the best team win. It'll be us.",
-				"There's us, and there's them. Pick a side.",
-			]
-			if catty:
-				options.append("Bless their hearts. They really think they stand a chance.")
-			if bold:
-				options.append("Bring it. I've been waiting for a reason.")
-			if even:
-				options.append("I don't do drama. I do winning quietly.")
-			if "at war with " in detail:
-				var enemy := detail.get_slice("at war with ", 1).trim_suffix(".")
-				options.append("%s? Never heard of them. Kidding. We're going to bury them." % enemy)
-		_:  # generic drama — the most-fired pool, so it gets the most lines
-			options = [
-				"You can't make this stuff up. Except, well, here we are.",
-				"I'm just here to do my job. The chaos finds me.",
-				"I have seen things at this water cooler. Things.",
-				"HR is going to LOVE this week's footage.",
-				"Don't look at me. I was at my desk. Allegedly.",
-			]
-			if catty:
-				options.append("I'm not saying I told you so. But I told you so.")
-			if anxious:
-				options.append("My stomach's been in knots all day. Something's off.")
-			if even:
-				options.append("On a scale of one to office meltdown? Solid seven.")
+	options.append_array(DialoguePools.fill("confessional", pool_kind, "base", tokens))
+	if anxious:
+		options.append_array(DialoguePools.fill("confessional", pool_kind, "anxious", tokens))
+	if catty:
+		options.append_array(DialoguePools.fill("confessional", pool_kind, "catty", tokens))
+	if bold:
+		options.append_array(DialoguePools.fill("confessional", pool_kind, "bold", tokens))
+	if even:
+		options.append_array(DialoguePools.fill("confessional", pool_kind, "even", tokens))
+	# Detail-threaded buckets: fill() already drops them when the token is
+	# absent, so these appends are no-ops on a detail-less draw.
+	for threaded_bucket in ["partner", "lost", "enemy"]:
+		options.append_array(DialoguePools.fill("confessional", pool_kind, threaded_bucket, tokens))
 
 	if options.is_empty():
 		return "No comment. ...Okay, maybe a little comment."

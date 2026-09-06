@@ -20,6 +20,7 @@ var _relationship_web: RelationshipWeb
 var _story_feed: StoryFeedPanel
 var _confessional_feed: ConfessionalFeed
 var _confessional_toast: ConfessionalToast
+var _booth_cutaway: BoothCutaway
 var _recap_panel: RecapPanel
 var _producer_panel: ProducerPanel
 var _settings_panel: Control = null
@@ -153,6 +154,21 @@ func _ready() -> void:
 	_confessional_feed.offset_bottom = 320
 	add_child(_confessional_feed)
 	_ui.register("confessionals", _confessional_feed, UIManager.Kind.EXCLUSIVE)
+
+	# Confessional booth cutaway (picture-in-picture talking head) — agent
+	# confessionals cut here; host recaps keep the plain toast below.
+	_booth_cutaway = BoothCutaway.new()
+	_booth_cutaway.anchor_left = 0.5
+	_booth_cutaway.anchor_right = 0.5
+	_booth_cutaway.anchor_top = 1.0
+	_booth_cutaway.anchor_bottom = 1.0
+	_booth_cutaway.offset_left = -170
+	_booth_cutaway.offset_right = 170
+	_booth_cutaway.offset_top = -128
+	_booth_cutaway.offset_bottom = -38
+	_booth_cutaway.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_booth_cutaway.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	add_child(_booth_cutaway)
 
 	# Confessional cutaway toast (lower third, above the icon bar)
 	_confessional_toast = ConfessionalToast.new()
@@ -406,7 +422,13 @@ func _update_llm_label() -> void:
 
 func _on_confessional_recorded(confessional: RefCounted) -> void:
 	var c: Confessional = confessional as Confessional
-	if c and _confessional_toast:
+	if c == null:
+		return
+	# Agents get the booth (portrait, curtain, typewriter); the host — and
+	# any speaker whose face is already gone — falls back to the toast.
+	if not c.is_host and _booth_cutaway and AgentManager.get_agent_by_name(c.speaker) != null:
+		_booth_cutaway.show_confessional(c)
+	elif _confessional_toast:
 		_confessional_toast.show_confessional(c)
 
 

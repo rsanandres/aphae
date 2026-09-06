@@ -251,6 +251,22 @@ func _run() -> void:
 	_check("removing an agent drops their secret",
 		SecretManager.get_secret(outsider.agent_name) == null)
 
+	# --- Finale pressure (Track B) -------------------------------------------
+	var fin_season := ProducerEconomy.season
+	var fin_episode := ProducerEconomy.episode
+	var fin_start := ProducerEconomy.episode_start_day
+	ProducerEconomy.season = 2
+	ProducerEconomy.episode = 2
+	ProducerEconomy.episode_start_day = TimeManager.day - 2  # day 3 of a 3-day episode
+	_check("finale night doubles the booth roll",
+		is_equal_approx(SecretManager._admit_chance(), SecretManager.ADMIT_CHANCE_PER_DAY * 2.0))
+	ProducerEconomy.episode_start_day = TimeManager.day
+	_check("mid-episode the booth roll is unchanged",
+		is_equal_approx(SecretManager._admit_chance(), SecretManager.ADMIT_CHANCE_PER_DAY))
+	ProducerEconomy.season = fin_season
+	ProducerEconomy.episode = fin_episode
+	ProducerEconomy.episode_start_day = fin_start
+
 
 func _check(test_name: String, ok: bool) -> void:
 	_results.append("%s  %s" % ["PASS" if ok else "FAIL", test_name])

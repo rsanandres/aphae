@@ -261,8 +261,14 @@ func _check_exposure(secret: SecretState) -> void:
 
 # --- The booth: where the truth goes ----------------------------------------
 
+func _admit_chance() -> float:
+	## Finale night loosens tongues: on an episode's last day the booth roll
+	## doubles, so endings cluster where the resolution scoring pays.
+	return ADMIT_CHANCE_PER_DAY * (2.0 if ProducerEconomy.is_finale_day() else 1.0)
+
+
 func _on_day_changed(_day: int) -> void:
-	if not auto_admit_enabled or randf() > ADMIT_CHANCE_PER_DAY:
+	if not auto_admit_enabled or randf() > _admit_chance():
 		return
 	var candidates: Array[SecretState] = []
 	for secret: SecretState in _secrets.values():

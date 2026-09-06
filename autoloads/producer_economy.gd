@@ -37,7 +37,15 @@ var _sample_sum: float = 0.0
 var _sample_count: int = 0
 var _peak_drama: float = 0.0
 var _beats: int = 0
-var last_breakdown: Dictionary = {"avg": 0.0, "peak": 0.0, "beats": 0}
+var last_breakdown: Dictionary = {"avg": 0.0, "peak": 0.0, "beats": 0, "resolutions": 0, "resolution_points": 0}
+
+## Resolution scoring (finale night): stories that CONCLUDE inside the
+## episode window score on top of raw drama — a goal landed, a romance
+## begun, a secret blown open, a mole case closed. Interventions that
+## finish stories are what pay, not interventions that merely stir.
+const RESOLUTION_POINTS := {"goal": 3, "romance": 3, "exposure": 4, "case": 6, "case_caught": 8}
+const RESOLUTION_CAP := 20
+var _resolutions: Dictionary = {}  # kind -> count this episode
 var _sample_accum_minutes: float = 0.0
 var _last_tick_minutes: float = 0.0
 var _trickle_today: int = 0
@@ -59,10 +67,16 @@ func _ready() -> void:
 	EventBus.day_changed.connect(_on_day_changed)
 	EventBus.time_tick.connect(_on_time_tick)
 	EventBus.narrative_event.connect(_on_narrative_event)
-	EventBus.romance_started.connect(func(_a: String, _b: String) -> void: _trickle(3, "romance"))
+	EventBus.romance_started.connect(func(_a: String, _b: String) -> void:
+		_trickle(3, "romance")
+		_resolution("romance"))
 	EventBus.confession_made.connect(func(_a: String, _b: String, _ok: bool) -> void: _trickle(3, "confession"))
 	EventBus.agent_died.connect(func(_n: String, _c: String) -> void: _trickle(5, "tragedy"))
 	EventBus.event_triggered.connect(func(_id: String, _n: Array) -> void: _trickle(1, "event"))
+	EventBus.goal_achieved.connect(func(_a: String, _t: String, _k: int) -> void: _resolution("goal"))
+	EventBus.secret_exposed.connect(func(_h: String, _t: String) -> void: _resolution("exposure"))
+	EventBus.case_resolved.connect(func(caught: bool, _m: String) -> void:
+		_resolution("case_caught" if caught else "case"))
 
 
 func _on_narrative_event(text: String, agents: Array, importance: float) -> void:
@@ -131,6 +145,31 @@ func episode_label() -> String:
 	return "S%dE%d" % [season, episode]
 
 
+func is_finale_day() -> bool:
+	## True on the episode's last day (the pilot's only day counts). Finale
+	## night raises the pressure elsewhere: booth admissions come easier and
+	## an open mole case strikes nightly — endings cluster where the score is.
+	return days_into_episode() >= episode_length_days()
+
+
+func _resolution(kind: String) -> void:
+	_resolutions[kind] = int(_resolutions.get(kind, 0)) + 1
+
+
+func resolution_points() -> int:
+	var pts := 0
+	for kind in _resolutions:
+		pts += int(RESOLUTION_POINTS.get(kind, 0)) * int(_resolutions[kind])
+	return mini(pts, RESOLUTION_CAP)
+
+
+func resolution_count() -> int:
+	var n := 0
+	for kind in _resolutions:
+		n += int(_resolutions[kind])
+	return n
+
+
 const OVERNIGHT_BASE := 3
 const OVERNIGHT_CAP := 8
 
@@ -155,10 +194,13 @@ func _on_day_changed(day: int) -> void:
 
 func _finish_episode() -> void:
 	var avg: float = (_sample_sum / _sample_count) if _sample_count > 0 else 0.0
-	var score: int = clampi(roundi(avg * 8.0 + _peak_drama * 3.0 + minf(_beats, 10) * 1.0), 0, 100)
+	var score: int = clampi(roundi(avg * 8.0 + _peak_drama * 3.0 + minf(_beats, 10) * 1.0) + resolution_points(), 0, 100)
 	var payout: int = 20 + score
 	last_episode_score = score
-	last_breakdown = {"avg": avg, "peak": _peak_drama, "beats": _beats}
+	last_breakdown = {
+		"avg": avg, "peak": _peak_drama, "beats": _beats,
+		"resolutions": resolution_count(), "resolution_points": resolution_points(),
+	}
 
 	var finished_season := season
 	var finished_episode := episode
@@ -171,6 +213,7 @@ func _finish_episode() -> void:
 	_sample_count = 0
 	_peak_drama = 0.0
 	_beats = 0
+	_resolutions = {}
 
 	lifetime_episodes += 1
 	best_episode_score = maxi(best_episode_score, score)
@@ -364,6 +407,7 @@ func get_save_state() -> Dictionary:
 		"sample_count": _sample_count,
 		"peak_drama": _peak_drama,
 		"beats": _beats,
+		"resolutions": _resolutions.duplicate(),
 	}
 
 
@@ -381,6 +425,7 @@ func load_save_state(data: Dictionary) -> void:
 	_sample_count = int(data.get("sample_count", 0))
 	_peak_drama = float(data.get("peak_drama", 0.0))
 	_beats = int(data.get("beats", 0))
+	_resolutions = data.get("resolutions", {}).duplicate() if data.get("resolutions") is Dictionary else {}
 	_last_tick_minutes = TimeManager.game_minutes
 	EventBus.influence_changed.emit(influence, 0, "loaded")
 

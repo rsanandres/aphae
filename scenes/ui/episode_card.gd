@@ -61,7 +61,13 @@ func _on_episode_ended(ended_season: int, ended_episode: int, score: int, payout
 	_grade.text = ProducerEconomy.grade_for(score)
 	_headline.text = "Ratings score: %d / 100" % score
 	var b: Dictionary = ProducerEconomy.last_breakdown
-	_breakdown.text = "Average drama %.1f · peak %.1f — the aggregates reset each episode, so every wrap starts a fresh chase." % [b["avg"], b["peak"]]
+	var resolved := int(b.get("resolutions", 0))
+	var resolution_line: String
+	if resolved > 0:
+		resolution_line = "%d stor%s concluded (+%d)" % [resolved, "y" if resolved == 1 else "ies", int(b.get("resolution_points", 0))]
+	else:
+		resolution_line = "no stories concluded — a finale wants endings"
+	_breakdown.text = "Average drama %.1f · peak %.1f · %s. The aggregates reset each episode; every wrap starts a fresh chase." % [b["avg"], b["peak"], resolution_line]
 	var top := Narrator.get_top_storylines(1)
 	if not top.is_empty() and top[0].title != "":
 		_storyline.text = "The story of the episode: %s" % top[0].title

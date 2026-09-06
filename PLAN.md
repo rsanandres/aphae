@@ -700,6 +700,43 @@ confessional_test. **Deliberate exception: this harness must NOT set
 `TimeManager.is_paused = true`** — ConfessionalDirector._process only
 decays the cooldown while the clock runs, and `_cool()` depends on it.
 
+## Finale night + resolution scoring (2026-09-06, Roadmap Track B)
+
+Interventions that CONCLUDE stories are what score now. ProducerEconomy
+counts per-episode resolutions off the signals that already exist —
+`goal_achieved` (3), `romance_started` (3), `secret_exposed` (4),
+`case_resolved` (6, or 8 when the house caught the mole) — capped at
+`RESOLUTION_CAP` (20) and added to the episode score at the wrap. The
+breakdown carries `resolutions`/`resolution_points`; the EpisodeCard says
+"N stories concluded (+P)" or, honestly, "no stories concluded — a finale
+wants endings". Counters persist mid-episode (gate-free key) and reset at
+the wrap.
+
+**Finale pressure:** `ProducerEconomy.is_finale_day()` is true on an
+episode's last day (the pilot's only day counts). SecretManager's booth
+roll doubles (`_admit_chance()`), and an open mole case strikes nightly
+(`WhodunitDirector._incident_interval()` → 1) — endings cluster where the
+scoring pays. Both behind the existing auto_* seams, so no harness felt
+it. economy_test 58 → 67, secrets_test 41 → 43, whodunit_test 46 → 48.
+
+## The confessional booth cutaway (2026-09-06, Roadmap Track A)
+
+The marquee promise is a picture now. `scenes/ui/booth_cutaway.gd`
+(BoothCutaway, one HUD instance): when an agent files a confessional, the
+lower third cuts to a drawn curtain (fold stripes with edge falloff) under
+a layered-circle spotlight, the speaker's portrait — their still idle
+frame at 4x, nearest-filtered — with a mouth overlay that flaps while a
+typewriter reveals the quote (28 chars/s), and a blinking `• REC` inside
+the frame. Host recaps (and any speaker whose agent is already gone) keep
+the plain ConfessionalToast: the Narrator has no face.
+
+**Gotcha that cost a capture round:** a PanelContainer STOMPS manually
+positioned children during its layout sort — the portrait vanished until
+everything hand-placed moved onto a plain Control stage inside the panel.
+Same family as the anchors-before-offsets trap. Mouth placement on the
+14x18 outlined sprite: `MOUTH_RECT_SRC` (5.5, 5.5, 3x0.8 source px) —
+tuned against a real capture, where the first guess read as a mustache.
+
 ## The Premiere package (2026-08-31, Roadmap Now #1)
 
 The first hour now proves the game instead of hoping. Two pieces:

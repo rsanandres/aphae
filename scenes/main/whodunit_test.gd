@@ -267,6 +267,22 @@ func _run() -> void:
 		WhodunitDirector._on_day_changed(10 + i)
 	_check("the seam keeps the day-roll quiet", WhodunitDirector.case == null)
 
+	# --- Finale pressure (Track B) -------------------------------------------
+	# case is null here, so wrongful-vote emboldening cannot mask the check.
+	var fin_season := ProducerEconomy.season
+	var fin_episode := ProducerEconomy.episode
+	var fin_start := ProducerEconomy.episode_start_day
+	ProducerEconomy.season = 2
+	ProducerEconomy.episode = 2
+	ProducerEconomy.episode_start_day = TimeManager.day - 2  # day 3 of a 3-day episode
+	_check("finale day: the mole strikes nightly", WhodunitDirector._incident_interval() == 1)
+	ProducerEconomy.episode_start_day = TimeManager.day  # day 1 of 3
+	_check("mid-episode: the usual interval",
+		WhodunitDirector._incident_interval() == WhodunitDirector.INCIDENT_INTERVAL_DAYS)
+	ProducerEconomy.season = fin_season
+	ProducerEconomy.episode = fin_episode
+	ProducerEconomy.episode_start_day = fin_start
+
 
 func _wait_cast_size(expected: int) -> void:
 	## Departures free their node on an animation clock; wait for the roster,

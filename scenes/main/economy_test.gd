@@ -91,6 +91,35 @@ func _run() -> void:
 	_check("the pilot wraps after one day", ended.size() == pilot_ended_before + 1)
 	_check("post-pilot episodes are full length", ProducerEconomy.episode_length_days() == ProducerEconomy.EPISODE_DAYS)
 
+	# --- Finale night: resolutions score the episode (Track B) ----------------
+	TimeManager.game_minutes = 1440.0 + 480.0  # day 2
+	ProducerEconomy.load_save_state({})  # S1E1 anchored today
+	_check("the pilot's only day is its finale", ProducerEconomy.is_finale_day())
+	EventBus.goal_achieved.emit("Ann", "learn to paint", 0)
+	EventBus.romance_started.emit("Ann", "Bee")
+	EventBus.secret_exposed.emit("Cid", "hid a whole thing")
+	EventBus.case_resolved.emit(true, "Dov")
+	_check("resolutions tally with their weights", ProducerEconomy.resolution_points() == 18)
+	var fin_before: int = ended.size()
+	TimeManager.game_minutes = 2.0 * 1440.0 + 480.0  # day 3 wraps the pilot
+	EventBus.day_changed.emit(TimeManager.day)
+	_check("concluded stories pay into the score",
+		ended.size() == fin_before + 1 and int(ended[fin_before]["score"]) >= 18)
+	_check("the wrap card sees the resolutions",
+		int(ProducerEconomy.last_breakdown.get("resolutions", 0)) == 4 \
+			and int(ProducerEconomy.last_breakdown.get("resolution_points", 0)) == 18)
+	_check("resolution counters reset at the wrap", ProducerEconomy.resolution_points() == 0)
+	_check("day 1 of a 3-day episode is not a finale", not ProducerEconomy.is_finale_day())
+	for i in range(5):
+		EventBus.case_resolved.emit(false, "Nobody")
+	_check("resolution points cap", ProducerEconomy.resolution_points() == ProducerEconomy.RESOLUTION_CAP)
+	var fin_snapshot: Dictionary = ProducerEconomy.get_save_state()
+	ProducerEconomy.load_save_state({})
+	_check("a fresh save has no resolutions", ProducerEconomy.resolution_points() == 0)
+	ProducerEconomy.load_save_state(fin_snapshot)
+	_check("mid-episode resolutions survive a round-trip",
+		ProducerEconomy.resolution_points() == ProducerEconomy.RESOLUTION_CAP)
+
 	# --- Score bounds ---
 	_check("grade thresholds", ProducerEconomy.grade_for(85) == "S" and ProducerEconomy.grade_for(60) == "A" \
 		and ProducerEconomy.grade_for(40) == "B" and ProducerEconomy.grade_for(5) == "D")

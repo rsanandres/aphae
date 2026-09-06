@@ -75,14 +75,24 @@ func _on_day_changed(day: int) -> void:
 	if not auto_enabled:
 		return
 	if has_open_case():
-		var interval := 1 if case.wrongful_votes > 0 else INCIDENT_INTERVAL_DAYS
-		if day - case.last_incident_day >= interval:
+		if day - case.last_incident_day >= _incident_interval():
 			commit_incident()
 		return
 	if day < MIN_QUIET_DAYS:
 		return
 	if randf() < OPEN_CHANCE_PER_DAY * DramaDirector.get_probability_modifier():
 		open_case()
+
+
+func _incident_interval() -> int:
+	## Emboldened after a wrongful vote — and on finale night the mole always
+	## strikes: an open case on an episode's last day is drama that must land
+	## while the resolution scoring can still count it.
+	if case != null and case.wrongful_votes > 0:
+		return 1
+	if ProducerEconomy.is_finale_day():
+		return 1
+	return INCIDENT_INTERVAL_DAYS
 
 
 func open_case(forced_mole: Node2D = null) -> CaseState:

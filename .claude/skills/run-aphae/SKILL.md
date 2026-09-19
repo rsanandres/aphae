@@ -73,11 +73,11 @@ $G -e --quit-after 5 2>&1 | grep -E 'Parse Error|Compile Error'   # must print N
 $G res://scenes/main/producer_test.tscn               # 33 passed
 $G res://scenes/main/confessional_test.tscn           # 19 passed
 $G res://scenes/main/events_test.tscn                 # 67 passed
-$G res://scenes/main/economy_test.tscn                # 67 passed
+$G res://scenes/main/economy_test.tscn                # 86 passed
 $G res://scenes/main/premiere_test.tscn               # 13 passed
 $G res://scenes/main/goals_test.tscn                  # 75 passed
-$G res://scenes/main/secrets_test.tscn                # 43 passed
-$G res://scenes/main/whodunit_test.tscn               # 48 passed
+$G res://scenes/main/secrets_test.tscn                # 45 passed
+$G res://scenes/main/whodunit_test.tscn               # 50 passed
 $G res://scenes/main/synergy_test.tscn                # 26 passed
 $G res://scenes/main/headless_sim.tscn -- --agents=12 --speed=3   # soak; runs forever, kill it
 ```
@@ -124,6 +124,8 @@ in this repo; the trace named the exact function on the first line.
   needs in `_ready()`:
   `ProducerEconomy.meta_persistence_enabled = false` (CI runs inflated the
   owner's real lifetime progression — this happened),
+  `SaveManager.episode_snapshots_enabled = false` (every wrap banks a file
+  under user://saves/history/ otherwise — harness wraps must not),
   `TimeManager.is_paused = true`, zero event probabilities
   (`trigger_event()` bypasses them),
   `SaveManager._last_auto_save_day = 999999`,

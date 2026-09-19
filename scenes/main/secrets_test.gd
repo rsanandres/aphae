@@ -14,6 +14,7 @@ var _results: Array[String] = []
 
 func _ready() -> void:
 	ProducerEconomy.meta_persistence_enabled = false
+	SaveManager.episode_snapshots_enabled = false
 	TimeManager.is_paused = true
 	SaveManager._last_auto_save_day = 999999
 	for definition in EventManager.get_available_events():
@@ -250,6 +251,18 @@ func _run() -> void:
 	EventBus.agent_removed.emit(outsider.agent_name)
 	_check("removing an agent drops their secret",
 		SecretManager.get_secret(outsider.agent_name) == null)
+
+	# --- Facing: talkers turn toward each other (Track A) --------------------
+	# friend stands at x=90, gossip at x=120: friend looks right (no flip),
+	# gossip looks left (flipped). Walking already flips on velocity; this is
+	# the conversation case that used to leave both facing wherever they last
+	# stepped.
+	friend.enter_talking_state(gossip)
+	gossip.enter_talking_state(friend)
+	_check("a talker faces a partner on their right", friend.sprite.flip_h == false)
+	_check("a talker faces a partner on their left", gossip.sprite.flip_h == true)
+	friend.exit_talking_state()
+	gossip.exit_talking_state()
 
 	# --- Finale pressure (Track B) -------------------------------------------
 	var fin_season := ProducerEconomy.season

@@ -700,6 +700,47 @@ confessional_test. **Deliberate exception: this harness must NOT set
 `TimeManager.is_paused = true`** — ConfessionalDirector._process only
 decays the cooldown while the clock runs, and `_cool()` depends on it.
 
+## Episode snapshots: a rewindable season history (2026-09-19)
+
+The owner asked whether week-by-week state was kept when syncing; it
+wasn't — a slot only ever held the present. Now every `episode_ended`
+banks `_serialize_world()` to `user://saves/history/slot_N_SxEy.json`
+(`SaveManager.snapshot_episode`), capped at `MAX_SNAPSHOTS_PER_SLOT` (6),
+ordered by parsed season/episode — NOT by timestamp, which ties within a
+second in a harness and pruned the wrong file on the first draft.
+`list_snapshots(slot)` feeds a "Rewind..." dropdown per slot in the load
+picker; `load_snapshot(path)` restores into the running game without
+touching the slot file, so a rewind is never destructive until the player
+saves. Seam `episode_snapshots_enabled`, off in every harness (they wrap
+episodes by hand); economy_test exercises it last, on slot 5, and cleans
+up. Recaps in `user://recaps/` remain the other thing that accumulates.
+
+## "Next time on Aphae": teasers + producer bets (2026-09-19, Roadmap Track B)
+
+The one-more-day engine and the economy's missing sink, built as one
+predicate engine per the panel. At every wrap `ProducerEconomy` reads live
+autoload state into up to three teasers (`generate_teasers`): an open mole
+case, the hidden secret in the most ears, an unacted crush (CRUSHING), the
+goal furthest along past 40% — with generic fallbacks ("Does anyone's
+secret slip?") so the card always has two. The EpisodeCard's new "Next
+time on Aphae" section shows them with a `Bet ¤5` button; `place_bet`
+stakes `BET_STAKE`, one open bet at a time. The next wrap settles it
+(`_settle_bet`) against an episode LEDGER — the same signals that score
+resolutions, with identities kept (goal owners, exposed holders, romance
+pairs either order, case caught) — and pays `BET_PAYOUT` (15) on a hit.
+The card reports last wrap's result above the new teasers. `pending_bet`
+and the ledger persist gate-free with the producer block. Signals:
+`bet_placed`, `bet_settled`. Contract-style objectives (Network notes) are
+deliberately NOT built — this predicate engine is the seat they'd take.
+
+## Facing (2026-09-19, Roadmap Track A slice)
+
+`enter_talking_state(partner)` flips the sprite toward the partner;
+`ConversationInstance.start` passes each side. Walking already flipped on
+velocity; a conversation used to leave both agents pointing wherever they
+last stepped. Asserted in secrets_test on agents at known x positions —
+the gui_check bubbles shot is synthetic and cannot show it.
+
 ## Finale night + resolution scoring (2026-09-06, Roadmap Track B)
 
 Interventions that CONCLUDE stories are what score now. ProducerEconomy

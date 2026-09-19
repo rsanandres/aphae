@@ -78,7 +78,7 @@ Aphae — AI Agent Office Simulation. A top-down 2D pixel art game where AI agen
 Space=pause, 1/2/3=speed, Tab=god mode, F5=save, F9=load, F12=screenshot, L=narrative log, R=relationships, C=confessional cam, E=episode recap, Esc=close overlays
 
 ### Save/Load
-5 save slots at `user://saves/slot_N.json` with `.bak` backup. Auto-save every 5 game-days. Legacy migration from single-file save. Save v4 adds confessionals, v6 goals, v7 secrets, v8 the mole case, v9 the impact log and the episode star; these restores sit outside the version gate, so older saves still load — a pre-v6 save simply has no goal block and agents re-derive theirs from personality on spawn.
+5 save slots at `user://saves/slot_N.json` with `.bak` backup. Auto-save every 5 game-days. Every episode wrap also banks a snapshot to `user://saves/history/slot_N_SxEy.json` (capped at 6 per slot; `SaveManager.list_snapshots`/`load_snapshot`, "Rewind..." in the load picker) — a season history beside the slot, which itself only holds the present. Legacy migration from single-file save. Save v4 adds confessionals, v6 goals, v7 secrets, v8 the mole case, v9 the impact log and the episode star; these restores sit outside the version gate, so older saves still load — a pre-v6 save simply has no goal block and agents re-derive theirs from personality on spawn.
 
 ### Episode Recap
 `EpisodeRecap` (`scripts/utils/`) assembles a shareable Markdown recap from Narrator storylines + ConfessionalDirector quips. Pure synchronous read — storylines already carry LLM summaries, so it needs no LLM call. Viewable with **E**, exports to `user://recaps/`, and shown on the game-over overlay.

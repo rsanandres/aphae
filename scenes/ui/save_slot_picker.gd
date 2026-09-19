@@ -90,6 +90,29 @@ func _rebuild() -> void:
 			)
 			row.add_child(del_btn)
 
+		# Rewind: the slot's banked episode wraps (load mode only). One
+		# dropdown per slot that has history; picking an entry restores that
+		# wrap into the running game without touching the slot file.
+		if _mode == "load":
+			var snaps: Array[Dictionary] = SaveManager.list_snapshots(i)
+			if not snaps.is_empty():
+				var rewind := OptionButton.new()
+				rewind.add_theme_font_size_override("font_size", 9)
+				rewind.custom_minimum_size = Vector2(88, 0)
+				rewind.tooltip_text = "Rewind to an earlier episode wrap"
+				rewind.add_item("Rewind...")
+				rewind.set_item_disabled(0, true)
+				for snap in snaps:
+					rewind.add_item("%s (day %d)" % [snap["label"], snap["day"]])
+				rewind.item_selected.connect(func(idx: int) -> void:
+					if idx <= 0:
+						return
+					if SaveManager.load_snapshot(str(snaps[idx - 1]["path"])):
+						SaveManager.current_slot = slot
+						visible = false
+				)
+				row.add_child(rewind)
+
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0, 4)
 	_content.add_child(spacer)

@@ -13,6 +13,7 @@ var _results: Array[String] = []
 
 func _ready() -> void:
 	ProducerEconomy.meta_persistence_enabled = false
+	SaveManager.episode_snapshots_enabled = false
 	# M7 seams off: the spawn-roll must not plant secret memories under the
 	# assertions, and the day-roll must not inject booth admissions mid-test.
 	GoalManager.auto_enabled = false
@@ -119,6 +120,55 @@ func _run() -> void:
 	ProducerEconomy.load_save_state(fin_snapshot)
 	_check("mid-episode resolutions survive a round-trip",
 		ProducerEconomy.resolution_points() == ProducerEconomy.RESOLUTION_CAP)
+
+	# --- Next time on Aphae: teasers and bets (Track B) -----------------------
+	TimeManager.game_minutes = 480.0
+	ProducerEconomy.load_save_state({})
+	var teasers: Array = ProducerEconomy.generate_teasers()
+	_check("a bare office still gets two generic teasers",
+		teasers.size() >= 2 and teasers.size() <= ProducerEconomy.MAX_TEASERS)
+	_check("no bet is pending on a fresh save", ProducerEconomy.can_place_bet())
+	var romance_teaser := {"kind": "romance", "subject": "Ann", "other": "Bee", "text": "Ann and Bee?"}
+	var bank_before: int = ProducerEconomy.influence
+	_check("placing a bet costs the stake",
+		ProducerEconomy.place_bet(romance_teaser) and ProducerEconomy.influence == bank_before - ProducerEconomy.BET_STAKE)
+	_check("one bet at a time", not ProducerEconomy.place_bet(romance_teaser))
+	var bet_snapshot: Dictionary = ProducerEconomy.get_save_state()
+	ProducerEconomy.load_save_state({})
+	_check("a fresh save carries no bet", ProducerEconomy.pending_bet.is_empty())
+	ProducerEconomy.load_save_state(bet_snapshot)
+	_check("a pending bet survives a round-trip",
+		str(ProducerEconomy.pending_bet.get("subject", "")) == "Ann")
+	# The wrong romance does not pay; the right pair does, either order.
+	EventBus.romance_started.emit("Cid", "Dov")
+	EventBus.romance_started.emit("Bee", "Ann")
+	var settled: Array = []
+	EventBus.bet_settled.connect(func(hit: bool, _t: String, payout: int) -> void:
+		settled.append({"hit": hit, "payout": payout}))
+	bank_before = ProducerEconomy.influence
+	TimeManager.game_minutes = 1440.0 + 480.0  # day 2 wraps the pilot
+	EventBus.day_changed.emit(TimeManager.day)
+	_check("a hit bet pays at the wrap",
+		settled.size() == 1 and bool(settled[0]["hit"]) and int(settled[0]["payout"]) == ProducerEconomy.BET_PAYOUT)
+	_check("the card can read the settled result",
+		bool(ProducerEconomy.last_bet_result.get("hit", false)))
+	_check("the wrap clears the bet and offers new teasers",
+		ProducerEconomy.pending_bet.is_empty() and ProducerEconomy.last_teasers.size() >= 2)
+	# A miss: bet on the mole with no case resolved.
+	ProducerEconomy.place_bet({"kind": "mole", "subject": "", "other": "", "text": "Mole?"})
+	TimeManager.game_minutes = 4.0 * 1440.0 + 480.0  # day 5 wraps S1E2
+	EventBus.day_changed.emit(TimeManager.day)
+	_check("a missed bet pays nothing",
+		settled.size() == 2 and not bool(settled[1]["hit"]) and int(settled[1]["payout"]) == 0)
+	# Generic teasers settle on ANY matching event.
+	ProducerEconomy.place_bet({"kind": "exposure", "subject": "", "other": "", "text": "Any secret?"})
+	EventBus.secret_exposed.emit("Eve", "a thing")
+	TimeManager.game_minutes = 7.0 * 1440.0 + 480.0
+	EventBus.day_changed.emit(TimeManager.day)
+	_check("a generic teaser settles on any matching event",
+		settled.size() == 3 and bool(settled[2]["hit"]))
+	ProducerEconomy.influence = 0
+	_check("a broke producer cannot bet", not ProducerEconomy.can_place_bet())
 
 	# --- Score bounds ---
 	_check("grade thresholds", ProducerEconomy.grade_for(85) == "S" and ProducerEconomy.grade_for(60) == "A" \
@@ -321,6 +371,38 @@ func _run() -> void:
 		if meta_out:
 			meta_out.store_string(meta_backup)
 			meta_out.close()
+	_run_snapshots()
+
+
+func _run_snapshots() -> void:
+	# --- Episode snapshots: every wrap banks a rewindable copy ---------------
+	# Runs LAST: a rewind re-deserializes the world, so nothing may depend on
+	# state after it. Slot 5 (index 4) is the harness slot, never a player's.
+	SaveManager.episode_snapshots_enabled = true
+	SaveManager.current_slot = 4
+	for old in SaveManager.list_snapshots(4):
+		DirAccess.remove_absolute(str(old["path"]))
+	var first_path: String = SaveManager.snapshot_episode(4, 1, 1)
+	_check("a wrap banks a snapshot file", first_path != "" and FileAccess.file_exists(first_path))
+	var snaps: Array[Dictionary] = SaveManager.list_snapshots(4)
+	_check("the snapshot lists under its slot with its label",
+		snaps.size() == 1 and str(snaps[0]["label"]) == "S1E1")
+	# The episode_ended hook banks on its own when a world exists.
+	EventBus.episode_ended.emit(1, 2, 40, 60)
+	_check("the wrap signal banks a snapshot", SaveManager.list_snapshots(4).size() == 2)
+	for e in range(3, SaveManager.MAX_SNAPSHOTS_PER_SLOT + 4):
+		SaveManager.snapshot_episode(4, 1, e)
+	snaps = SaveManager.list_snapshots(4)
+	_check("history is capped per slot", snaps.size() == SaveManager.MAX_SNAPSHOTS_PER_SLOT)
+	_check("the newest wrap lists first and the oldest was pruned",
+		str(snaps[0]["label"]) == "S1E%d" % (SaveManager.MAX_SNAPSHOTS_PER_SLOT + 3)
+			and not FileAccess.file_exists(first_path))
+	_check("a snapshot rewinds into the running game",
+		SaveManager.load_snapshot(str(snaps[0]["path"])))
+	_check("a missing snapshot is refused", not SaveManager.load_snapshot(SaveManager.SNAPSHOT_DIR + "nope.json"))
+	for snap in SaveManager.list_snapshots(4):
+		DirAccess.remove_absolute(str(snap["path"]))
+	SaveManager.episode_snapshots_enabled = false
 
 
 func _check(test_name: String, ok: bool) -> void:

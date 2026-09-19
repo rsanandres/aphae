@@ -15,6 +15,7 @@ var _world: Node2D
 
 func _ready() -> void:
 	ProducerEconomy.meta_persistence_enabled = false
+	SaveManager.episode_snapshots_enabled = false
 	TimeManager.is_paused = true
 	SaveManager._last_auto_save_day = 999999
 	for definition in EventManager.get_available_events():

@@ -46,6 +46,18 @@ var last_breakdown: Dictionary = {"avg": 0.0, "peak": 0.0, "beats": 0, "resoluti
 const RESOLUTION_POINTS := {"goal": 3, "romance": 3, "exposure": 4, "case": 6, "case_caught": 8}
 const RESOLUTION_CAP := 20
 var _resolutions: Dictionary = {}  # kind -> count this episode
+
+## "Next time on Aphae": at every wrap the card teases 2-3 live cliffhangers
+## and the producer may stake Influence on ONE. The next wrap settles it
+## against the episode ledger — the same signals that score resolutions,
+## with identities kept. The one-more-day engine and the economy's sink.
+const BET_STAKE := 5
+const BET_PAYOUT := 15
+const MAX_TEASERS := 3
+var pending_bet: Dictionary = {}      # {kind, subject, other, text, placed_episode}
+var last_teasers: Array = []          # generated at the wrap, shown on the card
+var last_bet_result: Dictionary = {}  # {hit, text, payout} for the card, this session
+var _ledger: Dictionary = {"goals": [], "exposures": [], "romances": [], "case_resolved": false, "case_caught": false}
 var _sample_accum_minutes: float = 0.0
 var _last_tick_minutes: float = 0.0
 var _trickle_today: int = 0
@@ -67,16 +79,23 @@ func _ready() -> void:
 	EventBus.day_changed.connect(_on_day_changed)
 	EventBus.time_tick.connect(_on_time_tick)
 	EventBus.narrative_event.connect(_on_narrative_event)
-	EventBus.romance_started.connect(func(_a: String, _b: String) -> void:
+	EventBus.romance_started.connect(func(a: String, b: String) -> void:
 		_trickle(3, "romance")
-		_resolution("romance"))
+		_resolution("romance")
+		(_ledger["romances"] as Array).append([a, b]))
 	EventBus.confession_made.connect(func(_a: String, _b: String, _ok: bool) -> void: _trickle(3, "confession"))
 	EventBus.agent_died.connect(func(_n: String, _c: String) -> void: _trickle(5, "tragedy"))
 	EventBus.event_triggered.connect(func(_id: String, _n: Array) -> void: _trickle(1, "event"))
-	EventBus.goal_achieved.connect(func(_a: String, _t: String, _k: int) -> void: _resolution("goal"))
-	EventBus.secret_exposed.connect(func(_h: String, _t: String) -> void: _resolution("exposure"))
+	EventBus.goal_achieved.connect(func(a: String, _t: String, _k: int) -> void:
+		_resolution("goal")
+		(_ledger["goals"] as Array).append(a))
+	EventBus.secret_exposed.connect(func(h: String, _t: String) -> void:
+		_resolution("exposure")
+		(_ledger["exposures"] as Array).append(h))
 	EventBus.case_resolved.connect(func(caught: bool, _m: String) -> void:
-		_resolution("case_caught" if caught else "case"))
+		_resolution("case_caught" if caught else "case")
+		_ledger["case_resolved"] = true
+		_ledger["case_caught"] = _ledger["case_caught"] or caught)
 
 
 func _on_narrative_event(text: String, agents: Array, importance: float) -> void:
@@ -202,6 +221,10 @@ func _finish_episode() -> void:
 		"resolutions": resolution_count(), "resolution_points": resolution_points(),
 	}
 
+	# Settle last wrap's bet against this episode's ledger, then tease the
+	# next one — both before the signal so the card sees them.
+	_settle_bet()
+
 	var finished_season := season
 	var finished_episode := episode
 	episode += 1
@@ -214,6 +237,8 @@ func _finish_episode() -> void:
 	_peak_drama = 0.0
 	_beats = 0
 	_resolutions = {}
+	_ledger = {"goals": [], "exposures": [], "romances": [], "case_resolved": false, "case_caught": false}
+	last_teasers = generate_teasers()
 
 	lifetime_episodes += 1
 	best_episode_score = maxi(best_episode_score, score)
@@ -259,6 +284,124 @@ static func grade_for(score: int) -> String:
 	elif score >= 20:
 		return "C"
 	return "D"
+
+
+# --- Next time on Aphae: teasers and bets ------------------------------------
+
+func generate_teasers() -> Array:
+	## Up to MAX_TEASERS cliffhangers read off live autoload state, most
+	## specific first; generic fallbacks fill to two so the card always has a
+	## bet to offer. Each: {kind, subject, other, text}.
+	var out: Array = []
+	if WhodunitDirector.has_open_case():
+		out.append({"kind": "mole", "subject": "", "other": "",
+			"text": "Someone is still sabotaging the office. Does the house catch them?"})
+	# The secret closest to exposure: hidden, and already in some ears.
+	var best_secret: SecretState = null
+	for secret: SecretState in SecretManager._secrets.values():
+		if not secret.is_hidden() or secret.known_by.is_empty():
+			continue
+		if best_secret == null or secret.known_by.size() > best_secret.known_by.size():
+			best_secret = secret
+	if best_secret != null and out.size() < MAX_TEASERS:
+		out.append({"kind": "exposure", "subject": best_secret.agent_name, "other": "",
+			"text": "%s's secret has reached %d ear%s. Does it get out?" % [
+				best_secret.agent_name, best_secret.known_by.size(),
+				"" if best_secret.known_by.size() == 1 else "s"]})
+	# A crush nobody has acted on.
+	if out.size() < MAX_TEASERS:
+		for agent in AgentManager.agents:
+			if not is_instance_valid(agent) or agent.is_dead or agent.relationships == null:
+				continue
+			var found := false
+			for other_name in agent.relationships.get_all_relationships():
+				var rel: RelationshipEntry = agent.relationships.get_relationship(str(other_name))
+				if rel.relationship_status == RelationshipEntry.Status.CRUSHING:
+					out.append({"kind": "romance", "subject": agent.agent_name, "other": str(other_name),
+						"text": "%s keeps looking at %s. Do they make a move?" % [agent.agent_name, other_name]})
+					found = true
+					break
+			if found:
+				break
+	# A goal close enough to land — or to lose.
+	if out.size() < MAX_TEASERS:
+		var best_goal: GoalState = null
+		for agent in AgentManager.agents:
+			if not is_instance_valid(agent) or agent.is_dead:
+				continue
+			for goal: GoalState in GoalManager.get_goals(agent.agent_name):
+				if goal.status != GoalState.Status.ACTIVE or goal.progress < 40.0:
+					continue
+				if best_goal == null or goal.progress > best_goal.progress:
+					best_goal = goal
+		if best_goal != null:
+			out.append({"kind": "goal", "subject": best_goal.agent_name, "other": "",
+				"text": "%s is %d%% of the way to \"%s\". Do they land it?" % [
+					best_goal.agent_name, roundi(best_goal.progress), best_goal.text]})
+	# Fallbacks: the card always has something to bet on.
+	if out.size() < 2:
+		out.append({"kind": "exposure", "subject": "", "other": "",
+			"text": "Does anyone's secret slip this episode?"})
+	if out.size() < 2:
+		out.append({"kind": "romance", "subject": "", "other": "",
+			"text": "Does a romance bloom this episode?"})
+	return out.slice(0, MAX_TEASERS)
+
+
+func can_place_bet() -> bool:
+	return pending_bet.is_empty() and can_afford(BET_STAKE)
+
+
+func place_bet(teaser: Dictionary) -> bool:
+	## Stake BET_STAKE on one teaser. One open bet at a time; settled at the
+	## next wrap. The stake is gone either way — that is what makes it a bet.
+	if not can_place_bet() or not teaser.has("kind"):
+		return false
+	if not spend(BET_STAKE, "bet"):
+		return false
+	pending_bet = {
+		"kind": str(teaser.get("kind", "")),
+		"subject": str(teaser.get("subject", "")),
+		"other": str(teaser.get("other", "")),
+		"text": str(teaser.get("text", "")),
+		"placed_episode": episode_label(),
+	}
+	EventBus.bet_placed.emit(pending_bet["text"])
+	return true
+
+
+func _bet_hit(bet: Dictionary) -> bool:
+	var subject := str(bet.get("subject", ""))
+	var other := str(bet.get("other", ""))
+	match str(bet.get("kind", "")):
+		"mole":
+			return bool(_ledger["case_caught"])
+		"exposure":
+			var exposures: Array = _ledger["exposures"]
+			return (not exposures.is_empty()) if subject == "" else (subject in exposures)
+		"romance":
+			var romances: Array = _ledger["romances"]
+			if subject == "":
+				return not romances.is_empty()
+			for pair in romances:
+				if (pair[0] == subject and pair[1] == other) or (pair[0] == other and pair[1] == subject):
+					return true
+			return false
+		"goal":
+			return subject in (_ledger["goals"] as Array)
+	return false
+
+
+func _settle_bet() -> void:
+	if pending_bet.is_empty():
+		last_bet_result = {}
+		return
+	var hit := _bet_hit(pending_bet)
+	last_bet_result = {"hit": hit, "text": str(pending_bet.get("text", "")), "payout": BET_PAYOUT if hit else 0}
+	if hit:
+		grant(BET_PAYOUT, "bet won")
+	EventBus.bet_settled.emit(hit, str(pending_bet.get("text", "")), BET_PAYOUT if hit else 0)
+	pending_bet = {}
 
 
 # --- Creative mode and show-mode placement -----------------------------------
@@ -408,6 +551,8 @@ func get_save_state() -> Dictionary:
 		"peak_drama": _peak_drama,
 		"beats": _beats,
 		"resolutions": _resolutions.duplicate(),
+		"pending_bet": pending_bet.duplicate(),
+		"ledger": _ledger.duplicate(true),
 	}
 
 
@@ -426,6 +571,13 @@ func load_save_state(data: Dictionary) -> void:
 	_peak_drama = float(data.get("peak_drama", 0.0))
 	_beats = int(data.get("beats", 0))
 	_resolutions = data.get("resolutions", {}).duplicate() if data.get("resolutions") is Dictionary else {}
+	pending_bet = data.get("pending_bet", {}).duplicate() if data.get("pending_bet") is Dictionary else {}
+	_ledger = {"goals": [], "exposures": [], "romances": [], "case_resolved": false, "case_caught": false}
+	var saved_ledger: Variant = data.get("ledger")
+	if saved_ledger is Dictionary:
+		for key in _ledger:
+			if (saved_ledger as Dictionary).has(key):
+				_ledger[key] = (saved_ledger as Dictionary)[key]
 	_last_tick_minutes = TimeManager.game_minutes
 	EventBus.influence_changed.emit(influence, 0, "loaded")
 

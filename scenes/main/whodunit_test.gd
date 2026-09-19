@@ -15,6 +15,7 @@ var _results: Array[String] = []
 
 func _ready() -> void:
 	ProducerEconomy.meta_persistence_enabled = false
+	SaveManager.episode_snapshots_enabled = false
 	TimeManager.is_paused = true
 	SaveManager._last_auto_save_day = 999999
 	for definition in EventManager.get_available_events():
@@ -259,6 +260,17 @@ func _run() -> void:
 		WhodunitDirector.has_open_case()
 		and WhodunitDirector.case.mole_name == mole4.agent_name
 		and WhodunitDirector.case.incidents == 1)
+
+	# --- Teasers read the live case (Track B) ---------------------------------
+	# `mole` was voted off and freed earlier — the trap this file warns about.
+	var live_mole: Node2D = AgentManager.agents[0]
+	var case_teaser: CaseState = _fresh_case(live_mole)
+	var teaser_kinds: Array = []
+	for teaser in ProducerEconomy.generate_teasers():
+		teaser_kinds.append(str(teaser.get("kind", "")))
+	_check("an open case headlines the teasers", case_teaser != null and teaser_kinds[0] == "mole")
+	_check("a mole teaser settles on the catch",
+		ProducerEconomy._bet_hit({"kind": "mole", "subject": "", "other": ""}) == bool(ProducerEconomy._ledger["case_caught"]))
 
 	# --- The day-roll seam ---------------------------------------------------
 	WhodunitDirector.case = null

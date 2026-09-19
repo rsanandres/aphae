@@ -124,9 +124,14 @@ func show_speech(text: String, duration: float = 3.0, tone: String = "") -> void
 		layer.show_bubble(self, text, duration, tone)
 
 
-func enter_talking_state() -> void:
+func enter_talking_state(partner: Node2D = null) -> void:
 	state = AgentState.Type.TALKING
 	velocity = Vector2.ZERO
+	# Face whoever you are talking to. Walking already flips on velocity;
+	# a conversation used to leave both agents pointing wherever they last
+	# stepped, which read as two people talking past each other.
+	if partner != null and is_instance_valid(partner) and sprite:
+		sprite.flip_h = partner.global_position.x < global_position.x
 
 
 func exit_talking_state() -> void:

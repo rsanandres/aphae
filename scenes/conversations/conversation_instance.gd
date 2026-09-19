@@ -28,8 +28,8 @@ func start(a: Node2D, b: Node2D, confession: bool = false) -> void:
 	_is_confession = confession
 	_max_turns = 2 if confession else Config.CONVERSATION_TURNS
 	# Both agents enter talking state
-	agent_a.enter_talking_state()
-	agent_b.enter_talking_state()
+	agent_a.enter_talking_state(agent_b)
+	agent_b.enter_talking_state(agent_a)
 	EventBus.conversation_started.emit(agent_a.agent_name, agent_b.agent_name)
 	# Start first turn
 	_request_next_line()

@@ -10,6 +10,15 @@ const MAX_SLOTS := 5
 const LEGACY_PATH := "user://ayle_save.json"
 const LAST_SLOT_PATH := "user://last_slot.cfg"
 
+# Episode snapshots: at every wrap the world is banked to
+# user://saves/history/slot_N_SxEy.json — a rewindable season history
+# beside the slot, which itself only ever holds the present. Capped per
+# slot; the seam is off in harnesses (they wrap episodes by hand and must
+# not litter the real history folder).
+const SNAPSHOT_DIR := "user://saves/history/"
+const MAX_SNAPSHOTS_PER_SLOT := 6
+var episode_snapshots_enabled: bool = true
+
 var _last_auto_save_day: int = 0
 var current_slot: int = 0  # Active save slot
 var last_used_slot: int = 0  # Most recently used slot (persisted)
@@ -18,6 +27,7 @@ var skip_auto_load: bool = false  # Set by main menu for "New Sandbox"
 
 func _ready() -> void:
 	EventBus.day_changed.connect(_on_day_changed)
+	EventBus.episode_ended.connect(_on_episode_ended)
 	_ensure_save_dir()
 	_migrate_legacy_save()
 	_load_last_used_slot()
@@ -111,6 +121,98 @@ func get_slot_info(slot: int) -> Dictionary:
 		"agent_count": (data.get("agents", []) as Array).size(),
 		"version": data.get("version", 1),
 	}
+
+
+# --- Episode snapshots -------------------------------------------------------
+
+func _on_episode_ended(season: int, episode: int, _score: int, _payout: int) -> void:
+	if not episode_snapshots_enabled:
+		return
+	if get_tree().get_first_node_in_group("world") == null:
+		return  # menu or a bare harness: nothing to bank
+	snapshot_episode(current_slot, season, episode)
+
+
+func snapshot_episode(slot: int, season: int, episode: int) -> String:
+	## Bank the live world as slot_N_SxEy.json under history/. Returns the
+	## path written, or "" on failure. Never touches the slot file itself.
+	if not DirAccess.dir_exists_absolute(SNAPSHOT_DIR):
+		DirAccess.make_dir_recursive_absolute(SNAPSHOT_DIR)
+	var data := _serialize_world()
+	data["slot"] = slot
+	data["save_time"] = Time.get_datetime_string_from_system()
+	data["snapshot_label"] = "S%dE%d" % [season, episode]
+	var path := _snapshot_path(slot, season, episode)
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if not file:
+		push_warning("SaveManager: could not write episode snapshot %s" % path)
+		return ""
+	file.store_string(JSON.stringify(data, "\t"))
+	file.close()
+	_prune_snapshots(slot)
+	print("[SaveManager] Episode snapshot banked: %s" % path)
+	return path
+
+
+func list_snapshots(slot: int) -> Array[Dictionary]:
+	## Newest first: {path, label, save_time, day}. Cheap enough to call from
+	## a picker — it parses each file's header, and the cap keeps it short.
+	var out: Array[Dictionary] = []
+	var dir := DirAccess.open(SNAPSHOT_DIR)
+	if dir == null:
+		return out
+	var prefix := "slot_%d_" % slot
+	for name in dir.get_files():
+		if not name.begins_with(prefix) or not name.ends_with(".json"):
+			continue
+		var path := SNAPSHOT_DIR + name
+		var data := _try_load_file(path)
+		if data.is_empty():
+			continue
+		out.append({
+			"path": path,
+			"label": str(data.get("snapshot_label", name.trim_prefix(prefix).trim_suffix(".json"))),
+			"save_time": str(data.get("save_time", "")),
+			"day": int(float(data.get("game_time", 480.0)) / 1440.0) + 1,
+		})
+	# Newest EPISODE first — the label is the truth; timestamps tie within a
+	# second in a harness and would prune the wrong file.
+	out.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return _episode_ordinal(str(a["label"])) > _episode_ordinal(str(b["label"])))
+	return out
+
+
+static func _episode_ordinal(label: String) -> int:
+	## "S2E3" -> 2003; anything unparseable sorts oldest.
+	if not label.begins_with("S") or not "E" in label:
+		return -1
+	var parts := label.substr(1).split("E")
+	if parts.size() != 2 or not parts[0].is_valid_int() or not parts[1].is_valid_int():
+		return -1
+	return int(parts[0]) * 1000 + int(parts[1])
+
+
+func load_snapshot(path: String) -> bool:
+	## Rewind: restore a banked wrap into the running game. The slot file is
+	## left alone until the player saves, so a rewind is never destructive
+	## until they say so.
+	var data := _try_load_file(path)
+	if data.is_empty():
+		push_warning("SaveManager: snapshot unreadable: %s" % path)
+		return false
+	_deserialize_world(data)
+	EventBus.narrative_event.emit("Rewound to the %s wrap." % str(data.get("snapshot_label", "episode")), [], 3.0)
+	return true
+
+
+func _snapshot_path(slot: int, season: int, episode: int) -> String:
+	return SNAPSHOT_DIR + "slot_%d_S%dE%d.json" % [slot, season, episode]
+
+
+func _prune_snapshots(slot: int) -> void:
+	var snaps := list_snapshots(slot)
+	for i in range(MAX_SNAPSHOTS_PER_SLOT, snaps.size()):
+		DirAccess.remove_absolute(str(snaps[i]["path"]))
 
 
 func delete_save(slot: int) -> void:

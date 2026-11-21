@@ -6,7 +6,7 @@ are expensive to rediscover — several entries here exist because someone alrea
 to them.
 
 **Status:** M0–M5, M7, M8, V, E, P, A, and G shipped — every phase of the build order is done · **Branch:** `main` (CI on every push; releases by `v*` tag) · **Open:** backlog items only (M6/mobile was cut 2026-08-31)
-**Strategy:** the forward roadmap lives in [docs/ROADMAP.md](docs/ROADMAP.md) (2026-08-30 panel synthesis); this file stays the working engineering record.
+**Strategy:** the forward roadmap lives in [docs/ROADMAP.md](docs/ROADMAP.md) (second edition, 2026-11-21: research-backed feature list with a proof per item); this file stays the working engineering record.
 **Maintainer:** this file is owned and kept current. Amend it when you learn something; do not
 let it drift. Two claims in it have already been proven false and corrected — a stale doc is
 worse than no doc, because it is trusted.

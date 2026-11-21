@@ -1,12 +1,20 @@
 name: web-demo
 
 # Builds the no-threads web export and publishes it to GitHub Pages —
-# a play-it-in-your-browser link that updates on every push to main.
+# a play-it-in-your-browser link that updates with main.
 # No-threads sidesteps the SharedArrayBuffer/COOP/COEP problem entirely,
 # so plain Pages hosting works with no service-worker shims.
+#
+# Deploy only what passed: this runs when the `tests` workflow finishes on
+# main, and the job below goes ahead only if that run succeeded. It used to
+# run on every push, beside the tests, so a red commit still went live.
+# A manual dispatch remains as the deliberate way to publish without that
+# gate (it builds whatever ref it is dispatched on).
 
 on:
-  push:
+  workflow_run:
+    workflows: ["tests"]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -15,21 +23,34 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
   build-and-deploy:
+    # `tests` also runs for pull requests; only a passing push to main
+    # publishes. A failed or cancelled run publishes nothing.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # On the job, not the workflow: a run whose job is skipped (tests
+    # failed) must not cancel a good deploy that is still in flight.
+    concurrency:
+      group: pages
+      cancel-in-progress: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     env:
       GODOT_VERSION: "4.6"
+      # A workflow_run event carries the default branch's tip as github.sha,
+      # which may already be a newer commit than the one that was tested.
+      # Build exactly the commit whose tests passed.
+      DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
 
       - name: Cache Godot + export templates
         id: cache-godot
@@ -93,4 +114,4 @@ jobs:
           unzip -q /tmp/butler.zip -d /tmp/butler
           chmod +x /tmp/butler/butler
           /tmp/butler/butler push build/web "${ITCH_TARGET:-rsanandres/aphae}:web" \
-            --userversion "${GITHUB_SHA::8}"
+            --userversion "${DEPLOY_SHA::8}"

@@ -1,6 +1,13 @@
 extends Node
 ## Global signal bus decoupling all systems.
 
+
+func _init() -> void:
+	# First autoload constructed, so this runs before anything can draw a
+	# random number: one seed governs the whole run (see SimSeed).
+	SimSeed.apply()
+
+
 # Agent signals
 signal agent_spawned(agent: Node2D)
 signal agent_state_changed(agent: Node2D, old_state: AgentState.Type, new_state: AgentState.Type)
@@ -20,6 +27,10 @@ signal relationship_changed(agent_name: String, target_name: String, relationshi
 signal conversation_started(agent_a: String, agent_b: String)
 signal conversation_ended(agent_a: String, agent_b: String)
 signal conversation_line(speaker: String, line: String)
+## The same turn with its telemetry: `kind` is the pool the line came from
+## (see ConversationInstance._line_kind), `tone` is how the bubble reads
+## ("romantic", "hostile" or ""). Consumed by SoakReport.
+signal conversation_turn(speaker: String, listener: String, line: String, kind: String, tone: String)
 
 # Object signals
 signal object_occupied(object: Node2D, agent: Node2D)

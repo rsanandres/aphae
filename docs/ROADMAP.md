@@ -19,6 +19,8 @@ Three measures replace the old first-hour checklist. Each is a number a headless
 - **Conclusion rate**: storylines that reach an ending (goal landed, secret out, case closed, pact broken) per episode.
 - **Stance spread**: share of conversation turns that are not agreement. LLM agents drift prosocial ([arXiv 2504.02234](https://arxiv.org/pdf/2504.02234)); a cast that only agrees is not a show.
 
+The first measurement (seed 1, 10 agents, 5 game-days, heuristic brains): repeat rate **0.68**, conclusion rate **5.0** per episode, stance spread **0.04**. Three more seeds and what they show are in PLAN.md. `tools/run_soak.sh` prints these numbers and CI holds the repeat rate under a ceiling that only moves down.
+
 ---
 
 ## Where the last edition landed
@@ -77,10 +79,10 @@ Sizes describe scope, not duration. **S** touches one system and its harness. **
 
 | # | Item | Size | What and why | Proof |
 |---|---|---|---|---|
-| F1 | **Seeded runs** | S | A `--seed` user argument that seeds the global RNG for `headless_sim` and every harness. There is no seeding today, so a flake cannot be replayed. Applies to the heuristic path only; LLM output is not deterministic. | Two runs with the same seed print identical narrative logs |
-| F2 | **The soak report** | S | `headless_sim` writes a metrics JSON at exit: repeat rate, conclusion rate, stance spread, time to first drama, conversations per game-day, think-tick time. The three measures above become CI numbers. | CI publishes the report; a threshold on repeat rate fails the run |
+| F1 | **Seeded runs** | S, shipped | A `--seed` user argument that seeds the global RNG for `headless_sim` and every harness. There is no seeding today, so a flake cannot be replayed. Applies to the heuristic path only; LLM output is not deterministic. | Two runs with the same seed print identical narrative logs |
+| F2 | **The soak report** | S, shipped | `headless_sim` writes a metrics JSON at exit: repeat rate, conclusion rate, stance spread, time to first drama, conversations per game-day, think-tick time. The three measures above become CI numbers. | CI publishes the report; a threshold on repeat rate fails the run |
 | F3 | **Scale and save hardening** | M | Divide the tier round-robin interval by tier size and record think-tick time at 12, 25 and 50 agents. Add a fixture corpus of one save per version (v4 to current) with a forward-compat guard. | New harness loads every fixture; the soak report carries the three scale rows |
-| F4 | **Deploy only what passed** | S | Run the web deploy after the test workflow succeeds, not beside it. | A red test run publishes nothing |
+| F4 | **Deploy only what passed** | S, shipped | Run the web deploy after the test workflow succeeds, not beside it. | A red test run publishes nothing |
 | F5 | **Content packs** | M | Load and merge `user://packs/*/` JSON for personalities, objects, events, arcs, dialogue and synergies. Everything is already data; this lets content arrive without a code change and makes content pull requests reviewable. Extend the dialogue lint to every pack file type. | A fixture pack adds one object, one arc and one line, and each appears in a seeded run; a malformed pack is skipped with a warning, never a crash |
 
 ### B. Real brains
@@ -141,7 +143,7 @@ Sizes describe scope, not duration. **S** touches one system and its harness. **
 
 Each step unblocks the next. Items inside a step are independent.
 
-1. **F1, F2, F4.** Seeds and the soak report first, because every later item claims a number.
+1. **F1, F2, F4.** Seeds and the soak report first, because every later item claims a number. *Shipped 2026-11-21.*
 2. **D1, B1.** The voice pipeline closes the repeat-rate gap on the heuristic path; the OpenAI-compatible backend is the base the next two brain items stand on.
 3. **B2, B4, D3, D8.** Measure the models, fix the agreeable cast, rank the moments, make the pacing a choice.
 4. **D2, L1, L2, B5.** The simulation starts recognising its own stories, and the cast gets faces, voices and visible memory.

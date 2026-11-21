@@ -113,14 +113,20 @@ Then set the backend in **Settings → LLM** from the main menu (Ollama is auto-
 
 ## Development
 
-- **Tests**: nine headless harnesses, 370+ assertions, plus windowed layout/interaction sweeps. One command runs everything the way CI does:
+- **Tests**: ten headless harnesses, 480+ assertions, plus windowed layout/interaction sweeps. One command runs everything the way CI does:
 
   ```bash
   GODOT=/path/to/godot bash tools/run_tests.sh
   ```
 
-- **CI** runs the full suite on every push and PR; harnesses are discovered from disk, a script error fails even a passing run, and failures publish their output to the job summary.
-- **Releases**: pushing a `v*` tag exports, smoke-tests, and publishes Windows + Linux builds as a GitHub Release. Pushes to `main` also build the web version for GitHub Pages.
+- **Seeded runs and the soak**: every run prints its seed, and `-- --seed=N` replays it. The soak runs the office for five game-days on a fixed seed, checks that the same seed gives the same run, and reports how often the cast repeats itself, how many stories conclude, and how much of the talk is anything but agreement:
+
+  ```bash
+  GODOT=/path/to/godot bash tools/run_soak.sh
+  ```
+
+- **CI** runs the full suite and the soak on every push and PR; harnesses are discovered from disk, a script error fails even a passing run, failures publish their output to the job summary, and the soak's numbers are published on every run.
+- **Releases**: pushing a `v*` tag exports, smoke-tests, and publishes Windows + Linux builds as a GitHub Release. The web version is rebuilt for GitHub Pages from `main`, and only from a commit whose tests passed.
 - **[PLAN.md](PLAN.md)** is the living design doc and devlog — decisions, playtest findings, and the traps that cost real time. If you're poking at the code, start there.
 
 ### Architecture

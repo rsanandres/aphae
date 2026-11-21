@@ -3,6 +3,10 @@ extends Node
 
 const ACHIEVEMENTS_PATH := "user://achievements.json"
 
+## Seam: off in the soak, so a headless run cannot unlock achievements in
+## the real game's file.
+var persistence_enabled: bool = true
+
 var _definitions: Dictionary = {}  # id -> {name, description, category}
 var _unlocked: Dictionary = {}  # id -> true
 var _objects_placed: int = 0
@@ -93,6 +97,8 @@ func _load_progress() -> void:
 
 
 func _save_progress() -> void:
+	if not persistence_enabled:
+		return
 	var unlocked_list: Array = []
 	for id in _unlocked:
 		unlocked_list.append(id)

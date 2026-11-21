@@ -44,3 +44,31 @@ jobs:
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           tail -120 /tmp/suite.log >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      # The soak: the same seed twice must give the same run, and a five
+      # game-day run must not repeat itself more than the ceiling allows
+      # (tools/run_soak.sh). Its numbers go to the summary on every run,
+      # pass or fail, so a drift is visible before it trips the gate.
+      - name: Soak (replay check and report)
+        run: |
+          set -o pipefail
+          GODOT=~/godot-bin/godot bash tools/run_soak.sh 2>&1 | tee /tmp/soak.log
+
+      - name: Publish the soak numbers to the step summary
+        if: always()
+        run: |
+          if [ -f /tmp/soak.log ]; then
+            echo '### Soak' >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            sed -n '/== replay check/,$p' /tmp/soak.log >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload the soak report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: soak-report
+          path: build/soak/report.json
+          if-no-files-found: ignore
+          retention-days: 7

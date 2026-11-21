@@ -13,6 +13,9 @@ Aphae — AI Agent Office Simulation. A top-down 2D pixel art game where AI agen
 - Open project in Godot editor: `godot --editor project.godot`
 - Run from CLI: `godot --path /path/to/aphae`
 - Parse check: `godot --headless -e --quit-after 5`
+- Test suite: `GODOT=/path/to/godot bash tools/run_tests.sh`
+- Soak (seeded replay check + metrics report): `GODOT=/path/to/godot bash tools/run_soak.sh`
+- Replay any run: every run prints `[seed] N`; pass `-- --seed=N`. A line-for-line replay also needs `--heuristic` and the engine flag `--fixed-fps 60`
 
 ## Architecture
 
@@ -56,7 +59,7 @@ Aphae — AI Agent Office Simulation. A top-down 2D pixel art game where AI agen
 - `scenes/main/` — Root game scene
 - `scripts/enums/` — AgentState, NeedType, ActionType, LifeStage
 - `scripts/data/` — MemoryEntry, PersonalityProfile, RelationshipEntry, HealthState
-- `scripts/utils/` — SpriteFactory, Palette, PromptBuilder, AudioGenerator, EpisodeRecap
+- `scripts/utils/` — SpriteFactory, Palette, PromptBuilder, AudioGenerator, EpisodeRecap, SimSeed (the run seed, applied in `EventBus._init`), SoakReport (repeat rate, conclusion rate, stance spread, fingerprint)
 - `resources/` — Personalities (JSON), prompts (TXT), events (JSON), achievements (JSON)
 
 ### Agent Systems

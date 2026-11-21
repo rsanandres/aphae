@@ -5,7 +5,7 @@ this file before touching anything. It records decisions, environment setup, and
 are expensive to rediscover — several entries here exist because someone already lost an hour
 to them.
 
-**Status:** M0–M5, M7, M8, V, E, P, A, and G shipped — every phase of the build order is done · **Branch:** `main` (CI on every push; releases by `v*` tag) · **Open:** backlog items only (M6/mobile was cut 2026-08-31)
+**Status:** M0–M5, M7, M8, V, E, P, A, and G shipped — every phase of the build order is done; roadmap F1, F2 and F4 shipped 2026-11-21 · **Branch:** `main` (CI on every push; releases by `v*` tag) · **Open:** backlog items only (M6/mobile was cut 2026-08-31)
 **Strategy:** the forward roadmap lives in [docs/ROADMAP.md](docs/ROADMAP.md) (second edition, 2026-11-21: research-backed feature list with a proof per item); this file stays the working engineering record.
 **Maintainer:** this file is owned and kept current. Amend it when you learn something; do not
 let it drift. Two claims in it have already been proven false and corrected — a stale doc is
@@ -680,6 +680,88 @@ smoke-test, and `build/` + `steam_appid.txt` gitignored.
 - Content survey: procedural/LLM text means checking the "user-generated /
   AI content" disclosure box honestly — with the heuristic-only build this
   is canned-lines-only and simpler to answer.
+
+## Seeded runs, the soak report, and the deploy gate (2026-11-21, Roadmap F1, F2, F4)
+
+**F1, seeded runs.** `SimSeed` (`scripts/utils/sim_seed.gd`) is applied in
+`EventBus._init()`, the first autoload constructed, so one seed governs the
+run before anything can draw a number. Every run prints `[seed] N` on its
+first line; `-- --seed=N` replays it. `PersonalityGenerator` used to seed
+itself from the wall clock and now derives from the run seed when one is
+passed (an unseeded session keeps the clock in the mix, so a second New
+Game is still a different office).
+
+A seed alone does not replay a run. Three things have to hold, and
+`tools/run_soak.sh` passes all three:
+
+- `--seed=N`
+- `--heuristic` (model output is not reproducible)
+- the engine flag `--fixed-fps 60` (frame deltas otherwise follow the wall
+  clock, and the order of RNG draws follows the deltas)
+
+With those, two processes on the same seed produce the same log line for
+line. Verified at 1 and at 5 game-days.
+
+**F2, the soak report.** `headless_sim` takes `--days=N`, stops, and writes
+`SoakReport` (`scripts/utils/soak_report.gd`) as JSON: repeat rate,
+conclusion rate, stance spread, time to first drama, conversations per
+game-day, think-tick cost, and a `fingerprint` (SHA-256 of every line and
+narrative event with its game minute). Everything under `timing` is
+wall-clock; everything else must match between two runs of one seed.
+
+Stance spread needed a signal that did not exist: `ConversationInstance`
+now tags each turn with the pool it was drawn from (`_line_kind`) and emits
+`EventBus.conversation_turn`. Reject, probe, deflect and negative pools, or
+a hostile pair tone, count as not-agreement. Model-written turns carry kind
+`llm` and count by tone only, until stances are chosen in code (B4).
+
+**The first numbers** (10 agents, 1x, 5 game-days, heuristic):
+
+| Seed | Repeat rate | Conclusions per episode | Stance spread | Conversations per game-day |
+|---|---|---|---|---|
+| 1 | 0.68 | 5.0 | 0.04 | 6.6 |
+| 2 | 0.67 | 13.0 | 0.09 | 16.6 |
+| 3 | 0.66 | 0.5 | 0.04 | 2.0 |
+| 4 | 0.63 | 11.0 | 0.05 | 14.2 |
+
+What they say, before anyone tunes anything:
+
+- **Two lines in three are repeats.** The confessional pool is the worst
+  of it (0.81 to 0.90 by source): one line, "I have seen things at this
+  water cooler. Things.", was spoken 24 times in the seed 1 run.
+- **Some offices barely talk.** Seed 3 held 10 conversations in five days
+  where seed 2 held 83. Conclusions follow the same spread.
+- **Every conclusion but two was a goal.** No romance started and no mole
+  case closed in any of the four runs.
+- **About one turn in twenty is anything but agreement.**
+
+`tools/run_soak.sh` holds the repeat rate under a ceiling
+(`MAX_REPEAT_RATE`, 0.70). It is a ratchet set just above the measured
+figure, not a target: lower it whenever the voice pipeline lands a cut.
+
+**Three leaks the soak had, found on the way:**
+
+- `--speed` never took effect. `SettingsManager` applies the saved default
+  speed on a deferred call after `_ready`, so every soak ran at whatever
+  speed the machine's settings file held. The sim now re-asserts its speed.
+- It unlocked achievements in the real game's file. `AchievementManager`
+  gained a `persistence_enabled` seam, off in the soak and in `soak_test`.
+  **The other nine harnesses still write `user://achievements.json`.**
+- It banked episode snapshots and could auto-save. Both are now off.
+
+**Harness:** `scenes/main/soak_test.tscn`, **67 passed**. It covers the
+parsing, the report arithmetic, the fingerprint, the live wiring and the
+seams. The two-process replay proof lives in `tools/run_soak.sh`, which CI
+runs after the suite and publishes to the job summary.
+
+**F4, deploy only what passed.** `web-demo.yml` now runs on `workflow_run`
+of `tests` on `main` and deploys only when that run succeeded, building
+the exact commit that was tested (`workflow_run.head_sha`). Concurrency
+moved from the workflow to the job so a skipped run cannot cancel a good
+deploy in flight. A manual dispatch still publishes without the gate.
+**Not yet exercised:** a `workflow_run` trigger only takes effect from the
+default branch, so the first real test is the first push to `main` after
+this merges.
 
 ## The host-recap flake, fourth sighting of the cooldown-swallow (2026-09-02)
 

@@ -25,6 +25,12 @@ var _grid_update_timer: float = 0.0
 var _early_hook_done: bool = false
 var _think_count: int = 0
 
+# Wall-clock cost of think ticks, for the soak report. Each sample is one
+# scheduler trigger (pick an agent, let it decide) in microseconds.
+var think_calls: int = 0
+var think_usec_total: int = 0
+var think_usec_max: int = 0
+
 
 ## Cast fates: name -> {fate, day, personality}. The recap credits everyone
 ## a storyline or confessional ever featured, but a freed node loses its
@@ -251,7 +257,7 @@ func _process(delta: float) -> void:
 		_tier_timers[ThinkTier.ACTIVE] += sim_delta
 		if _tier_timers[ThinkTier.ACTIVE] >= Config.AGENT_THINK_INTERVAL:
 			_tier_timers[ThinkTier.ACTIVE] -= Config.AGENT_THINK_INTERVAL
-			_trigger_next_think_simple()
+			_timed_think(_trigger_next_think_simple)
 		return
 
 	# Large population: tiered scheduling
@@ -263,7 +269,16 @@ func _process(delta: float) -> void:
 		var interval: float = think_interval_for(tier)
 		if _tier_timers[tier] >= interval:
 			_tier_timers[tier] -= interval
-			_trigger_tier_think(tier)
+			_timed_think(_trigger_tier_think.bind(tier))
+
+
+func _timed_think(trigger: Callable) -> void:
+	var started := Time.get_ticks_usec()
+	trigger.call()
+	var spent := Time.get_ticks_usec() - started
+	think_calls += 1
+	think_usec_total += spent
+	think_usec_max = maxi(think_usec_max, spent)
 
 
 func _trigger_next_think_simple() -> void:

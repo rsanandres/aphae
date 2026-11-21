@@ -1,15 +1,50 @@
 extends Node2D
 ## Headless simulation: no rendering, just agent logic + console output.
-## Run via: ./run_headless.sh [agent_count] [speed]
+##
+##   godot --headless --path . --audio-driver Dummy \
+##       res://scenes/main/headless_sim.tscn -- --agents=12 --speed=3
+##
+## User arguments (after the bare `--`):
+##   --agents=N            cast size (default 10)
+##   --speed=N             0 pause, 1-3 game speed (default 3)
+##   --seed=N              replay a run (read by SimSeed, not here)
+##   --days=N              stop after N game-days and write the soak report;
+##                         without it the run never ends
+##   --report=PATH         where the report JSON goes (default
+##                         user://soak/report.json)
+##   --heuristic           never use a model, even if one is reachable
+##   --max-repeat-rate=X   exit 1 if the report's repeat_rate is above X
+##
+## A run that must replay line for line needs --seed, --heuristic and the
+## engine flag --fixed-fps 60 (tools/run_soak.sh passes all three).
+
+const DEFAULT_REPORT_PATH := "user://soak/report.json"
 
 var _world: Node2D
 var _agent_count: int = 10
 var _speed: int = 3  # 0=pause, 1=1x, 2=2x, 3=3x
 var _tick_count: int = 0
+var _days: float = 0.0  # 0 = run forever
+var _report_path: String = DEFAULT_REPORT_PATH
+var _max_repeat_rate: float = -1.0  # negative = no gate
+var _heuristic_only: bool = false
+var _end_minutes: float = 0.0
+var _report: SoakReport
+var _started_msec: int = 0
+var _finished: bool = false
 
 
 func _ready() -> void:
+	# A soak must never write into the real game's saves or lifetime meta.
 	ProducerEconomy.meta_persistence_enabled = false
+	SaveManager.episode_snapshots_enabled = false
+	SaveManager._last_auto_save_day = 999999
+	# Achievements neither persist nor start from what the real game has
+	# unlocked: the log must not depend on the machine it runs on.
+	AchievementManager.persistence_enabled = false
+	AchievementManager._unlocked.clear()
+	AchievementManager._objects_placed = 0
+	AchievementManager._confessionals_recorded = 0
 	# Parse command line args
 	var args := OS.get_cmdline_user_args()
 	for arg in args:
@@ -17,13 +52,30 @@ func _ready() -> void:
 			_agent_count = int(arg.split("=")[1])
 		elif arg.begins_with("--speed="):
 			_speed = int(arg.split("=")[1])
+		elif arg.begins_with("--days="):
+			_days = float(arg.split("=")[1])
+		elif arg.begins_with("--report="):
+			_report_path = arg.trim_prefix("--report=")
+		elif arg.begins_with("--max-repeat-rate="):
+			_max_repeat_rate = float(arg.split("=")[1])
+		elif arg == "--heuristic":
+			_heuristic_only = true
+
+	if _heuristic_only:
+		LLMManager._preferred_backend = "heuristic"
+		LLMManager._update_active_backend()
 
 	print("")
 	print("========================================")
 	print("  APHAE Headless Simulation")
-	print("  Agents: %d | Speed: %dx" % [_agent_count, _speed])
+	print("  Agents: %d | Speed: %dx | Seed: %d%s" % [
+		_agent_count, _speed, SimSeed.value,
+		"" if _days <= 0.0 else " | Days: %s" % str(_days)])
 	print("========================================")
 	print("")
+
+	_started_msec = Time.get_ticks_msec()
+	_end_minutes = TimeManager.game_minutes + _days * 1440.0
 
 	_build_world()
 	_place_objects()
@@ -63,15 +115,85 @@ func _ready() -> void:
 	EventBus.case_resolved.connect(func(caught: bool, mole: String) -> void:
 		print("## [Day %d %s] CASE CLOSED: mole was %s (%s)" % [TimeManager.day, TimeManager.time_string, mole, "CAUGHT" if caught else "GOT AWAY"]))
 
+	# Attached here, beside the console logging, so the report counts what
+	# the log shows: the cast arriving is setup, not the first drama.
+	_report = SoakReport.new()
+	_report.attach()
+
 	EventBus.game_ready.emit()
 	print("[SIM] Simulation started. Ctrl+C to stop.\n")
 
 
 func _process(_delta: float) -> void:
+	if _finished:
+		return
 	_tick_count += 1
+	# SettingsManager applies the saved default speed on a deferred call,
+	# after _ready: without this, --speed was silently overridden and the
+	# run's pace depended on the settings file of the machine it ran on.
+	if TimeManager.speed_index != _speed:
+		TimeManager.set_speed(_speed)
+	if _days > 0.0 and TimeManager.game_minutes >= _end_minutes:
+		_finish()
+		return
 	# Print status every 300 ticks (~5s at 60fps)
 	if _tick_count % 300 == 0:
 		_print_status()
+
+
+func _finish() -> void:
+	## End of a bounded run: write the report, print the headline numbers,
+	## and exit non-zero if the repeat-rate gate was set and missed.
+	_finished = true
+	TimeManager.set_speed(0)
+	var wall_seconds := (Time.get_ticks_msec() - _started_msec) / 1000.0
+	var think_calls: int = AgentManager.think_calls
+	var report := _report.build({
+		"seed": SimSeed.value,
+		"seed_explicit": SimSeed.explicit,
+		"agents": _agent_count,
+		"speed": _speed,
+		"backend": LLMManager.active_backend_name,
+	}, {
+		"wall_seconds": snappedf(wall_seconds, 0.01),
+		"frames": _tick_count,
+		"think_ticks": think_calls,
+		"think_ms_avg": snappedf(AgentManager.think_usec_total / 1000.0 / think_calls, 0.0001) if think_calls > 0 else null,
+		"think_ms_max": snappedf(AgentManager.think_usec_max / 1000.0, 0.0001),
+	})
+
+	var path := _report_path
+	var dir := path.get_base_dir()
+	if dir != "" and not DirAccess.dir_exists_absolute(dir):
+		DirAccess.make_dir_recursive_absolute(dir)
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(report, "  "))
+		file.close()
+	else:
+		push_error("[SIM] could not write the soak report to %s" % path)
+
+	print("")
+	print("=== SOAK REPORT ===")
+	print("  game days        %s" % str(report["game_days"]))
+	print("  repeat rate      %s  (%d of %d lines)" % [
+		str(report["repeat_rate"]), report["lines"]["repeated"], report["lines"]["total"]])
+	print("  conclusion rate  %s  (%d conclusions, %d episodes)" % [
+		str(report["conclusion_rate"]), report["conclusions"]["total"], report["conclusions"]["episodes"]])
+	print("  stance spread    %s  (%d of %d turns)" % [
+		str(report["stance_spread"]), report["stances"]["non_agreement"], report["stances"]["turns"]])
+	print("  first drama      %s game minutes" % str(report["drama"]["minutes_to_first"]))
+	print("  fingerprint      %s" % report["fingerprint"])
+	print("  written to       %s" % ProjectSettings.globalize_path(path))
+
+	var code := 0
+	if _max_repeat_rate >= 0.0 and float(report["repeat_rate"]) > _max_repeat_rate:
+		print("SOAK: FAIL (repeat rate %s is above the ceiling %s)" % [
+			str(report["repeat_rate"]), str(_max_repeat_rate)])
+		code = 1
+	else:
+		print("SOAK: OK")
+	get_tree().quit(code)
 
 
 func _build_world() -> void:

@@ -84,7 +84,12 @@ static var _rng := RandomNumberGenerator.new()
 
 
 static func generate_heuristic(spawn_index: int) -> PersonalityProfile:
-	_rng.seed = hash(spawn_index + Time.get_ticks_msec())
+	# A seeded run must cast the same people every time; an ordinary session
+	# keeps the clock in the mix so a second New Game is a different office.
+	if SimSeed.explicit:
+		_rng.seed = hash([SimSeed.value, spawn_index])
+	else:
+		_rng.seed = hash(spawn_index + Time.get_ticks_msec())
 
 	var profile := PersonalityProfile.new()
 

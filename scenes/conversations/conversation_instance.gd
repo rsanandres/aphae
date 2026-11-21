@@ -16,6 +16,11 @@ var _showing_line: bool = false
 var _name_a: String = ""
 var _name_b: String = ""
 var _aborted: bool = false
+## Which pool the line now being spoken came from ("negative", "probe",
+## "deflect", "reject", ... or "llm"). Telemetry only: it rides out on
+## EventBus.conversation_turn so the soak report can measure how much of
+## the cast's talk is something other than agreement.
+var _line_kind: String = ""
 
 
 func start(a: Node2D, b: Node2D, confession: bool = false) -> void:
@@ -135,6 +140,7 @@ func _request_next_line() -> void:
 			if success and data.has("line"):
 				line = LLMSanitizer.clean_line(str(data["line"]))
 			if line != "":
+				_line_kind = "llm"
 				_on_line_received(speaker, listener, line)
 			else:
 				_on_line_received(speaker, listener, _heuristic_line(speaker, listener)),
@@ -150,6 +156,7 @@ func _on_line_received(speaker: Node2D, _listener: Node2D, line: String) -> void
 	_history.append({"speaker": speaker.agent_name, "line": line})
 	speaker.show_speech(line, Config.CONVERSATION_LINE_DURATION, _tone(speaker, _listener))
 	EventBus.conversation_line.emit(speaker.agent_name, line)
+	EventBus.conversation_turn.emit(speaker.agent_name, _listener.agent_name, line, _line_kind, _tone(speaker, _listener))
 	_showing_line = true
 	_line_timer = Config.CONVERSATION_LINE_DURATION + 0.5
 
@@ -363,6 +370,7 @@ func _heuristic_line(speaker: Node2D, listener: Node2D) -> String:
 			"Okay, deep breath. %s, I think about you way more than a coworker should." % l_name,
 			"I wrote this down so I wouldn't chicken out. %s, I have feelings for you." % l_name,
 		]
+		_line_kind = "confess"
 		return pool[randi() % pool.size()]
 
 	if _is_confession and _current_turn == 1:
@@ -377,6 +385,7 @@ func _heuristic_line(speaker: Node2D, listener: Node2D) -> String:
 				"I can't stop smiling. I feel exactly the same way.",
 				"You just made my whole week, %s. I like you too." % s_name,
 			]
+			_line_kind = "accept"
 			return pool[randi() % pool.size()]
 		else:
 			var pool: Array[String] = [
@@ -389,6 +398,7 @@ func _heuristic_line(speaker: Node2D, listener: Node2D) -> String:
 				"I think you're great, but my heart's just not there. I'm sorry.",
 				"I don't want to hurt you, but I have to be honest. I see you as a friend.",
 			]
+			_line_kind = "reject"
 			return pool[randi() % pool.size()]
 
 	# --- Secrets flavor (M7): the mechanics run at wrap-up in SecretManager;
@@ -400,6 +410,7 @@ func _heuristic_line(speaker: Node2D, listener: Node2D) -> String:
 			"You've seemed a little cagey lately, %s. Just saying." % l_name,
 			"Funny — someone mentioned your name the other day. Interesting stuff.",
 		]
+		_line_kind = "probe"
 		return probe_pool[randi() % probe_pool.size()]
 	if SecretManager.has_hidden_secret(s_name) and randf() < 0.15:
 		var deflect_pool: Array[String] = [
@@ -408,6 +419,7 @@ func _heuristic_line(speaker: Node2D, listener: Node2D) -> String:
 			"I'm fine. Everything's fine. Great quarter, right?",
 			"Let's change the subject. For no reason. Just variety.",
 		]
+		_line_kind = "deflect"
 		return deflect_pool[randi() % deflect_pool.size()]
 
 	# --- Parametric helpers ---
@@ -426,12 +438,14 @@ func _heuristic_line(speaker: Node2D, listener: Node2D) -> String:
 			var mem: MemoryEntry = recent[randi() % recent.size()]
 			var mem_line := _memory_driven_line(s_name, l_name, mem)
 			if mem_line != "":
+				_line_kind = "memory"
 				return mem_line
 
 	# --- Personality-driven lines (25% chance: trait-specific dialogue) ---
 	if speaker.personality and randf() < 0.25:
 		var trait_line := _personality_driven_line(speaker, listener, s_name, l_name)
 		if trait_line != "":
+			_line_kind = "trait"
 			return trait_line
 
 	# --- Behavior modifier lines (mourning, avoidance) ---
@@ -439,6 +453,7 @@ func _heuristic_line(speaker: Node2D, listener: Node2D) -> String:
 		var mods: Array = speaker.get_active_modifiers()
 		for mod in mods:
 			if mod.get("type", "") == "mourning" and randf() < 0.5:
+				_line_kind = "mourning"
 				return _mourning_line(s_name, l_name, mod.get("target", "someone"))
 
 	# --- Need-based lines (40% chance if any need is critical) ---
@@ -456,21 +471,26 @@ func _heuristic_line(speaker: Node2D, listener: Node2D) -> String:
 
 	if not need_pools.is_empty() and randf() < 0.4:
 		var chosen_pool: Array = need_pools[randi() % need_pools.size()]
+		_line_kind = "need"
 		return _apply_substitutions(chosen_pool[randi() % chosen_pool.size()], s_name, l_name, quirk, goal, l_quirk, time_greeting)
 
 	# --- Romantic lines (romantic_interest > 40 OR dating/partners) ---
 	var is_romantic: bool = rel.romantic_interest > 40.0 or rel.relationship_status == RelationshipEntry.Status.DATING or rel.relationship_status == RelationshipEntry.Status.PARTNERS
 	if is_romantic:
 		var pool: Array[String] = _get_romantic_lines(s_name, l_name, is_late)
+		_line_kind = "romantic"
 		return _apply_substitutions(pool[randi() % pool.size()], s_name, l_name, quirk, goal, l_quirk, time_greeting)
 
 	# --- Relationship-tier lines ---
 	var pool: Array[String] = []
 	if rel.affinity > 30.0:
+		_line_kind = "positive"
 		pool = _get_positive_lines(s_name, l_name, quirk, goal, l_quirk, time_greeting)
 	elif rel.affinity < -20.0:
+		_line_kind = "negative"
 		pool = _get_negative_lines(s_name, l_name)
 	else:
+		_line_kind = "neutral"
 		pool = _get_neutral_lines(s_name, l_name, time_greeting, is_late)
 
 	return _apply_substitutions(pool[randi() % pool.size()], s_name, l_name, quirk, goal, l_quirk, time_greeting)

@@ -152,8 +152,17 @@ in this repo; the trace named the exact function on the first line.
   `SecretManager.auto_assign_enabled/auto_admit_enabled = false`,
   `WhodunitDirector.auto_enabled = false`, and
   `AchievementManager.persistence_enabled = false` (a harness that unlocks
-  an achievement otherwise writes it into the real game's file; only
-  `soak_test` and `headless_sim` set this so far).
+  an achievement otherwise writes it into the real game's file: one suite
+  run on a clean `user://` left 23 of the 39 unlocked. Every harness sets
+  it now, the three windowed ones included). That stops the write, not the
+  read: unlocks already on disk still load at startup. A harness whose
+  assertions can see unlock state must also clear
+  `AchievementManager._unlocked` and zero `_objects_placed` /
+  `_confessionals_recorded`. `headless_sim` does, so its log does not
+  depend on the machine, and so does `economy_test`, because catalog gates
+  are OR-combined with named achievements (with `drama_queen` on disk,
+  `meditation_pod` opens and "a catalog gate overrides the category tier"
+  fails).
   The rule behind the list: **any autoload acting on spawn/day/social
   signals collides with a harness eventually — through the confessional
   cooldown if nothing else. A new autoload with a background roll ships

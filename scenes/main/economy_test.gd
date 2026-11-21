@@ -14,6 +14,13 @@ var _results: Array[String] = []
 func _ready() -> void:
 	ProducerEconomy.meta_persistence_enabled = false
 	SaveManager.episode_snapshots_enabled = false
+	AchievementManager.persistence_enabled = false
+	# Catalog gates are OR-combined with named achievements, so what the real
+	# game has unlocked on this machine would open them under the assertions
+	# below (drama_queen opens meditation_pod). Start from nothing.
+	AchievementManager._unlocked.clear()
+	AchievementManager._objects_placed = 0
+	AchievementManager._confessionals_recorded = 0
 	# M7 seams off: the spawn-roll must not plant secret memories under the
 	# assertions, and the day-roll must not inject booth admissions mid-test.
 	GoalManager.auto_enabled = false

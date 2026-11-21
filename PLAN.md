@@ -746,7 +746,18 @@ figure, not a target: lower it whenever the voice pipeline lands a cut.
   speed the machine's settings file held. The sim now re-asserts its speed.
 - It unlocked achievements in the real game's file. `AchievementManager`
   gained a `persistence_enabled` seam, off in the soak and in `soak_test`.
-  **The other nine harnesses still write `user://achievements.json`.**
+  The other nine headless harnesses and the three windowed ones
+  (`gui_check`, `panel_check`, `screenshots`) did not set it at first: one
+  suite run on a clean `user://` wrote 23 of the 39 achievements to
+  `user://achievements.json`. All of them set it now, and a suite run on a
+  clean `user://` leaves no `achievements.json` behind.
+  The seam stops the write, not the read. Unlocks already on disk load at
+  startup, and `economy_test` could see them: catalog gates are OR-combined
+  with named achievements, so with `drama_queen` unlocked `meditation_pod`
+  opens and "a catalog gate overrides the category tier" fails (85 passed,
+  1 failed on a machine with every achievement unlocked). `economy_test`
+  now clears `AchievementManager._unlocked` and its two counters at the
+  start, as `headless_sim` does. No other harness asserts on unlock state.
 - It banked episode snapshots and could auto-save. Both are now off.
 
 **Harness:** `scenes/main/soak_test.tscn`, **67 passed**. It covers the

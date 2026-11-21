@@ -58,7 +58,7 @@ Pass the scene path directly. **Never use `run_headless.sh`** — it `sed`s
 corrupts the file if the run is killed.
 
 One command runs everything the way CI does — parse check (grep-gated),
-all six harnesses, timeouts, and the no-assertions guard:
+every harness, timeouts, and the no-assertions guard:
 
 ```bash
 GODOT=/path/to/godot tools/run_tests.sh          # or one harness by name
@@ -79,8 +79,23 @@ $G res://scenes/main/goals_test.tscn                  # 75 passed
 $G res://scenes/main/secrets_test.tscn                # 45 passed
 $G res://scenes/main/whodunit_test.tscn               # 50 passed
 $G res://scenes/main/synergy_test.tscn                # 26 passed
+$G res://scenes/main/soak_test.tscn                   # 67 passed
 $G res://scenes/main/headless_sim.tscn -- --agents=12 --speed=3   # soak; runs forever, kill it
 ```
+
+The bounded, seeded soak ends by itself and writes a report
+(`build/soak/report.json`: repeat rate, conclusion rate, stance spread,
+fingerprint). It runs the same seed twice first and fails if the two runs
+differ:
+
+```bash
+GODOT=/path/to/godot tools/run_soak.sh               # 3 minutes on a 4-core box
+SEED=7 DAYS=2 REPLAY_DAYS=0 tools/run_soak.sh        # one short run, no replay check
+```
+
+Every run prints `[seed] N` first. To replay a run line for line, pass
+`-- --seed=N --heuristic` AND the engine flag `--fixed-fps 60`: without the
+fixed frame rate, frame deltas follow the wall clock and the runs diverge.
 
 Windowed only (use the sandbox runner):
 
@@ -134,8 +149,11 @@ in this repo; the trace named the exact function on the first line.
   `GoalManager.auto_enabled = false` (a procedural agent's "find love" goal
   resolved on a harness's own romance emission, and the resulting quip's 8s
   cooldown swallowed the quip under test),
-  `SecretManager.auto_assign_enabled/auto_admit_enabled = false`, and
-  `WhodunitDirector.auto_enabled = false`.
+  `SecretManager.auto_assign_enabled/auto_admit_enabled = false`,
+  `WhodunitDirector.auto_enabled = false`, and
+  `AchievementManager.persistence_enabled = false` (a harness that unlocks
+  an achievement otherwise writes it into the real game's file; only
+  `soak_test` and `headless_sim` set this so far).
   The rule behind the list: **any autoload acting on spawn/day/social
   signals collides with a harness eventually — through the confessional
   cooldown if nothing else. A new autoload with a background roll ships
